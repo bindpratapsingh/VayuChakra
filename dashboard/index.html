@@ -365,6 +365,16 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
             </div>
           </div>
           <div class="panel">
+            <header>
+              <h3>Risk of breaching a GRAP stage</h3>
+              <span class="hint">what a decision actually turns on</span>
+            </header>
+            <div id="grap-slot">
+              <div class="skeleton sk-line" style="width:76%"></div>
+              <div class="skeleton sk-line" style="width:58%"></div>
+            </div>
+          </div>
+          <div class="panel">
             <header><h3>Pipeline status</h3>
               <span class="hint">what ran, and what did not</span></header>
             <div id="notes-slot" class="note">—</div>
@@ -835,6 +845,73 @@ function drawChips(sum) {
 }
 
 /* ---------- views ---------- */
+async function loadGrapRisk() {
+  const slot = $("#grap-slot");
+  const d = await api(`/uncertainty?horizon=${S.horizon}`);
+  if (d.__error) { offline(slot, d); return; }
+
+  const wrap = el("div");
+  const lead = el("p", "note");
+  lead.innerHTML = "A point forecast just under a boundary says nothing about the risk "
+    + "of crossing it. These are probabilities, from a model fitted to the conditional "
+    + "distribution rather than the mean.";
+  wrap.append(lead);
+
+  const live = d.live;
+  if (!live || !live.series || !live.series.length) {
+    const box = el("p", "note caveat");
+    box.textContent = d.note || "No quantile head trained yet.";
+    wrap.append(box);
+  } else {
+    // Peak risk across the forecast window is what matters for a decision: an official
+    // needs to know whether the stage is breached at ANY hour, not on average.
+    const rows = live.series;
+    const t = el("table", "kv");
+    const head = el("tr");
+    ["GRAP stage", "peak risk", ""].forEach(h => head.append(el("th", null, h)));
+    t.append(head);
+    Object.keys(d.thresholds_ugm3 || {}).forEach(label => {
+      const vals = rows.map(r => r[label]).filter(v => Number.isFinite(v));
+      if (!vals.length) return;
+      const peak = Math.max.apply(null, vals);
+      const tr = el("tr");
+      tr.append(el("th", null, label.replace(/^AQI \d+ \(/, "").replace(/\)$/, "")));
+      tr.append(Object.assign(el("td", "n"), { textContent: (100 * peak).toFixed(0) + "%" }));
+      const bar = el("td");
+      const track = el("div");
+      track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:90px;overflow:hidden";
+      const fill = el("div");
+      const colour = peak > 0.66 ? "var(--bad)" : peak > 0.33 ? "var(--warn)" : "var(--ok)";
+      fill.style.cssText = "height:100%;width:" + (100 * peak).toFixed(0)
+        + "%;background:" + colour + ";border-radius:4px";
+      track.append(fill); bar.append(track); tr.append(bar);
+      t.append(tr);
+    });
+    wrap.append(t);
+  }
+
+  const v = d.validation && d.validation.heads && d.validation.heads.pm25_24h;
+  if (v) {
+    const cov = v.coverage || {};
+    const cap = el("p", "note caveat");
+    let txt = "Measured on a held-out season: the 80% interval actually contained the "
+      + "truth <b>" + (100 * cov.measured).toFixed(1) + "%</b> of the time ("
+      + cov.verdict + ").";
+    const g = v.grap || {};
+    const first = Object.values(g)[0];
+    if (first && first.brier_skill_score != null) {
+      txt += " The probabilities beat a climatological forecast at every threshold, "
+        + "with skill scores from " + Math.min.apply(null, Object.values(g)
+            .map(x => x.brier_skill_score)).toFixed(2) + " to "
+        + Math.max.apply(null, Object.values(g)
+            .map(x => x.brier_skill_score)).toFixed(2) + ".";
+    }
+    cap.innerHTML = txt;
+    wrap.append(cap);
+  }
+  slot.replaceChildren(wrap);
+}
+
 async function loadForecast() {
   const [fc, sum] = await Promise.all([
     api(`/forecast?horizon=${S.horizon}`), api("/summary")
@@ -877,6 +954,8 @@ async function loadForecast() {
       ? `Generated ${new Date(sum.generated_at).toLocaleString()} · ${sum.cells} cells`
       : "—";
   }
+
+  loadGrapRisk();
 
   const notes = $("#notes-slot");
   if (sum.__error) notes.textContent = "—";

@@ -990,3 +990,65 @@ expecting a value there.
 **The lesson.** A safety net that can be bypassed by ordinary convenience code is not a
 safety net. The check was correct; the caller defeated it, and only a rendered chart
 saying "no values" exposed it.
+
+## D-054 · Gap analysis: the project had exactly ONE winter
+A survey of every station within 60 km of Delhi against the OpenAQ S3 archive:
+
+| year | stations with data |
+|---|---|
+| 2018 | 75 |
+| 2019 | 58 |
+| 2020 | 67 |
+| 2021 | 66 |
+| 2022 | 66 |
+| 2023-2024 | 1-3 (the archive gap) |
+| 2025 | 75 |
+| 2026 | 89 |
+
+**Seven usable winter seasons exist and we were training on one.** 2016-17, 2017-18,
+2018-19, 2019-20, 2020-21, 2021-22 and 2025-26, the middle four with 47-65 stations each.
+
+**This explains the weakest number in the project.** With only Nov 2025 - Feb 2026
+available, the winter hold-out removed the *only* winter from training — so the model was
+tested on winter having never seen one. PM2.5 at +24 h scored **+4.5%** over persistence
+under that arrangement. Neither split reflected operational reality, which is *trained on
+past winters, forecasting the current one*:
+
+ - recency split: winter **in** training, tested on summer — winter never evaluated;
+ - winter hold-out: winter tested, but **absent** from training — pessimistic by design.
+
+**Fix.** A second panel covering Oct 2018 - Mar 2022 (four more winters, 40 stations,
+47,984 station-days) to concatenate with the existing one. CAMS does not reach back that
+far, so the multi-year model runs without a chemistry prior and is reported as such.
+
+**A published Delhi study uses a decade of winters** for exactly this reason, which is
+corroboration that one winter was never going to be enough.
+
+## D-055 · Prediction intervals and GRAP exceedance probabilities
+A point forecast of 118 µg/m³ sitting just under a GRAP boundary tells an official
+nothing about the risk of crossing it, and GRAP stages are what a decision actually turns
+on. `uncertainty.py` fits five quantiles with XGBoost's `reg:quantileerror` and
+interpolates the conditional CDF to give the probability of breaching each stage.
+
+**First run, on the winter-blind model** (the only winter held out):
+
+| | |
+|---|---|
+| interval coverage | **66.7%** against 80% nominal — over-confident |
+| quantile crossing rate | 5.7% (repaired by row-wise sorting, and reported) |
+
+| GRAP threshold | observed | predicted | Brier | **skill vs climatology** |
+|---|---|---|---|---|
+| AQI 200 (Stage II) | 0.808 | 0.786 | 0.108 | **+0.304** |
+| AQI 300 (Stage III) | 0.663 | 0.655 | 0.156 | **+0.304** |
+| AQI 400 (Stage IV) | 0.208 | 0.168 | 0.130 | **+0.213** |
+
+**The probabilities are well calibrated and beat climatology at every threshold**, which
+is the useful result. **The interval is too narrow**, and that is the same one-winter
+problem: a model that has never seen a winter is confidently wrong about one, and its
+quantiles inherit the confidence without the accuracy.
+
+**A Brier score alone is not interpretable** — 0.108 sounds good until you notice that
+always predicting the base rate scores 0.155 on the same data. The skill score against
+that climatological forecast is reported alongside, because it is the number that says
+whether the model knows anything.

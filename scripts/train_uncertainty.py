@@ -95,11 +95,20 @@ def main() -> int:
                             rel.append({"predicted": round(float(p[m].mean()), 3),
                                         "observed": round(float(actual[m].mean()), 3),
                                         "n": int(m.sum())})
+                    # A Brier score alone is not interpretable: 0.11 sounds good until
+                    # you notice that always predicting the base rate scores 0.155 on
+                    # the same data. The SKILL SCORE against that climatological
+                    # forecast is the number that says whether the model knows anything.
+                    base = float(actual[ok].mean())
+                    brier = float(np.mean((p[ok] - actual[ok]) ** 2))
+                    clim = base * (1.0 - base)
                     entry["grap"][label] = {
                         "threshold_ugm3": thr,
-                        "base_rate": round(float(actual[ok].mean()), 4),
+                        "base_rate": round(base, 4),
                         "mean_predicted": round(float(p[ok].mean()), 4),
-                        "brier_score": round(float(np.mean((p[ok] - actual[ok]) ** 2)), 4),
+                        "brier_score": round(brier, 4),
+                        "brier_climatology": round(clim, 4),
+                        "brier_skill_score": round(1.0 - brier / clim, 4) if clim > 0 else None,
                         "reliability": rel,
                     }
             report["heads"][f"{target}_{horizon}h"] = entry
@@ -121,11 +130,16 @@ def main() -> int:
 
     pm = report["heads"].get("pm25_24h", {}).get("grap")
     if pm:
-        print("\n  GRAP exceedance, PM2.5 +24 h — Brier score, lower is better")
-        print(f"  {'threshold':44s} {'base rate':>10s} {'predicted':>10s} {'Brier':>8s}")
+        print("\n  GRAP exceedance, PM2.5 +24 h")
+        print("  Skill is measured against always forecasting the base rate. Above zero")
+        print("  means the model knows something; zero means it knows nothing.")
+        print(f"  {'threshold':44s} {'observed':>9s} {'predicted':>10s} "
+              f"{'Brier':>8s} {'skill':>8s}")
         for label, g in pm.items():
-            print(f"  {label:44s} {g['base_rate']:10.3f} {g['mean_predicted']:10.3f} "
-                  f"{g['brier_score']:8.4f}")
+            bss = g.get("brier_skill_score")
+            shown = "     n/a" if bss is None else format(bss, "+8.3f")
+            print(f"  {label:44s} {g['base_rate']:9.3f} {g['mean_predicted']:10.3f} "
+                  f"{g['brier_score']:8.4f} {shown}")
     return 0
 
 

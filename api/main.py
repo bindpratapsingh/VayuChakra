@@ -313,6 +313,49 @@ def loso_endpoint():
     return _clean(data)
 
 
+@app.get("/uncertainty")
+def uncertainty_endpoint(horizon: int = 24, refresh: bool = False):
+    """Prediction intervals and the probability of breaching each GRAP stage.
+
+    A point forecast sitting just under a threshold tells an official nothing about the
+    risk of crossing it, and GRAP stages are what a decision turns on. This returns the
+    fitted conditional distribution instead.
+    """
+    from vayuchakra import uncertainty as unc
+
+    out: dict = {
+        "why": ("GRAP stages trigger at AQI 200, 300 and 400. A decision turns on the "
+                "probability of crossing one, not on a point estimate near it."),
+        "thresholds_ugm3": unc.GRAP_PM25,
+        "validation": _artefact("uncertainty_pm25_24h.json") or _artefact("uncertainty.json"),
+    }
+    head = unc.QuantileHead.load("pm25", horizon)
+    if head is None:
+        out["live"] = None
+        out["note"] = "no quantile head trained yet - run scripts/train_uncertainty.py"
+        return _clean(out)
+
+    r = get_forecast(refresh=refresh)
+    if not r.available:
+        raise HTTPException(503, detail="forecast unavailable")
+    f = r.frame[r.frame["horizon_h"] == horizon]
+    absent = [c for c in head.features if c not in f.columns]
+    if absent:
+        out["live"] = None
+        out["note"] = (f"{len(absent)} trained features absent on the inference path "
+                       f"(first: {', '.join(absent[:4])}) - intervals withheld rather "
+                       f"than computed from nulls")
+        return _clean(out)
+
+    q = head.predict(f)
+    risk = unc.grap_risk(q)
+    joined = pd.concat([f[["time", "cell_id"]].reset_index(drop=True),
+                        q.reset_index(drop=True), risk.reset_index(drop=True)], axis=1)
+    city = joined.groupby("time").mean(numeric_only=True).reset_index()
+    out["live"] = {"horizon_h": horizon, "series": city.to_dict("records")}
+    return _clean(out)
+
+
 @app.get("/validation")
 def validation():
     """Stored training metrics. The expensive validations are run offline by scripts."""
