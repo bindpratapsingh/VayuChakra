@@ -931,7 +931,7 @@ PM2.5 drives the loop, and NO₂ and O₃ enter it through photolysis (D-039).
 ## D-051 · Leave-one-station-out: the gridded product is justified
 Every score before this was temporal — different hours, same stations. That answers "does
 it work next week". It does not answer the question a **gridded** forecast rests on: we
-serve 1,115 cells and about 40 contain an instrument, so for a thousand of them the model
+serve 1,120 cells and about 40 contain an instrument, so for a thousand of them the model
 is extrapolating in space and nothing had tested whether it can.
 
 Each station removed from training entirely, model rebuilt on the rest, predicting a
@@ -1052,3 +1052,82 @@ quantiles inherit the confidence without the accuracy.
 always predicting the base rate scores 0.155 on the same data. The skill score against
 that climatological forecast is reported alongside, because it is the number that says
 whether the model knows anything.
+
+---
+
+## D-056
+
+**The frontend is rebuilt around the vertical column and the regional flow, not around
+wards.**
+
+AirGrid's dashboard is a ward choropleth: one number per neighbourhood, health bands, a
+citizen deciding whether to go outside. That shape was inherited here and it was the
+wrong shape. This problem statement is about the atmosphere's vertical structure and
+about transport across a region, and a city choropleth can express neither. Delhi is
+420 cells of a 1,120-cell domain, so the view that mattered most was showing the least.
+
+The six views are now named for the physics rather than for pages:
+
+| view | what it answers |
+|---|---|
+| Domain | where the air comes from, at the scale it comes from |
+| Vertical | what the lid is doing, in time and height |
+| Coupling | the loop the product is named after |
+| Transport | whether the smoke actually arrives |
+| Forecast | the derived surface product, where AQI finally appears |
+| Evidence | every validation number, negative ones included |
+
+Two views are new, and both exist because a value we already computed was invisible.
+
+**The time and height cross-section.** Inversion lid, mixing depth and the temperature
+profile at 950, 925 and 850 hPa were all being computed and then flattened into three
+line charts of surface scalars. The cross-section draws the column itself: time on x,
+metres above ground on y, static stability as the fill, mixing depth as a line and the
+lid marked where one exists. On a 168-hour window a lid is present in 95 hours and
+absent in 73, and the absence is drawn as absence rather than joined through, because
+"no lid" and "a lid at ground level" are opposite statements.
+
+**The regional domain map.** The forecast covers 27.0 to 29.9 N and the fires that drive
+the October and November episodes sit 200 to 400 km upwind, so a Delhi-only map could
+not show the mechanism the statement asks about.
+
+### Three things the new views exposed
+
+**A 4.2 km hole in the grid.** Coarse cells were dropped when their CENTRE fell inside
+the Delhi box. The box starts at 28.40, so the coarse cell centred there was dropped
+although it covers down to 28.35, while the fine tier only reaches 28.3875. A strip
+along Delhi's southern edge belonged to neither tier. The northern edge never had the
+problem, because 28.90 lies outside the box and was kept anyway, so the two edges were
+not even wrong in the same way. Dropping a coarse cell only when the fine tier covers
+its whole footprint makes both edges overlap slightly and neither gap. **1,115 cells
+becomes 1,120** (D-002 superseded).
+
+The test that should have caught this asserted the bug: `test_grid_tiers_do_not_overlap`
+checked that no coarse centre fell inside the box, which is precisely the rule that
+opened the hole. It is replaced by `test_grid_tiers_leave_no_gap`, which walks a mesh
+across the tier boundary and asserts every point falls inside some cell's footprint.
+
+**A parked crosshair bleeding into the neighbouring chart.** `svg.plot` carried
+`overflow: visible` and each chart parked its crosshair at `x = -99` on pointer-leave.
+The line was therefore drawn 99 units outside its own chart, landing inside the panel to
+its left, where it read as a meaningful vertical marker on somebody else's data. Nothing
+in these plots paints outside the viewBox, so the overflow is gone and the crosshair is
+hidden rather than moved off-canvas.
+
+**A stubble overlay that overstated itself.** Drawing the FIRMS search bounding box as a
+filled region covered two thirds of the map, because the belt runs to 32.5 N while the
+domain stops at 29.9 N. It read as though the whole region were alight. The box is a
+satellite query extent, not a landscape feature. It is now a hatch that visibly runs off
+the top edge, which is the true statement, and the fires themselves carry the signal.
+
+### Rejected
+
+**Reusing AirGrid's dashboard with new copy.** Cheaper, and it would have kept the ward
+map as the front door of a product whose subject is a column of air.
+
+**A 3D or rotatable atmosphere view.** The data is three pressure levels over one
+domain-mean column. A perspective render would imply resolved structure between the
+levels that does not exist, and it would be harder to read a number off.
+
+**Predicting AQI directly.** Unchanged from D-018: PM2.5 and ozone are predicted
+separately and combined through the published CPCB breakpoint table.

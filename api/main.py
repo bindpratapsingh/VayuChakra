@@ -393,6 +393,82 @@ def uncertainty_endpoint(horizon: int = 24, refresh: bool = False):
     return _clean(out)
 
 
+@app.get("/profile")
+def profile(cell_id: int | None = None, refresh: bool = False):
+    """Vertical structure over time: the cross-section a forecaster actually reads.
+
+    Everything else in this system reports a surface number. The problem statement is
+    about what happens ABOVE the surface, and until now that was only ever shown as a
+    flat line. This returns the temperature profile at each usable pressure level
+    together with the mixing depth and the inversion lid, so the lid can be drawn as a
+    surface in time and height rather than described in a caption.
+
+    Heights are above ground, not above sea level. 1000 hPa is excluded because over
+    Delhi it sits below the terrain (D-009), and a level underground carries no
+    information about the air above it.
+    """
+    r = get_forecast(refresh=refresh)
+    if not r.available:
+        raise HTTPException(503, detail="forecast unavailable")
+    f = r.frame[r.frame["horizon_h"] == r.frame["horizon_h"].min()]
+    if cell_id is not None:
+        f = f[f["cell_id"] == cell_id]
+        if f.empty:
+            raise HTTPException(404, detail=f"no cell {cell_id}")
+
+    levels = []
+    for name in ("950", "925", "850"):
+        z, t = f"z_{name}", f"t_{name}"
+        if z in f.columns and t in f.columns and f[z].notna().any():
+            levels.append({"pressure_hpa": float(name),
+                           "height_col": z, "temp_col": t})
+
+    cols = ["temperature_2m", "mixing_depth_m", "inversion_lid_m",
+            "inversion_strength_k", "boundary_layer_height", "is_inversion",
+            "shortwave_radiation"]
+    cols += [c for lv in levels for c in (lv["height_col"], lv["temp_col"])]
+    cols = [c for c in cols if c in f.columns]
+    series = f.groupby("time")[cols].mean().reset_index()
+
+    return _clean({
+        "scope": f"cell {cell_id}" if cell_id is not None else "domain mean",
+        "levels": [{"pressure_hpa": lv["pressure_hpa"],
+                    "height": lv["height_col"], "temp": lv["temp_col"]}
+                   for lv in levels],
+        "surface_height_m": 2.0,
+        "note": ("Heights are metres above ground. The 1000 hPa surface is excluded "
+                 "because over Delhi it lies below the terrain, so its temperature is a "
+                 "downward extrapolation that reads several degrees too warm at night."),
+        "series": series.to_dict("records"),
+    })
+
+
+@app.get("/domain")
+def domain(refresh: bool = False):
+    """The whole modelled region, not just the city.
+
+    The forecast covers 1,120 cells across NCR and the transport that matters starts
+    250 km upwind, in Punjab and Haryana. A Delhi-only view cannot show smoke arriving
+    from outside the city, which is the mechanism the problem statement asks about.
+    """
+    cells = grid.build_grid()
+    fires = plume.fetch_fires(days=3)
+    return _clean({
+        "bounds": {"lat": [C.LAT_MIN, C.LAT_MAX], "lon": [C.LON_MIN, C.LON_MAX]},
+        "delhi_box": {"lat": [grid.DELHI_BOX[0], grid.DELHI_BOX[1]],
+                      "lon": [grid.DELHI_BOX[2], grid.DELHI_BOX[3]]},
+        "stubble_bbox": {"lon": [plume.STUBBLE_BBOX[0], plume.STUBBLE_BBOX[2]],
+                         "lat": [plume.STUBBLE_BBOX[1], plume.STUBBLE_BBOX[3]]},
+        "delhi": {"lat": C.DELHI_LAT, "lon": C.DELHI_LON},
+        "districts": [{"code": d.code, "name": d.name, "lat": d.lat, "lon": d.lon,
+                       "state": d.state} for d in grid.DISTRICTS],
+        "cells": [{"lat": c.lat, "lon": c.lon, "tier": c.tier} for c in cells],
+        "fires": [{"lat": f.lat, "lon": f.lon, "frp_mw": f.frp_mw,
+                   "confidence": f.confidence} for f in fires[:1500]],
+        "fire_summary": plume.summarise(fires),
+    })
+
+
 @app.get("/validation")
 def validation():
     """Stored training metrics. The expensive validations are run offline by scripts."""

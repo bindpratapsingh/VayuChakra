@@ -4,7 +4,7 @@ Run:  python scripts/loso.py [--targets pm25,o3] [--horizon 24] [--stations 10]
 
 Every score so far has been temporal — train on some hours, test on others, at stations
 the model has seen. That answers "does it work next week". It does not answer the
-question a **gridded** product actually rests on: the forecast is served for 1,115 cells,
+question a **gridded** product actually rests on: the forecast is served for 1,120 cells,
 and only about 40 of them contain an instrument. For the other thousand, the model is
 extrapolating in space, and nothing measured so far tells us whether it can.
 

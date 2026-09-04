@@ -28,10 +28,52 @@ def test_bearing_to_punjab_is_north_west():
     assert 300 < b < 340
 
 
-def test_grid_tiers_do_not_overlap():
+def _footprint(c):
+    """The ground a cell actually stands for: half a step in every direction."""
+    h = 0.0125 if c.tier == "delhi" else 0.05
+    return c.lat - h, c.lat + h, c.lon - h, c.lon + h
+
+
+def test_grid_tiers_leave_no_gap():
+    """The two tiers must tile the domain, with no strip belonging to neither.
+
+    This used to assert that no coarse cell CENTRE fell inside the Delhi box, and that
+    is what put a hole in the map. The box starts at 28.40, so the coarse cell centred
+    there was dropped even though it covers down to 28.35, while the fine tier only
+    reaches 28.3875. A 4.2 km strip along Delhi's southern edge belonged to neither
+    tier. Assert the property that actually matters instead: full coverage.
+    """
     cells = grid.build_grid()
-    ncr = [c for c in cells if c.tier == "ncr"]
-    assert not any(grid.in_delhi_box(c.lat, c.lon) for c in ncr)
+    boxes = [_footprint(c) for c in cells]
+    lat0, lat1, lon0, lon1 = grid.DELHI_BOX
+
+    uncovered = []
+    la = lat0 - 0.2
+    while la <= lat1 + 0.2:
+        lo = lon0
+        while lo <= lon1:
+            if not any(a <= la <= b and c <= lo <= d for a, b, c, d in boxes):
+                uncovered.append((round(la, 4), round(lo, 4)))
+            lo += 0.02
+        la += 0.005
+    assert not uncovered, f"no cell covers {uncovered[:5]}"
+
+
+def test_no_coarse_cell_is_fully_redundant():
+    """A coarse cell entirely inside the fine tier is wasted upstream work."""
+    cells = grid.build_grid()
+    fine = [c for c in cells if c.tier == "delhi"]
+    fa = min(c.lat for c in fine) - 0.0125, max(c.lat for c in fine) + 0.0125
+    fo = min(c.lon for c in fine) - 0.0125, max(c.lon for c in fine) + 0.0125
+    for c in cells:
+        if c.tier == "delhi":
+            continue
+        a, b, x, y = _footprint(c)
+        assert not (fa[0] <= a and b <= fa[1] and fo[0] <= x and y <= fo[1]),             f"coarse cell {c.cell_id} at {c.lat},{c.lon} is fully covered by the fine tier"
+
+
+def test_grid_cell_ids_are_unique():
+    cells = grid.build_grid()
     assert len({c.cell_id for c in cells}) == len(cells)
 
 

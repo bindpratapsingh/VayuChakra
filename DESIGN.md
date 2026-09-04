@@ -1,6 +1,6 @@
 ---
 name: VayuChakra
-description: Coupled weather–chemistry forecasting for Delhi NCR — an operational scientific instrument, read by forecasters and reviewed by a jury.
+description: Coupled weather and chemistry forecasting for Delhi NCR, an operational scientific instrument, read by forecasters and reviewed by a jury.
 register: product
 platform: web
 colors:
@@ -30,12 +30,36 @@ colors:
   aqi-poor: "#ff9933"
   aqi-very-poor: "#cc0033"
   aqi-severe: "#7e0023"
+  canvas: "#f7f9fb"
+  no-data: "#e3e8ee"
+  skeleton-sweep: "#f2f5f8"
+  s2-ink: "#8a4f10"
+  moderate-ink: "#8a6d00"
+  ramp-0: "#eef1f8"
+  ramp-1: "#c8d3ea"
+  ramp-2: "#93a9d6"
+  ramp-3: "#5c78bd"
+  ramp-4: "#33539c"
+  ramp-5: "#1c3260"
+  stab-0: "#3b62d4"
+  stab-1: "#8ba3de"
+  stab-2: "#c6cfda"
+  stab-3: "#c9c3b6"
+  stab-4: "#dcae7e"
+  stab-5: "#c2701c"
 typography:
   display:
     fontFamily: "system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 700
     lineHeight: 1.1
+    letterSpacing: "-0.02em"
+    fontFeature: "tabular-nums"
+  readout:
+    fontFamily: "system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 700
+    lineHeight: 1.15
     letterSpacing: "-0.02em"
     fontFeature: "tabular-nums"
   title:
@@ -103,7 +127,7 @@ components:
   rail:
     backgroundColor: "{colors.brand}"
     textColor: "#ffffff"
-    width: "216px"
+    width: "224px"
   segmented:
     backgroundColor: "{colors.panel-2}"
     rounded: "{rounded.pill}"
@@ -165,11 +189,11 @@ number, the band and the confidence stand forward.
 colour reserved for two jobs only: severity, and series identity.
 
 ### Chrome
-- **Atmospheric Indigo** (#1c3260) — the single brand voice: rail, primary emphasis.
+- **Atmospheric Indigo** (#1c3260) is the single brand voice: rail, primary emphasis.
   Deep enough to read as institutional. Indigo rather than AirGrid's teal because the
   subject is the vertical structure of the atmosphere. 12.54:1 with white.
-- **Active Indigo** (#2c4b8a) — focus rings and interactive states.
-- **Indigo Wash** (#eef1f8) — the tint behind the loop-closure note.
+- **Active Indigo** (#2c4b8a) for focus rings and interactive states.
+- **Indigo Wash** (#eef1f8) is the tint behind the loop-closure note.
 
 ### Neutrals
 - **Ink** (#101820) body text, 16.52:1 on surface.
@@ -204,6 +228,50 @@ result is not dismissable, and it sets two hard rules:
 Text on bands: dark ink on Good, Satisfactory, Moderate and Poor; white on Very Poor and
 Severe. White on Good is only 3.65:1, which is large-text-only, so ink is used there too.
 
+### Sequential ramp (continuous magnitude)
+
+`#eef1f8 → #c8d3ea → #93a9d6 → #5c78bd → #33539c → #1c3260`
+
+One hue, light to dark, running from Indigo Wash to the brand itself. Used where a
+quantity is continuous and has no published band scale: the relative AQI map mode, and
+the coarse-tier cells on the domain map. Single-hue by rule, because a rainbow ramp
+invents category boundaries the data does not have and reads differently to a
+colour-blind viewer at every step.
+
+It is never used for AQI in the default view. AQI has a legislated band scale and
+recolouring it would be a fabrication, so the relative mode is opt-in and says in its own
+caption that these are not CPCB colours.
+
+### Diverging ramp (static stability)
+
+`#3b62d4 → #8ba3de → #c6cfda → #c9c3b6 → #dcae7e → #c2701c`
+
+Two hues with a near-neutral midpoint, built from the ends of the validated series pair:
+`s1` for stable air, `s2` for unstable. Reserved for one quantity, the lapse rate on the
+time and height cross-section, because stability is genuinely two-sided around a neutral
+value and a sequential ramp would hide the sign change that matters most. The two hues
+inherit the series pair's CVD separation, so the stable and unstable ends stay
+distinguishable under protanopia.
+
+### Darkened tones for small text
+
+Two tokens exist only because their parents fail contrast at 10px:
+
+- **`s2-ink #8a4f10`** is `s2` darkened to 6.1:1 for the stubble-belt label, which sits at
+  10px on the map ground where `s2` itself reaches only about 3.3:1.
+- **`moderate-ink #8a6d00`** is the Moderate band darkened for the large AQI readout.
+  `#ffde33` as text on white is 1.4:1 and effectively invisible.
+
+Both are text-only. Neither is ever used as a fill, because that would put a second
+almost-identical tone next to its parent and imply a distinction that is not there.
+
+### Utility neutrals
+
+`canvas #f7f9fb` is the map ground, one shade lighter than the surface so the domain
+reads as a distinct plane. `no-data #e3e8ee` fills a cell with no index and is
+deliberately outside the CPCB set, so absence never resembles a band. `skeleton-sweep
+#f2f5f8` is the highlight in the loading sweep.
+
 ### Status
 `ok #0f7b4a` · `warn #b06a12` · `bad #b3261e`, each with a wash for chip backgrounds.
 Reserved for state. Never reused as a fourth series colour, and always shipped with a
@@ -214,9 +282,15 @@ label rather than a bare dot.
 One family: the system sans. A product UI does not need a display pairing.
 
 Fixed rem scale, not fluid, at roughly a 1.125 ratio:
-`0.6875 → 0.75 → 0.8125 → 0.875 → 0.9375 → 1.0625 → 1.5rem`,
+`0.6875 → 0.75 → 0.8125 → 0.875 → 0.9375 → 1.0625 → 1.25 → 1.5rem`,
 plus a fixed `10px` for chart axis ticks, which sit outside the text ramp because they
 must stay legible at a fixed size regardless of the surrounding scale.
+
+The `1.25rem` **readout** step closes a real gap. Without it the jump from `1.0625` to
+`1.5` is a ratio of 1.41, far outside the rest of the scale, and the six coupling-loop
+values had nowhere to sit: at `1.5rem` they compete with the city AQI, which is the one
+number on the product that should be largest, and at `1.0625rem` they stop reading as
+figures and start reading as headings.
 
 The scale is deliberately tighter and has more steps than AirGrid's. A dense instrument
 has more distinct text roles than a chat interface, and exaggerated contrast between
@@ -226,8 +300,13 @@ them would read as noise.
 
 ## 5. Layout and density
 
-Rail plus content. The rail is a fixed 216px, collapsing to a horizontal bar under
-860px. Content is a 22px gutter with panels on a 14px grid.
+Rail plus content. The rail is a fixed 224px, collapsing to a horizontal bar under
+900px. Content is a 22px gutter with panels on a 14px grid.
+
+It widened from 216px when each nav item gained a second line. The six views are named
+for physics rather than for pages, so `Vertical` and `Domain` need a sub-label saying
+what they contain; 216px wrapped those onto three lines and 224px does not. The
+sub-labels are dropped entirely in the collapsed bar, where there is no room for them.
 
 Panels are used where a genuine grouping exists. **Cards are not the default answer and
 are never nested.** The coupling view's five steps are columns divided by hairlines
@@ -236,7 +315,7 @@ rather than five cards, because they are one continuous process and not five thi
 ## 6. Motion
 
 150–250ms, ease-out, on state only: view changes, toggles, tooltip fades, the skeleton
-sweep. No orchestrated page-load sequence — the reader arrives to work, not to watch.
+sweep. No orchestrated page-load sequence, because the reader arrives to work, not to watch.
 Every animation has a `prefers-reduced-motion` alternative, and the skeleton sweep stops
 entirely under it.
 

@@ -26,6 +26,7 @@ TWO MEASURED FACTS THAT SHAPE THIS MODULE
 """
 from __future__ import annotations
 
+import hashlib
 import csv
 import gzip
 import io
@@ -199,6 +200,16 @@ def _fetch_day(location_id: int, day: pd.Timestamp) -> list[dict]:
     return rows
 
 
+def _archive_key(station_ids: list[int], start: str, end: str) -> str:
+    """Stable short key for one archive request.
+
+    Station order must not change the key, or the same request made twice would cache
+    twice and hit neither.
+    """
+    raw = ",".join(str(i) for i in sorted(station_ids)) + f"|{start}|{end}"
+    return hashlib.sha1(raw.encode()).hexdigest()[:16]
+
+
 def fetch_archive(station_ids: list[int], start: str, end: str,
                   workers: int = 12, flush_every: int = 250) -> pd.DataFrame:
     """Hourly observations for a set of stations over a date range.
@@ -213,6 +224,23 @@ def fetch_archive(station_ids: list[int], start: str, end: str,
     ratio and keeps it flat in the number of days requested, at the cost of a final
     regroup to merge batch boundaries.
     """
+    # The download is the expensive half of the whole project: 48,000 gzipped
+    # station-days for the five-winter window, about 80 minutes at the archive's rate.
+    # The assembled panel is cached further up, but that cache is only written once
+    # assembly SUCCEEDS, so a failure after the fetch, which is exactly what an
+    # out-of-memory error in add_lags is, threw away the 80 minutes and made every
+    # attempt at a fix cost another 80. Caching the hourly frame separates the two:
+    # download once, then iterate on assembly for the price of a parquet read.
+    cache = C.CACHE / f"obs_archive_{_archive_key(station_ids, start, end)}.parquet"
+    if cache.exists():
+        try:
+            df = pd.read_parquet(cache)
+            print(f"[obs] cached archive {cache.name}: {len(df):,} station-hours")
+            return df
+        except Exception as exc:                       # a truncated or partial write
+            print(f"[obs] cache {cache.name} unreadable ({exc}); refetching")
+            cache.unlink(missing_ok=True)
+
     # Ask each station which months it actually holds before requesting any day of
     # them. One listing per station-year replaces up to 365 futile downloads.
     jobs: list[tuple[int, pd.Timestamp]] = []
@@ -265,7 +293,19 @@ def fetch_archive(station_ids: list[int], start: str, end: str,
     numeric = [c for c in combined.columns if c not in ("station_id", "time")]
     combined = (combined.groupby(["station_id", "time"], as_index=False)[numeric]
                         .mean(numeric_only=True))
-    return combined.sort_values(["station_id", "time"]).reset_index(drop=True)
+    combined = combined.sort_values(["station_id", "time"]).reset_index(drop=True)
+
+    # Write via a temporary name and rename, so an interrupted write cannot leave a
+    # half-file that a later run would read as complete.
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        tmp = cache.with_suffix(".parquet.tmp")
+        combined.to_parquet(tmp, index=False)
+        tmp.replace(cache)
+        print(f"[obs] cached -> {cache.name}")
+    except Exception as exc:
+        print(f"[obs] could not cache the archive ({exc}); continuing")
+    return combined
 
 
 def _to_hourly(df: pd.DataFrame) -> pd.DataFrame:

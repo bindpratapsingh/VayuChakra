@@ -99,7 +99,7 @@ ARCHIVE_VARS: tuple[str, ...] = (
 ALL_VARS: tuple[str, ...] = tuple(dict.fromkeys(HOURLY_VARS + ARCHIVE_VARS))
 
 #: Open-Meteo accepts comma-separated coordinate lists and returns one object per
-#: point. 100 keeps the URL well inside limits while cutting 1,115 cells to 12 calls.
+#: point. 100 keeps the URL well inside limits while cutting 1,120 cells to 12 calls.
 BATCH = 100
 
 

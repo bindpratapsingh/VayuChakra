@@ -2,7 +2,7 @@
 
 **Coupled weather–chemistry forecasting for Delhi NCR**
 
-> Built for: Ministry of Earth Sciences / NCMRWF —
+> Built for: Ministry of Earth Sciences / NCMRWF,
 > *Air Pollution–Weather Coupled Forecasting System (Delhi NCR Focus)*
 
 ---
@@ -11,7 +11,7 @@
 
 Every operational AQI forecast treats weather as an input: wind disperses, rain
 scavenges, a shallow boundary layer concentrates. That is one direction only. The real
-atmosphere runs a loop — dense aerosol blocks sunlight, the surface heats less, the
+atmosphere runs a loop: dense aerosol blocks sunlight, the surface heats less, the
 mixed layer grows shallower, and the same emissions end up more concentrated, which
 blocks more sunlight. The problem statement calls ignoring that loop a source of
 "significant inaccuracies".
@@ -25,11 +25,39 @@ blocks more sunlight. The problem statement calls ignoring that loop a source of
 | | |
 |---|---|
 | **Two-way coupling** | An explicit five-step solver: PM2.5 → optical depth → shortwave → temperature → boundary layer → PM2.5, iterated to convergence |
-| **Separate PM2.5 and O₃** | Two model heads, because their physics and seasons are opposite — ozone peaks on bright afternoons and *rises when NOx falls* |
+| **Separate PM2.5 and O₃** | Two model heads, because their physics and seasons are opposite. Ozone peaks on bright afternoons and *rises when NOx falls* |
 | **Inversion tracking** | Strength in kelvin, lid height, mixing depth, ventilation coefficient, stagnation run length |
 | **Plume dispersion** | Lagrangian puffs released from satellite fire detections, advected on forecast wind, gated by the inversion lid |
-| **72-hour outlook** | 1,115 cells — ~2.8 km over Delhi, ~11 km across the wider NCR |
+| **72-hour outlook** | 1,120 cells, ~2.8 km over Delhi, ~11 km across the wider NCR |
 | **Validated against the MoES DSS** | Head-to-head with the ministry's own operational system on identical observations |
+| **A forecaster's interface** | Six views organised around the physics: the region, the vertical column, the loop, transport, the surface product, and the evidence |
+
+---
+
+## The interface
+
+The dashboard is deliberately not a ward map. A ward choropleth answers "should I go
+outside", which is a good question and a different product. This problem statement is
+about the vertical structure of the atmosphere and about transport across a region, so
+the views are named for the physics rather than for pages.
+
+| view | what it answers |
+|---|---|
+| **Domain** | Where the air comes from. The full 27.0 to 29.9 N extent, the stubble belt running off the northern edge, live fire detections, and an arrow from today's fire centroid to the city. |
+| **Vertical** | What the lid is doing. A time and height cross-section: hours on x, metres above ground on y, static stability as the fill, mixing depth as a line, and the inversion lid marked where one exists. |
+| **Coupling** | The loop, step by step, with each step's live value and each one checked against a published Delhi range. |
+| **Transport** | Whether the smoke actually arrives, and how the model scores against the MoES DSS attribution. |
+| **Forecast** | The surface product. CPCB AQI per cell, and the probability of breaching each GRAP stage. |
+| **Evidence** | Every validation number, negative results included. |
+
+The cross-section is the one that did not exist before. Inversion lid, mixing depth and
+the temperature profile at 950, 925 and 850 hPa were all being computed and then
+flattened into three line charts of surface scalars. On a 168-hour window the lid is
+present in 95 hours and absent in 73, and absence is drawn as absence rather than joined
+through: "no lid" and "a lid at ground level" are opposite statements about the
+atmosphere and must not share a pixel.
+
+Screenshots are in [docs/shots/](docs/shots/).
 
 ---
 
@@ -50,10 +78,10 @@ box.
    AOD → ultraviolet → photolysis rate → ozone production
 ```
 
-All three meteorological variables the problem statement names — **temperature, wind and
-PBL height** — now respond, and NO₂ and O₃ enter the loop through photolysis.
+All three meteorological variables the problem statement names, **temperature, wind and
+PBL height**, now respond, and NO₂ and O₃ enter the loop through photolysis.
 
-Step 5 feeds step 1, so it is **solved**, not evaluated — damped fixed-point iteration
+Step 5 feeds step 1, so it is **solved**, not evaluated. Damped fixed-point iteration
 with clipped responses, an iteration cap, and a divergence flag that falls back to the
 uncoupled answer rather than shipping a number it could not solve for.
 
@@ -74,8 +102,8 @@ Five for five, on 13,109 high-aerosol daylight hours.
 
 ## Results
 
-**All twelve forecast heads beat persistence.** Persistence — "tomorrow looks like
-today" — is the baseline that matters and is embarrassingly hard to beat at 24 hours.
+**All twelve forecast heads beat persistence.** Persistence, meaning "tomorrow looks like
+today", is the baseline that matters and is embarrassingly hard to beat at 24 hours.
 Trained on 536,670 station-hours from 40 stations, Feb 2025 to Aug 2026, chronological
 hold-out.
 
@@ -91,7 +119,7 @@ faster than a physics-informed model as the horizon grows.
 
 ### The same models, evaluated on a winter they never saw
 
-The table above uses a **recency** split — and on this panel the most recent 20% is
+The table above uses a **recency** split, and on this panel the most recent 20% is
 May–August 2026, which contains **no winter at all**. Delhi's defining pollution season
 was going unevaluated. Retraining with Nov 2025 – Feb 2026 held out entirely gives a
 sharply different picture, and both are reported because they answer different questions.
@@ -111,8 +139,8 @@ very different from the summer numbers above.
 | NO₂ +24 / +48 / +72 h | +21.7 / +24.1 / +24.6% | +11.8 / +14.5 / +13.7% | 0.64 / 0.57 / 0.52 |
 
 **PM2.5 in winter is a much harder problem**, and the 24-hour margin over persistence
-nearly disappears. Winter Delhi is episode-driven — boundary-layer collapse, multi-day
-accumulation, festival and burning spikes — and persistence is strongest exactly when
+nearly disappears. Winter Delhi is episode-driven (boundary-layer collapse, multi-day
+accumulation, festival and burning spikes) and persistence is strongest exactly when
 concentrations are high and slowly varying. The margin recovers at longer leads.
 
 **Ozone goes the other way**, improving in winter at every horizon. That is consistent
@@ -142,7 +170,7 @@ sample in time.
 | +72 h | 2,363 | 118.95 | **101.22** | 115.00 |
 
 **Read the caveat before quoting the table.** The DSS forecasts were issued
-*operationally* — it had to predict the weather as well as the chemistry, days ahead.
+*operationally*: it had to predict the weather as well as the chemistry, days ahead.
 Our hindcast is driven by ERA5 *reanalysis*, the meteorology as it actually turned out.
 That is a material advantage and it is **not a fair comparison of forecast skill**.
 
@@ -151,7 +179,7 @@ It does **not** support: *"we forecast better than the MoES DSS."*
 
 ### Stubble plume, scored against the MoES DSS attribution
 
-Round 1 tested the plume against one four-day episode and got r = −0.12 — an
+Round 1 tested the plume against one four-day episode and got r = −0.12, an
 uninformative comparison, because transported smoke is a minority additive term against
 a signal dominated by local emissions. The DSS workbook contains a far better reference:
 a **daily stubble attribution in µg/m³ for 147 days**.
@@ -160,9 +188,9 @@ Scored over the 6 Oct – 30 Nov 2021 burning season, **229,709 archived FIRMS d
 
 | vertical treatment | r | RMSE | peak (scaled) | DSS peak |
 |---|---|---|---|---|
-| **A** — injection height fixed | **+0.596** | 8.28 | 27.7 | 38.0 |
-| C — entrained + residual layer | +0.525 | 8.90 | 24.5 | 38.0 |
-| B — entrained, no residual | +0.369 | 9.95 | 22.4 | 38.0 |
+| **A**, injection height fixed | **+0.596** | 8.28 | 27.7 | 38.0 |
+| C, entrained plus residual layer | +0.525 | 8.90 | 24.5 | 38.0 |
+| B, entrained, no residual | +0.369 | 9.95 | 22.4 | 38.0 |
 
 Only a **single scale factor** is fitted, absorbing emission-factor uncertainty
 (5–8 g/kg for cereal straw), satellite detection limits and burn-duration assumptions.
@@ -171,14 +199,14 @@ Correlation cannot be improved by scaling, so the ranking measures physics, not 
 **This overturned a Round 1 decision.** We had shipped C on the argument that its
 vertical treatment is the most physically complete, having rejected A from a single
 episode. Over a full season against the operational reference, A has the best day-to-day
-timing — so A is now the default. The caveat: the DSS attribution is *daily*, so it
+timing, so A is now the default. The caveat: the DSS attribution is *daily*, so it
 settles day-to-day timing and nothing finer, and cannot discriminate the variants on
 their diurnal behaviour, which is where A remains questionable.
 
 ### Aerosol and ozone: a counterfactual, validated
 
 Explicit photolysis features did **not** improve the ozone forecast (17.61 vs 17.58 RMSE
-— a wash). But a statistical model can only interpolate conditions it has seen; it cannot
+a wash). But a statistical model can only interpolate conditions it has seen; it cannot
 answer *"what would ozone be if Delhi's aerosol halved?"* A mechanism can.
 
 Trained with Nov 2025 – Feb 2026 held out entirely:
@@ -190,7 +218,7 @@ Trained with Nov 2025 – Feb 2026 held out entirely:
 | −75% | +24.29% |
 
 The published Delhi figure is **+25% ozone for a 50% AOD cut** (Nelson et al., Faraday
-Discussions 226, 2021). Ours gives +12.79% — same sign, monotonic, **within a factor of
+Discussions 226, 2021). Ours gives +12.79%: same sign, monotonic, **within a factor of
 two of a number the model was never fitted to and never saw**.
 
 The seasonal split corroborates the mechanism: the same experiment on a *summer* hold-out
@@ -203,8 +231,8 @@ the whole oxidation chain. We have no VOC measurements and model only the direct
 
 ### Does it work where there is no monitor?
 
-The forecast serves 1,115 cells and about 40 contain an instrument. Every score above is
-temporal — different hours, same stations. Leave-one-station-out removes a station from
+The forecast serves 1,120 cells and about 40 contain an instrument. Every score above is
+temporal, different hours and the same stations. Leave-one-station-out removes a station from
 training entirely and predicts a place the model has never seen.
 
 | target | stations | RMSE | persistence | vs persistence | beat |
@@ -214,7 +242,7 @@ training entirely and predicts a place the model has never seen.
 
 The margin is larger than it looks, because the comparison is deliberately unfair to us:
 persistence uses the held-out station's **own recent history**, which the model is denied.
-A model that has never seen a location still beats a baseline that has — so producing a
+A model that has never seen a location still beats a baseline that has, so producing a
 value for a cell with no instrument is defensible rather than decorative.
 
 ### Does the PM2.5 coupling help? A negative result
@@ -231,11 +259,11 @@ fit an intercept.
 | well ventilated | 8,134 | 76.61 | 76.77 | −0.21% |
 | high aerosol | 28,440 | 83.29 | 83.00 | **+0.35%** |
 
-The feedback's *magnitudes* are right — all four literature checks pass. But switching it
+The feedback's *magnitudes* are right, and all four literature checks pass. But switching it
 on does **not** measurably improve PM2.5 against observations, except marginally where
 aerosol is high. The most interesting candidate explanation is that the trained model
 already receives mixing depth, ventilation coefficient, shortwave and the stagnation
-indices, and may be learning the feedback's effect implicitly — in which case adding it
+indices, and may be learning the feedback's effect implicitly, in which case adding it
 explicitly is double-counting rather than new information. See D-036.
 
 ---
@@ -249,7 +277,7 @@ chemistry model), calibrated against CPCB ground truth, validated against the Mo
 aerosol microphysics, no chemistry en route. The feedback is parameterised.
 
 We never claim to have built or run WRF-Chem. The `DSS Paper related/` workbook is
-third-party research output from IITM / NCMRWF / TERI / NCAR — **cited, never
+third-party research output from IITM / NCMRWF / TERI / NCAR. **Cited, never
 redistributed, never presented as ours**.
 
 ---
@@ -274,7 +302,7 @@ All free. No paid service anywhere.
 vayuchakra/
   config.py      domain, credentials, physical constants, acceptance bounds
   net.py         cached HTTP that never raises
-  grid.py        two-tier NCR grid, 19 DSS districts, geometry
+  grid.py        two-tier NCR grid, 20 DSS districts, geometry
   met.py         meteorology ingestion, forecast and ERA5 archive
   indices.py     inversion strength, mixing depth, ventilation, stability class
   chem_prior.py  CAMS chemistry prior
@@ -287,16 +315,19 @@ vayuchakra/
   forecast.py    the full pipeline
   validate.py    DSS head-to-head and the coupling ablation
   dss.py         MoES DSS workbook reader
+  photolysis.py  MCM clear-sky J, aerosol attenuation of ultraviolet
+  uncertainty.py quantile heads, interval coverage, GRAP exceedance probability
 api/main.py      local FastAPI
-scripts/         build_dataset.py, train.py
-tests/           66 offline tests
+dashboard/       the six-view interface, one file, no build step
+scripts/         build_dataset.py, train.py, run_all.sh, and the validators
+tests/           76 offline tests
 ```
 
 ---
 
 ## Reproducing this
 
-Two free API keys are needed — OpenAQ and NASA FIRMS. Copy `.env.example` to `.env` and
+Two free API keys are needed: OpenAQ and NASA FIRMS. Copy `.env.example` to `.env` and
 fill them in. Everything else (Open-Meteo forecast, ERA5 archive, CAMS chemistry) is
 keyless. Without the keys the system still runs and reports which stages could not.
 
@@ -340,16 +371,18 @@ the only version of this that is worth anything.
 | **We do not run a chemical transport model** | Structural. WRF-Chem needs an HPC cluster and a district emission inventory we do not have. We consume CAMS instead and call it a surrogate. |
 | **No VOC chemistry** | Delhi ozone is VOC-limited and we have no VOC measurements. TROPOMI HCHO/NO₂ could give a regime map (threshold FNR ≈ 3.1) but needs NetCDF orbit processing. |
 | **Single layer** | No vertical discretisation. The largest remaining simplification. |
-| **PM2.5 winter skill** | The weakest number in the project, and the one most improved by the multi-winter data. |
+| **PM2.5 winter skill** | The weakest number in the project, and the one the multi-winter data exists to improve. |
+| **The five-winter retrain does not fit on the development machine** | Measured, not assumed. The 2018 to 2022 panel is 1.22 million rows by 130 columns, about 1.4 GB in float32 before pandas takes a working copy. The machine has **3.8 GB of RAM, 150 MB physically available and 2.1 GB of commit headroom**, so the assembly step failed on an allocation of 3 MB. The pipeline was made lean enough to be worth retrying (see below) and the historical panel was cut to two winters, which is what fits. More winters need more RAM, not more code. |
 | **Plume validated only at daily resolution** | The DSS attribution is daily, so it cannot discriminate the vertical treatments on their behaviour through the night. |
 | **No operational run cycle** | The API caches for an hour but nothing schedules a refresh. |
+| **The interval is over-confident** | The 80% prediction interval contains the truth 66.7% of the time. Same one-winter cause: a model that has never seen a winter is confidently wrong about one, and its quantiles inherit the confidence without the accuracy. |
 
 ---
 
 ## Design decisions
 
 Every non-obvious choice, the measurement behind it, and what would reverse it is
-logged in [DECISIONS.md](DECISIONS.md) — including the bugs found along the way and how
+logged in [DECISIONS.md](DECISIONS.md), including the bugs found along the way and how
 each was caught. Several were only visible because output magnitudes were checked
 against physical expectations rather than eyeballed.
 
@@ -372,7 +405,7 @@ Stated here rather than buried, because a reviewer will find them anyway.
 - **The feedback is parameterised, not a radiative-transfer solve.** No spectral
   integration, no vertical layering, no aerosol microphysics.
 - **The coupling ablation is a negative result** and is reported as one. See above.
-- **The DSS comparison is not like-for-like** — reanalysis versus operational forecast.
+- **The DSS comparison is not like-for-like**: reanalysis versus operational forecast.
 - **Spatial resolution is 6 km, not 2.8 km.** The display grid is finer than the inputs,
   so predicted fields are smoothed to the resolution the drivers actually carry. Without
   it the map rendered tree-leaf quantisation as though it were a pollution gradient.

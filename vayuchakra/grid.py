@@ -152,24 +152,46 @@ def build_grid(
     farmland whose only role is to carry a plume towards the city.
 
     So: 0.025 degrees (~2.8 km) inside Delhi where the forecast is consumed, 0.1
-    degrees (~11 km) outside it where the field only needs to advect. Coarse cells
-    falling inside the Delhi box are dropped so the two tiers never overlap.
+    degrees (~11 km) outside it where the field only needs to advect.
+
+    A coarse cell is dropped only when the fine tier covers the WHOLE of its footprint.
+    Testing the coarse centre instead, which is what this did originally, left a real
+    hole: the box starts at 28.40, so the coarse cell centred at 28.40 was dropped even
+    though it covers down to 28.35, while the fine tier only reaches 28.3875. That left
+    a 4.2 km strip along Delhi's southern edge with no cell in either tier, and it was
+    visible as a white seam once the domain was drawn at its full extent. The northern
+    edge never had the problem because 28.90 falls outside the box and was kept anyway,
+    so the two edges were not even wrong in the same way. Footprint containment makes
+    them consistent: a slight overlap at both edges, and a gap at neither.
     """
     cells: list[Cell] = []
     cid = 0
 
+    # The ground the fine tier actually paints, which is half a fine cell beyond its
+    # outermost centres, not the nominal box.
+    d_lats = _span(DELHI_BOX[0], DELHI_BOX[1], delhi_step)
+    d_lons = _span(DELHI_BOX[2], DELHI_BOX[3], delhi_step)
+    half = delhi_step / 2.0
+    fine_lat0, fine_lat1 = d_lats[0] - half, d_lats[-1] + half
+    fine_lon0, fine_lon1 = d_lons[0] - half, d_lons[-1] + half
+    ch = ncr_step / 2.0
+
+    def covered_by_fine(lat: float, lon: float) -> bool:
+        """Is every corner of this coarse cell already served by the fine tier?"""
+        return (lat - ch >= fine_lat0 - 1e-9 and lat + ch <= fine_lat1 + 1e-9
+                and lon - ch >= fine_lon0 - 1e-9 and lon + ch <= fine_lon1 + 1e-9)
+
     for lat in _span(C.LAT_MIN, C.LAT_MAX, ncr_step):
         for lon in _span(C.LON_MIN, C.LON_MAX, ncr_step):
-            if in_delhi_box(lat, lon):
+            if covered_by_fine(lat, lon):
                 continue                      # the fine tier owns this area
             d = nearest_district(lat, lon)
             cells.append(Cell(cid, lat, lon, d.code,
                               round(haversine_km(lat, lon, d.lat, d.lon), 2), "ncr"))
             cid += 1
 
-    a, b, c, d_ = DELHI_BOX
-    for lat in _span(a, b, delhi_step):
-        for lon in _span(c, d_, delhi_step):
+    for lat in d_lats:
+        for lon in d_lons:
             dd = nearest_district(lat, lon)
             cells.append(Cell(cid, lat, lon, dd.code,
                               round(haversine_km(lat, lon, dd.lat, dd.lon), 2), "delhi"))

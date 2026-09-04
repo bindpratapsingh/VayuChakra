@@ -14,9 +14,15 @@
 #   4. quantiles prediction intervals and GRAP exceedance probabilities
 #   5. loso      does it work where there is no instrument
 #   6. validate  DSS head-to-head using the held-out model from step 3
-set -u
+#
+# set -e matters here. Without it, step 1 failing left combine_panels to skip the
+# missing winters panel, and steps 2 through 6 then trained, validated and reported on
+# the single-winter panel instead. Six green stages for a model that had seen one
+# winter, which is the exact claim this whole run exists to stop making.
+set -eu
 cd "$(dirname "$0")/.."
 log() { echo ""; echo "=== $* ==="; }
+fail() { echo ""; echo "!!! FAILED at: $* "; echo "!!! Stopping. Nothing downstream ran."; exit 1; }
 
 log "1/6 combine panels"
 python -u scripts/combine_panels.py --panels winters_panel,train_panel --out combined_panel

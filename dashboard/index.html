@@ -3,25 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VayuChakra · Coupled Weather–Chemistry Forecast, Delhi NCR</title>
+<title>VayuChakra · Coupled Weather-Chemistry Forecast, Delhi NCR</title>
 <style>
 /* ============================================================================
-   VayuChakra design tokens
+   VayuChakra
 
-   Register: product. The reader is a forecaster or scientific reviewer at a desk
-   under office light, or a jury watching a projector in a lit room — so: light
-   surface, high density, tabular figures, no decoration competing with the data.
+   THE LAYOUT FOLLOWS THE PROBLEM STATEMENT, NOT THE SIBLING PRODUCT.
 
-   Sibling to AirGrid, not a copy. AirGrid's voice is deep civic teal; this is
-   atmospheric indigo, because the subject is the vertical structure of the
-   atmosphere rather than public-health advice.
+   AirGrid is a ward-wise citizen advisory: a city choropleth, health bands, one
+   number per neighbourhood. That is the right shape for "should I go out today".
+   It is the wrong shape here.
 
-   The CPCB AQI scale is a PUBLIC STANDARD and is reproduced exactly. It is never
-   recoloured for taste. Validated: CVD separation passes (worst adjacent ΔE 8.2
-   protan), but Satisfactory / Moderate / Poor all fall below 3:1 against a light
-   surface — so every band-coloured element carries its band NAME and NUMBER as
-   visible text, and every cell gets a hairline border. Colour is never the only
-   channel.
+   This problem statement is about the atmosphere's VERTICAL structure (inversion
+   strength, mixing depth, what a lid traps) and about REGIONAL transport (smoke
+   travelling 250 km from Punjab into a city that cannot ventilate). So the views
+   are organised around a column and a flow rather than around administrative
+   polygons:
+
+     Domain     the whole modelled region, with the stubble belt that feeds it
+     Vertical   a time and height cross-section, the chart a forecaster reads
+     Coupling   the loop, which is what the product is named after
+     Transport  plume arrival, gated by the lid
+     Forecast   the derived surface product, where AQI finally appears
+     Evidence   every validation number in one place
+
+   Reading scene: a forecaster at a desk under office light, or the same screen
+   projected in a lit room for a scientific jury. That forces a light surface, high
+   density, tabular figures, and no decoration competing with the data.
    ========================================================================= */
 :root {
   --surface: #f4f6f8;
@@ -32,19 +40,18 @@
   --ink: #101820;
   --ink-muted: #4a5764;
 
-  /* Brand chrome. 12.54:1 with white — this is UI, not a series colour. */
+  /* Atmospheric indigo. 12.54:1 with white. */
   --brand: #1c3260;
   --brand-active: #2c4b8a;
   --brand-wash: #eef1f8;
 
-  /* Chart series. Validated: lightness band, chroma floor, CVD ΔE 14.0 (protan),
-     normal-vision ΔE 21.7, contrast ≥3:1 — all pass. Assigned in fixed order. */
+  /* Validated chart series: CVD separation 14.0 (protan), normal vision 21.7. */
   --s1: #3b62d4;
   --s2: #c2701c;
   --s3: #0f9b8e;
   --baseline: #8b98a8;
 
-  /* CPCB National AQI bands — public standard, exact values. */
+  /* CPCB National AQI. Public standard, reproduced exactly, never recoloured. */
   --aqi-good: #009966;
   --aqi-satisfactory: #84cf33;
   --aqi-moderate: #ffde33;
@@ -56,13 +63,14 @@
   --warn: #b06a12;
   --bad: #b3261e;
 
+  --r-xs: 2px;
   --r-sm: 6px;
   --r-md: 10px;
+  --r-bar: 4px;
   --r-pill: 999px;
 
   --z-sticky: 10;
   --z-tooltip: 40;
-
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -71,24 +79,19 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ink);
-  background: var(--surface);
+  font-size: 14px; line-height: 1.5;
+  color: var(--ink); background: var(--surface);
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
 h2 { font-size: 1.0625rem; }
 h3 { font-size: 0.875rem; }
 p { margin: 0; }
-.num { font-variant-numeric: tabular-nums; }
 
-/* ---------- shell ---------- */
-.app { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; }
+.app { display: grid; grid-template-columns: 224px 1fr; min-height: 100vh; }
 
 .rail {
-  background: var(--brand);
-  color: #fff;
+  background: var(--brand); color: #fff;
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh;
 }
@@ -99,25 +102,29 @@ p { margin: 0; }
 
 .nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
 .nav button {
-  all: unset; cursor: pointer; display: flex; align-items: baseline; gap: 9px;
-  padding: 9px 11px; border-radius: var(--r-sm); font-size: 0.875rem;
-  color: rgba(255,255,255,0.80); transition: background 160ms var(--ease), color 160ms var(--ease);
+  all: unset; cursor: pointer; display: grid;
+  grid-template-columns: 14px 1fr; gap: 9px; align-items: baseline;
+  padding: 8px 11px; border-radius: var(--r-sm); font-size: 0.875rem;
+  color: rgba(255,255,255,0.80);
+  transition: background 160ms var(--ease), color 160ms var(--ease);
 }
 .nav button .k { font-size: 0.6875rem; opacity: 0.5; font-variant-numeric: tabular-nums; }
+.nav button .sub { grid-column: 2; font-size: 0.6875rem; opacity: 0.5; line-height: 1.25; }
 .nav button:hover { background: rgba(255,255,255,0.09); color: #fff; }
 .nav button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
 .nav button[aria-current="page"] { background: rgba(255,255,255,0.16); color: #fff; font-weight: 600; }
+.nav button[aria-current="page"] .sub { opacity: 0.7; }
 
-.rail-foot { margin-top: auto; padding: 14px 18px; font-size: 0.6875rem; opacity: 0.6; line-height: 1.45; border-top: 1px solid rgba(255,255,255,0.14); }
-
+.rail-foot {
+  margin-top: auto; padding: 14px 18px; font-size: 0.6875rem;
+  opacity: 0.6; line-height: 1.45; border-top: 1px solid rgba(255,255,255,0.14);
+}
 .main { min-width: 0; display: flex; flex-direction: column; }
 
-/* ---------- top bar ---------- */
 .topbar {
   position: sticky; top: 0; z-index: var(--z-sticky);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
   padding: 12px 22px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
 }
 .topbar .title { font-weight: 650; font-size: 0.9375rem; }
@@ -128,7 +135,8 @@ p { margin: 0; }
 .seg button {
   all: unset; cursor: pointer; padding: 5px 13px; border-radius: var(--r-pill);
   font-size: 0.8125rem; font-weight: 600; color: var(--ink-muted);
-  font-variant-numeric: tabular-nums; transition: background 160ms var(--ease), color 160ms var(--ease);
+  font-variant-numeric: tabular-nums;
+  transition: background 160ms var(--ease), color 160ms var(--ease);
 }
 .seg button:hover { color: var(--ink); }
 .seg button:focus-visible { outline: 2px solid var(--brand-active); outline-offset: 1px; }
@@ -138,13 +146,12 @@ p { margin: 0; }
   all: unset; cursor: pointer; padding: 6px 13px; border-radius: var(--r-sm);
   font-size: 0.8125rem; font-weight: 600; border: 1px solid var(--line-strong);
   background: var(--panel); color: var(--ink);
-  transition: background 160ms var(--ease), border-color 160ms var(--ease);
+  transition: background 160ms var(--ease);
 }
 .btn:hover { background: var(--panel-2); }
 .btn:focus-visible { outline: 2px solid var(--brand-active); outline-offset: 1px; }
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
-/* ---------- status chips ---------- */
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -157,48 +164,59 @@ p { margin: 0; }
 .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 34%, var(--line)); background: #fdf7ee; }
 .chip.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 34%, var(--line)); background: #fdf2f1; }
 
-/* ---------- content ---------- */
 .view { padding: 20px 22px 44px; display: none; }
 .view[data-active="true"] { display: block; }
-.view > header { margin-bottom: 16px; max-width: 74ch; }
+.view > header { margin-bottom: 16px; max-width: 76ch; }
 .view > header p { color: var(--ink-muted); margin-top: 5px; }
 
-.panel {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--r-md); padding: 16px;
-}
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; }
 .panel > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .panel > header .hint { color: var(--ink-muted); font-size: 0.8125rem; }
 
 .cols { display: grid; gap: 14px; }
-@media (min-width: 1180px) { .cols.two { grid-template-columns: minmax(0,1.55fr) minmax(0,1fr); } }
+@media (min-width: 1180px) { .cols.two { grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); } }
+@media (min-width: 1180px) { .cols.portrait { grid-template-columns: minmax(0,520px) minmax(0,1fr); } }
 @media (min-width: 1300px) { .cols.three { grid-template-columns: repeat(3, minmax(0,1fr)); } }
 @media (min-width: 900px) and (max-width: 1299px) { .cols.three { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
-/* ---------- readouts ---------- */
 .readout { display: grid; gap: 2px; }
 .readout .v { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .readout .l { font-size: 0.75rem; color: var(--ink-muted); }
-.readout .u { font-size: 0.8125rem; font-weight: 500; color: var(--ink-muted); }
 
 .kv { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
 .kv th, .kv td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
 .kv th { font-weight: 600; color: var(--ink-muted); font-size: 0.75rem; }
-.kv td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.kv td.n, .kv th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .kv tr:last-child th, .kv tr:last-child td { border-bottom: 0; }
+.kv td.n, .kv th.n { width: 1%; white-space: nowrap; padding-left: 18px; }
 
-/* ---------- AQI legend & swatches ---------- */
-.legend { display: flex; flex-wrap: wrap; gap: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .legend .b {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px; border-radius: var(--r-sm); font-size: 0.75rem; font-weight: 600;
   border: 1px solid rgba(16,24,32,0.16);
 }
-.sw { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(16,24,32,0.22); flex: none; }
+.ramp { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--ink-muted); }
+.ramp .bar { height: 10px; width: 140px; border-radius: var(--r-bar); border: 1px solid var(--line-strong); }
 
-/* ---------- map ---------- */
-.mapwrap { position: relative; }
-svg.map { display: block; width: 100%; height: auto; }
+svg.plot, svg.map { display: block; width: 100%; height: auto; }
+svg.plot .grid, svg.map .grid { stroke: var(--line); stroke-width: 1; }
+svg.plot .axis { stroke: var(--line-strong); stroke-width: 1; }
+svg.plot .tick, svg.map .tick { font-size: 10px; fill: var(--ink-muted); font-variant-numeric: tabular-nums; }
+svg.plot .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+svg.plot .crosshair { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+svg.plot .crosshair[data-on="true"] { opacity: 0.55; }
+svg.plot .dlabel { font-size: 10px; font-weight: 650; }
+svg .alabel { font-size: 10px; fill: var(--ink-muted); font-weight: 600; }
+
+figure.chart { margin: 0; }
+figure.chart figcaption { font-size: 0.75rem; color: var(--ink-muted); margin-top: 7px; line-height: 1.45; }
+.serieskey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.75rem; color: var(--ink-muted); margin-bottom: 6px; }
+.serieskey b { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ink); }
+.serieskey i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.serieskey.area i { width: 11px; height: 11px; border-radius: var(--r-xs); }
+
+#map-slot svg.map { max-width: 620px; margin: 0 auto; }
 svg.map rect.cell { stroke: rgba(16,24,32,0.20); stroke-width: 0.4; cursor: crosshair; }
 svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 
@@ -206,7 +224,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
   position: fixed; z-index: var(--z-tooltip); pointer-events: none;
   background: var(--ink); color: #fff; border-radius: var(--r-sm);
   padding: 8px 10px; font-size: 0.75rem; line-height: 1.45;
-  box-shadow: 0 6px 20px rgba(16,24,32,0.26); max-width: 260px;
+  box-shadow: 0 6px 20px rgba(16,24,32,0.26); max-width: 280px;
   opacity: 0; transition: opacity 120ms var(--ease);
 }
 .tip[data-show="true"] { opacity: 1; }
@@ -214,7 +232,6 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 .tip .r { display: flex; justify-content: space-between; gap: 14px; }
 .tip .r span:last-child { font-variant-numeric: tabular-nums; }
 
-/* ---------- the coupling loop ---------- */
 .loop { display: grid; gap: 0; grid-template-columns: repeat(6, minmax(0,1fr)); align-items: stretch; }
 .step { position: relative; padding: 12px 12px 12px 16px; border-left: 1px solid var(--line); }
 .step:first-child { border-left: 0; padding-left: 2px; }
@@ -230,47 +247,21 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 }
 .loopback b { color: var(--ink); font-weight: 650; }
 
-/* ---------- switch ---------- */
 .switch { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-.switch .track {
-  width: 38px; height: 22px; border-radius: var(--r-pill); background: var(--line-strong);
-  position: relative; transition: background 180ms var(--ease); flex: none;
-}
-.switch .track::after {
-  content: ""; position: absolute; inset: 3px auto 3px 3px; width: 16px;
-  border-radius: 50%; background: #fff; transition: transform 180ms var(--ease);
-  box-shadow: 0 1px 2px rgba(16,24,32,0.3);
-}
+.switch .track { width: 38px; height: 22px; border-radius: var(--r-pill); background: var(--line-strong); position: relative; transition: background 180ms var(--ease); flex: none; }
+.switch .track::after { content: ""; position: absolute; inset: 3px auto 3px 3px; width: 16px; border-radius: 50%; background: #fff; transition: transform 180ms var(--ease); box-shadow: 0 1px 2px rgba(16,24,32,0.3); }
 .switch input:checked + .track { background: var(--s1); }
 .switch input:checked + .track::after { transform: translateX(16px); }
 .switch input:focus-visible + .track { outline: 2px solid var(--brand-active); outline-offset: 2px; }
 .switch .lab { font-size: 0.8125rem; font-weight: 600; }
 
-/* ---------- charts ---------- */
-figure.chart { margin: 0; }
-figure.chart figcaption { font-size: 0.75rem; color: var(--ink-muted); margin-top: 7px; line-height: 1.45; }
-svg.plot { display: block; width: 100%; height: auto; overflow: visible; }
-svg.plot .grid { stroke: var(--line); stroke-width: 1; }
-svg.plot .axis { stroke: var(--line-strong); stroke-width: 1; }
-svg.plot .tick { font-size: 10px; fill: var(--ink-muted); font-variant-numeric: tabular-nums; }
-svg.plot .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-svg.plot .band { opacity: 0.13; }
-svg.plot .crosshair { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
-svg.plot .dlabel { font-size: 10px; font-weight: 650; }
-
-.serieskey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.75rem; color: var(--ink-muted); margin-bottom: 6px; }
-.serieskey b { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ink); }
-.serieskey i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
-
-/* ---------- states ---------- */
-.skeleton { background: linear-gradient(90deg, var(--panel-2) 25%, #f2f5f8 50%, var(--panel-2) 75%);
-  background-size: 200% 100%; animation: sweep 1.3s linear infinite; border-radius: var(--r-sm); }
+.skeleton { background: linear-gradient(90deg, var(--panel-2) 25%, #f2f5f8 50%, var(--panel-2) 75%); background-size: 200% 100%; animation: sweep 1.3s linear infinite; border-radius: var(--r-sm); }
 @keyframes sweep { to { background-position: -200% 0; } }
 .sk-line { height: 12px; margin-bottom: 8px; }
 .sk-block { height: 220px; }
 
-.empty { padding: 26px 20px; text-align: left; color: var(--ink-muted); font-size: 0.875rem; max-width: 62ch; }
+.empty { padding: 24px 20px; color: var(--ink-muted); font-size: 0.875rem; max-width: 64ch; }
 .empty b { color: var(--ink); display: block; margin-bottom: 5px; font-size: 0.9375rem; }
 .empty code { background: var(--panel-2); padding: 1px 6px; border-radius: 4px; font-size: 0.8125rem; }
 
@@ -281,12 +272,13 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
   *, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
   .skeleton { animation: none; background: var(--panel-2); }
 }
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
-  .rail { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .rail { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; }
   .brand { border-bottom: 0; padding: 12px 16px; }
   .brand .tag { display: none; }
   .nav { flex-direction: row; flex-wrap: wrap; padding: 0 12px 12px; }
+  .nav button .sub { display: none; }
   .rail-foot { display: none; }
   .loop { grid-template-columns: 1fr 1fr; }
   .step { border-left: 0; border-top: 1px solid var(--line); padding-left: 2px; }
@@ -300,27 +292,27 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
     <div class="brand">
       <div class="name">VayuChakra</div>
       <div class="deva">वायु चक्र</div>
-      <div class="tag">Coupled weather–chemistry forecasting for Delhi NCR</div>
+      <div class="tag">Coupled weather and chemistry forecasting for Delhi NCR</div>
     </div>
     <nav class="nav" id="nav" aria-label="Views">
-      <button data-view="forecast"  aria-current="page"><span class="k">1</span> Forecast</button>
-      <button data-view="coupling"><span class="k">2</span> Coupling</button>
-      <button data-view="inversion"><span class="k">3</span> Inversion</button>
-      <button data-view="plume"><span class="k">4</span> Plume</button>
-      <button data-view="scenario"><span class="k">5</span> Scenarios</button>
-      <button data-view="validation"><span class="k">6</span> Validation</button>
+      <button data-view="domain" aria-current="page"><span class="k">1</span><span>Domain</span><span class="sub">region and fire sources</span></button>
+      <button data-view="vertical"><span class="k">2</span><span>Vertical</span><span class="sub">inversion and mixing depth</span></button>
+      <button data-view="coupling"><span class="k">3</span><span>Coupling</span><span class="sub">the two-way loop</span></button>
+      <button data-view="transport"><span class="k">4</span><span>Transport</span><span class="sub">stubble plume arrival</span></button>
+      <button data-view="forecast"><span class="k">5</span><span>Forecast</span><span class="sub">AQI and GRAP risk</span></button>
+      <button data-view="evidence"><span class="k">6</span><span>Evidence</span><span class="sub">every validation number</span></button>
     </nav>
     <div class="rail-foot">
-      Local instance · not deployed<br>
-      <span id="foot-api">localhost:8100</span>
+      Local instance, not deployed<br>
+      <span id="foot-api">127.0.0.1:8100</span>
     </div>
   </aside>
 
   <div class="main">
     <div class="topbar">
       <div>
-        <div class="title" id="bar-title">Forecast</div>
-        <div class="sub" id="bar-sub">—</div>
+        <div class="title" id="bar-title">Domain</div>
+        <div class="sub" id="bar-sub">loading</div>
       </div>
       <div class="spacer"></div>
       <div class="chips" id="status-chips"></div>
@@ -332,97 +324,120 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
       <button class="btn" id="refresh">Refresh</button>
     </div>
 
-    <!-- ============ FORECAST ============ -->
-    <section class="view" data-view="forecast" data-active="true">
+    <!-- ============ 1 DOMAIN ============ -->
+    <section class="view" data-view="domain" data-active="true">
       <header>
-        <h2>72-hour forecast, Delhi NCR</h2>
-        <p>PM2.5 and ozone predicted separately, then combined into the CPCB National AQI.
-           Each cell is about 2.8 km. Severity is always stated three ways: colour, band name and number.</p>
+        <h2>The modelled region, and where its air comes from</h2>
+        <p>Delhi's worst air is not made in Delhi. Through October and November, smoke from
+           paddy stubble burning in Punjab and Haryana travels 200 to 400 km on the
+           north-westerly flow and arrives over a city that often cannot ventilate. A
+           city-only view cannot show that, so the domain runs from Alwar to Karnal and the
+           fire sources are drawn where they actually are.</p>
       </header>
-      <div class="cols two">
+      <div class="cols portrait">
         <div class="panel">
           <header>
-            <h3>Ward grid</h3>
-            <span class="hint" id="map-hint">Hover a cell for its full readout</span>
-            <div class="spacer"></div>
-            <div class="seg" id="map-mode" role="group" aria-label="Map colour scale">
-              <button data-mode="band" aria-pressed="true">CPCB band</button>
-              <button data-mode="relative" aria-pressed="false">Relative</button>
-            </div>
+            <h3>Domain and active fire detections</h3>
+            <span class="hint" id="domain-hint">two resolutions</span>
           </header>
-          <div class="legend" id="aqi-legend"></div>
-          <div class="mapwrap" style="margin-top:12px">
-            <div id="map-slot"><div class="skeleton sk-block"></div></div>
-          </div>
+          <div id="domain-map"><div class="skeleton sk-block" style="height:420px"></div></div>
         </div>
         <div style="display:grid;gap:14px;align-content:start">
           <div class="panel">
-            <header><h3>City summary</h3></header>
-            <div id="summary-slot">
-              <div class="skeleton sk-line" style="width:70%"></div>
-              <div class="skeleton sk-line" style="width:52%"></div>
-              <div class="skeleton sk-line" style="width:61%"></div>
-            </div>
+            <header><h3>Why two resolutions</h3></header>
+            <p class="note">The forecast is consumed in Delhi, so the city is modelled at
+              about 2.8 km. The rest of the NCR only has to carry a plume toward it, and
+              11 km is enough for that. A uniform fine grid over the whole box would be
+              roughly 11,000 cells, most of them farmland.</p>
+            <p class="note caveat">The honest resolution is coarser than the display grid.
+              Meteorology arrives at about 11 km and the chemistry prior at about 40 km, so
+              predicted fields are smoothed to 6 km. That removes structure the model
+              cannot justify rather than inventing structure it does not have.</p>
           </div>
           <div class="panel">
-            <header>
-              <h3>Risk of breaching a GRAP stage</h3>
-              <span class="hint">what a decision actually turns on</span>
-            </header>
-            <div id="grap-slot">
-              <div class="skeleton sk-line" style="width:76%"></div>
-              <div class="skeleton sk-line" style="width:58%"></div>
-            </div>
-          </div>
-          <div class="panel">
-            <header><h3>Pipeline status</h3>
-              <span class="hint">what ran, and what did not</span></header>
-            <div id="notes-slot" class="note">—</div>
+            <header><h3>Fire sources</h3><span class="hint">VIIRS and MODIS, last 3 days</span></header>
+            <div id="domain-fires"><div class="skeleton sk-line" style="width:72%"></div></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ COUPLING ============ -->
+    <!-- ============ 2 VERTICAL ============ -->
+    <section class="view" data-view="vertical">
+      <header>
+        <h2>Vertical structure over time</h2>
+        <p>This is the chart the problem statement is really about. A temperature inversion
+           is air that gets warmer with height, and it puts a lid on the city: whatever is
+           emitted underneath cannot escape upward, so concentration climbs even when
+           emissions are flat. Everything else in this system reports a surface number.
+           Here the lid itself is drawn, in time and height.</p>
+      </header>
+      <div class="panel" style="margin-bottom:14px">
+        <header>
+          <h3>Time and height cross-section</h3>
+          <span class="hint" id="xsec-hint">temperature profile, mixing depth and inversion lid</span>
+          <div class="spacer"></div>
+          <div class="ramp">
+            <span>stable</span><span class="bar" id="stability-ramp"></span><span>unstable</span>
+          </div>
+        </header>
+        <div id="xsec"><div class="skeleton sk-block" style="height:300px"></div></div>
+      </div>
+      <div class="cols three" id="inv-charts">
+        <div class="panel"><div class="skeleton sk-block" style="height:170px"></div></div>
+        <div class="panel"><div class="skeleton sk-block" style="height:170px"></div></div>
+        <div class="panel"><div class="skeleton sk-block" style="height:170px"></div></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <header><h3>Why three charts and not one</h3></header>
+        <p class="note">Inversion strength is in kelvin, mixing depth in metres,
+          ventilation coefficient in m²·s⁻¹. Plotting them on one pair of axes needs two or
+          three y-scales, which lets whoever draws the chart choose the story by choosing
+          the scaling. Three panels sharing one x-axis compare honestly.</p>
+      </div>
+    </section>
+
+    <!-- ============ 3 COUPLING ============ -->
     <section class="view" data-view="coupling">
       <header>
         <h2>The two-way coupling</h2>
-        <p>Every conventional forecast treats weather as an input only. The real atmosphere runs a loop:
-           aerosol blocks sunlight, the surface heats less, the mixed layer grows shallower, and the same
-           emissions end up more concentrated, which blocks more sunlight. This is that loop, solved to
-           convergence and measured against a pristine-atmosphere control.</p>
+        <p>Every conventional forecast treats weather as an input only. The real atmosphere
+           runs a loop: aerosol blocks sunlight, the surface heats less, the mixed layer
+           grows shallower, the wind slackens, and the same emissions end up more
+           concentrated, which blocks more sunlight. That loop is what this product is
+           named after, and it is solved to convergence against a pristine-atmosphere
+           control.</p>
       </header>
 
       <div class="panel" style="margin-bottom:14px">
         <header>
           <h3>The six steps</h3>
-          <span class="hint">live values from the current run &middot; all three met variables the PS names</span>
+          <span class="hint">live values, all three meteorological variables the statement names</span>
           <div class="spacer"></div>
           <label class="switch">
             <input type="checkbox" id="fb-toggle" checked>
-            <span class="track"></span>
-            <span class="lab">Feedback on</span>
+            <span class="track"></span><span class="lab">Feedback on</span>
           </label>
         </header>
         <div class="loop" id="loop-slot"></div>
         <div class="loopback">
-          <b>↻</b> <span>Step 5 feeds step 1 — so this is <b>solved</b> rather than evaluated.
-          Damped fixed-point iteration, with every response clipped and a divergence flag that falls
-          back to the uncoupled answer rather than shipping a number it could not solve for.</span>
+          <b>&#8635;</b><span>Step 5 feeds step 1, so this is <b>solved</b> rather than
+          evaluated. Damped fixed-point iteration, with every response clipped and a
+          divergence flag that falls back to the uncoupled answer rather than shipping a
+          number it could not solve for.</span>
         </div>
       </div>
 
       <div class="panel" style="margin-bottom:14px">
         <header>
-          <h3>Photolysis: the stronger pathway</h3>
+          <h3>Photolysis, the stronger pathway</h3>
           <span class="hint">aerosol blocks ultraviolet, so less ozone is made</span>
         </header>
         <p class="note" style="margin-bottom:12px">
           There are two aerosol mechanisms and they are not equal. Dimming the sun to cool
-          the surface and shallow the mixed layer changes ozone by 1&ndash;3%. Blocking the
-          ultraviolet that drives the photochemistry changes it by 10&ndash;12%. The second
-          is the one that matters, and it acts on ozone directly rather than through four
-          intermediate steps.
+          the surface and shallow the mixed layer changes ozone by 1 to 3 percent. Blocking
+          the ultraviolet that drives the photochemistry changes it by 10 to 12 percent.
+          The second is the one that matters, and it acts on ozone directly.
         </p>
         <div class="cols two">
           <div id="photo-chart"><div class="skeleton sk-block" style="height:170px"></div></div>
@@ -432,55 +447,35 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
 
       <div class="cols two">
         <div class="panel">
-          <header><h3>Coupled vs uncoupled PM2.5</h3>
+          <header><h3>Coupled against uncoupled PM2.5</h3>
             <span class="hint">same hours, same inputs, feedback the only difference</span></header>
           <div id="coupling-chart"><div class="skeleton sk-block"></div></div>
         </div>
         <div class="panel">
           <header><h3>Against published Delhi values</h3>
-            <span class="hint">high-aerosol daylight hours</span></header>
+            <span class="hint">magnitudes, over high-aerosol daylight hours</span></header>
           <div id="gate-slot"><div class="skeleton sk-line" style="width:80%"></div></div>
-          <p class="note caveat">Bounds come from the regime the published figures were measured in:
-            winter haze episodes in daylight. A season-wide average, which includes clean afternoons and
-            nights when the radiative feedback is correctly zero, is a different quantity and is reported
-            separately rather than judged.</p>
+          <p class="note caveat">Bounds come from the regime the published figures were
+            measured in: winter haze episodes in daylight. A season-wide average, which
+            includes clean afternoons and nights when the radiative feedback is correctly
+            zero, is a different quantity and is reported separately rather than judged.</p>
         </div>
       </div>
     </section>
 
-    <!-- ============ INVERSION ============ -->
-    <section class="view" data-view="inversion">
+    <!-- ============ 4 TRANSPORT ============ -->
+    <section class="view" data-view="transport">
       <header>
-        <h2>Atmospheric inversion tracker</h2>
-        <p>A temperature inversion puts a lid on the city: emissions released under it cannot escape
-           upward, so concentration climbs even when emissions are flat. Delhi's worst winter episodes
-           are inversion episodes.</p>
-      </header>
-      <div class="cols three" id="inv-charts">
-        <div class="panel"><div class="skeleton sk-block"></div></div>
-        <div class="panel"><div class="skeleton sk-block"></div></div>
-        <div class="panel"><div class="skeleton sk-block"></div></div>
-      </div>
-      <div class="panel" style="margin-top:14px">
-        <header><h3>Why three charts and not one</h3></header>
-        <p class="note">Inversion strength is in kelvin, mixing depth in metres, ventilation coefficient
-          in m²·s⁻¹. Plotting them on one pair of axes would need two or three y-scales, which lets the
-          author choose the story by choosing the scaling. Three panels sharing one x-axis compare
-          honestly.</p>
-      </div>
-    </section>
-
-    <!-- ============ PLUME ============ -->
-    <section class="view" data-view="plume">
-      <header>
-        <h2>Stubble-burning plume transport</h2>
-        <p>Each satellite fire detection is released as a parcel and carried forward on the forecast wind,
-           spreading as it travels. It contributes to Delhi's air only when and where it actually arrives,
-           and only if the inversion lid lets it reach the ground.</p>
+        <h2>Stubble plume transport</h2>
+        <p>Each satellite fire detection is released as a parcel and carried forward on the
+           forecast wind, spreading as it travels. It contributes to Delhi's air only when
+           and where it actually arrives, and only if the inversion lid lets it reach the
+           ground. Smoke can sit overhead while monitors read clean, then land abruptly
+           mid-morning when convection reconnects it.</p>
       </header>
       <div class="cols two">
         <div class="panel">
-          <header><h3>Active detections</h3><span class="hint">VIIRS + MODIS, last 3 days</span></header>
+          <header><h3>Active detections</h3><span class="hint">VIIRS and MODIS, last 3 days</span></header>
           <div id="fires-slot"><div class="skeleton sk-block" style="height:150px"></div></div>
         </div>
         <div class="panel">
@@ -491,43 +486,82 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
       <div class="panel" style="margin-top:14px">
         <header>
           <h3>Scored against the MoES Decision Support System</h3>
-          <span class="hint">daily stubble attribution, 6 Oct &ndash; 30 Nov 2021</span>
+          <span class="hint">daily stubble attribution, 6 Oct to 30 Nov 2021</span>
         </header>
         <div id="plume-calib"><div class="skeleton sk-line" style="width:70%"></div></div>
       </div>
     </section>
 
-    <!-- ============ SCENARIOS ============ -->
-    <section class="view" data-view="scenario">
+    <!-- ============ 5 FORECAST ============ -->
+    <section class="view" data-view="forecast">
       <header>
-        <h2>Emission-reduction scenarios</h2>
-        <p>What a cut actually buys, in µg/m³. These are the MoES Decision Support System's own
-           scenario runs, not ours.</p>
+        <h2>Surface product: the 72-hour AQI outlook</h2>
+        <p>PM2.5 and ozone are predicted separately, then combined into the CPCB National
+           AQI using the published breakpoint table rather than predicted directly.
+           Severity is always stated three ways: colour, band name and number.</p>
       </header>
-      <div class="panel">
-        <header>
-          <h3>Benefit by target</h3>
-          <div class="spacer"></div>
-          <div class="seg" id="scen-kind" role="group" aria-label="Scenario target type">
-            <button data-kind="delhi_sector" aria-pressed="true">Delhi sectors</button>
-            <button data-kind="district" aria-pressed="false">NCR districts</button>
+      <div class="cols two">
+        <div class="panel">
+          <header>
+            <h3>Delhi grid</h3>
+            <span class="hint" id="map-hint">hover a cell for its full readout</span>
+            <div class="spacer"></div>
+            <div class="seg" id="map-mode" role="group" aria-label="Map colour scale">
+              <button data-mode="band" aria-pressed="true">CPCB band</button>
+              <button data-mode="relative" aria-pressed="false">Relative</button>
+            </div>
+          </header>
+          <div class="legend" id="aqi-legend"></div>
+          <div style="margin-top:12px" id="map-slot"><div class="skeleton sk-block"></div></div>
+        </div>
+        <div style="display:grid;gap:14px;align-content:start">
+          <div class="panel">
+            <header><h3>City summary</h3></header>
+            <div id="summary-slot">
+              <div class="skeleton sk-line" style="width:70%"></div>
+              <div class="skeleton sk-line" style="width:52%"></div>
+            </div>
           </div>
-        </header>
-        <div id="scen-slot"><div class="skeleton sk-block" style="height:260px"></div></div>
+          <div class="panel">
+            <header><h3>Risk of breaching a GRAP stage</h3>
+              <span class="hint">what a decision actually turns on</span></header>
+            <div id="grap-slot"><div class="skeleton sk-line" style="width:76%"></div></div>
+          </div>
+          <div class="panel">
+            <header><h3>Pipeline status</h3><span class="hint">what ran, and what did not</span></header>
+            <div id="notes-slot" class="note">loading</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ============ VALIDATION ============ -->
-    <section class="view" data-view="validation">
+    <!-- ============ 6 EVIDENCE ============ -->
+    <section class="view" data-view="evidence">
       <header>
-        <h2>Validation</h2>
-        <p>Persistence, meaning "tomorrow looks like today", is the baseline that matters. It is
-           embarrassingly hard to beat at 24 hours. Any head that fails to beat it is reported as
-           failing to beat it.</p>
+        <h2>Evidence</h2>
+        <p>Persistence, meaning "tomorrow looks like today", is the baseline that matters
+           and is embarrassingly hard to beat at 24 hours. Any head that fails to beat it is
+           reported as failing to beat it, and negative results appear here too.</p>
       </header>
-      <div class="panel">
-        <header><h3>Forecast heads</h3><span class="hint">chronological hold-out</span></header>
+      <div class="panel" style="margin-bottom:14px">
+        <header><h3>Forecast heads</h3><span class="hint">held-out evaluation</span></header>
         <div id="val-slot"><div class="skeleton sk-block" style="height:200px"></div></div>
+      </div>
+      <div class="cols two">
+        <div class="panel">
+          <header><h3>Does it work where there is no monitor</h3>
+            <span class="hint">leave-one-station-out</span></header>
+          <div id="loso-slot"><div class="skeleton sk-line" style="width:70%"></div></div>
+        </div>
+        <div class="panel">
+          <header><h3>Emission reduction scenarios</h3>
+            <span class="hint">MoES DSS runs, not ours</span></header>
+          <div class="seg" id="scen-kind" role="group" aria-label="Scenario target type" style="margin-bottom:10px">
+            <button data-kind="delhi_sector" aria-pressed="true">Delhi sectors</button>
+            <button data-kind="district" aria-pressed="false">NCR districts</button>
+          </div>
+          <div id="scen-slot"><div class="skeleton sk-line" style="width:66%"></div></div>
+        </div>
       </div>
     </section>
 
@@ -541,8 +575,30 @@ svg.plot .dlabel { font-size: 10px; font-weight: 650; }
 const API = "http://127.0.0.1:8100";
 document.getElementById("foot-api").textContent = API.replace("http://", "");
 
-/* CPCB bands — public standard. Light bands take dark ink, dark bands take white:
-   white on Good is only 3.65:1, which is large-text-only, so ink is used instead. */
+/* Colours that have to be literals.
+   SVG presentation attributes cannot read a CSS custom property, so every colour drawn
+   into a chart is written out here rather than scattered through the call sites. Each
+   one is a documented token in DESIGN.md; this object is the single place to audit them
+   against it. */
+const T = {
+  ink:        "#101820",   // mixing depth line, the one reading traced across the chart
+  inkMuted:   "#4a5764",   // district markers
+  panel2:     "#eaeef3",   // control-strip fill
+  brand:      "#1c3260",   // Delhi box, the city marker
+  s1:         "#3b62d4",   // first series
+  s2:         "#c2701c",   // second series, and the stubble belt
+  s3:         "#0f9b8e",   // third series
+  baseline:   "#8b98a8",   // the uncoupled control, always also dashed
+  bad:        "#b3261e",   // the inversion lid, and fire detections
+  canvas:     "#f7f9fb",   // map ground, a shade lighter than the surface it sits on
+  noData:     "#e3e8ee",   // a cell with no index, distinct from every band
+  s2Ink:      "#8a4f10",   // s2 darkened to 6.1:1, for 10px labels on the map ground
+  moderateInk:"#8a6d00",   // the Moderate band darkened, because #ffde33 text is unreadable
+  white:      "#ffffff",
+};
+
+/* CPCB bands. Public standard. Light bands take dark ink because white on Good is only
+   3.65:1, which is large-text-only. */
 const BANDS = [
   { name: "Good",         lo: 0,   hi: 50,   c: "#009966", ink: "#101820" },
   { name: "Satisfactory", lo: 51,  hi: 100,  c: "#84cf33", ink: "#101820" },
@@ -554,63 +610,66 @@ const BANDS = [
 const bandOf = v => (v == null || !Number.isFinite(v)) ? null
   : BANDS.reduce((acc, b) => (v >= b.lo ? b : acc), BANDS[0]);
 
-/* A sequential ramp for the "relative" map mode: one hue, light to dark, as magnitude
-   scales require. It exists because the CPCB scale genuinely stops being informative
-   when a whole city sits inside one band — a real September forecast spanning AQI
-   106-162 is entirely "Moderate", so the standard palette paints 420 identical yellow
-   squares and hides a spread of 56 points. Relative mode re-scales across the values
-   actually present.
-
-   It is never the default and always labelled, because the band colours are a public
-   standard and the reader must not be left guessing which scale they are looking at. */
+/* Sequential ramp for the relative map: one hue, light to dark. */
 const RAMP = ["#eef1f8", "#c8d3ea", "#93a9d6", "#5c78bd", "#33539c", "#1c3260"];
-function rampColor(t) {
-  const x = Math.max(0, Math.min(1, t)) * (RAMP.length - 1);
-  const i = Math.min(RAMP.length - 2, Math.floor(x));
+/* Diverging ramp for stability, which is a genuinely two-sided quantity: stable air on
+   one side, unstable on the other, neutral in the middle. Two hues, neutral midpoint. */
+const STAB = ["#3b62d4", "#8ba3de", "#c6cfda", "#c9c3b6", "#dcae7e", "#c2701c"];
+
+function mixRamp(ramp, t) {
+  const x = Math.max(0, Math.min(1, t)) * (ramp.length - 1);
+  const i = Math.min(ramp.length - 2, Math.floor(x));
   const f = x - i;
   const hex = h => [1, 3, 5].map(k => parseInt(h.slice(k, k + 2), 16));
-  const [r1, g1, b1] = hex(RAMP[i]), [r2, g2, b2] = hex(RAMP[i + 1]);
-  const mix = (a, b) => Math.round(a + (b - a) * f);
-  return `rgb(${mix(r1, r2)},${mix(g1, g2)},${mix(b1, b2)})`;
+  const a = hex(ramp[i]), b = hex(ramp[i + 1]);
+  const m = (p, q) => Math.round(p + (q - p) * f);
+  return "rgb(" + m(a[0], b[0]) + "," + m(a[1], b[1]) + "," + m(a[2], b[2]) + ")";
 }
 
-const S = { horizon: 24, view: "forecast", forecast: null, summary: null,
-            coupling: null, inversion: null, feedback: true, scenKind: "delhi_sector",
-            mapMode: "band" };
+const S = { horizon: 24, view: "domain", forecast: null, summary: null,
+            feedback: true, scenKind: "delhi_sector", mapMode: "band" };
 
 const $ = s => document.querySelector(s);
 const el = (t, cls, txt) => { const n = document.createElement(t);
   if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
-const fmt = (v, d = 0) => (v == null || !Number.isFinite(v)) ? "—" : Number(v).toFixed(d);
+const fmt = (v, d = 0) => (v == null || !Number.isFinite(v)) ? "n/a" : Number(v).toFixed(d);
+/* A "02 Sept, 05" tick needs roughly 78px of clear axis to stand alone. */
+const timeTicks = plotWidth => Math.max(2, Math.min(4, Math.floor(plotWidth / 78)));
+
+const NS = "http://www.w3.org/2000/svg";
+const mk = (t, a) => { const n = document.createElementNS(NS, t);
+  for (const k in a) n.setAttribute(k, a[k]); return n; };
 
 async function api(path) {
   try {
     const r = await fetch(API + path);
-    if (!r.ok) return { __error: `HTTP ${r.status}`, __detail: await r.text().catch(() => "") };
+    if (!r.ok) return { __error: "HTTP " + r.status, __detail: await r.text().catch(() => "") };
     return await r.json();
   } catch (e) { return { __error: "unreachable", __detail: String(e) }; }
 }
 
-/* ---------- offline / not-started state, written to teach rather than scold ---------- */
 function offline(slot, err) {
   const box = el("div", "empty");
   box.append(Object.assign(el("b"), { textContent: "The API is not answering" }));
   const p = el("p");
-  p.innerHTML = `Start it from the project root:<br><code>uvicorn api.main:app --port 8100</code>`;
+  p.innerHTML = "Start it from the project root:<br><code>uvicorn api.main:app --port 8100</code>";
   box.append(p);
-  const q = el("p"); q.style.marginTop = "8px";
-  q.textContent = err && err.__detail ? String(err.__detail).slice(0, 160) : "";
-  box.append(q);
+  if (err && err.__detail) {
+    const q = el("p"); q.style.marginTop = "8px";
+    q.textContent = String(err.__detail).slice(0, 160);
+    box.append(q);
+  }
   slot.replaceChildren(box);
 }
 
-/* ---------- tooltip ---------- */
 const tip = $("#tip");
 function showTip(evt, title, rows) {
   tip.replaceChildren();
   tip.append(el("div", "t", title));
-  rows.forEach(([k, v]) => {
-    const r = el("div", "r"); r.append(el("span", null, k), el("span", null, v)); tip.append(r);
+  rows.forEach(kv => {
+    const r = el("div", "r");
+    r.append(el("span", null, kv[0]), el("span", null, kv[1]));
+    tip.append(r);
   });
   tip.dataset.show = "true";
   const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
@@ -621,107 +680,78 @@ function showTip(evt, title, rows) {
 }
 const hideTip = () => { tip.dataset.show = "false"; };
 
-/* ---------- SVG line chart with crosshair ---------- */
-/* Charts use Number.isFinite, never the global isFinite. The global one COERCES its
-   argument, so isFinite(null) is true (Number(null) === 0) — which silently plotted
-   every missing hour as zero and drew a cliff to the floor at the end of each forecast,
-   exactly where the upstream inputs run out. The data was honest; the chart was not. */
+/* ---------- line chart ----------
+   Number.isFinite throughout, never the global isFinite. The global one coerces, so
+   isFinite(null) is true, which silently plots every missing hour as zero and draws a
+   cliff to the floor wherever the upstream inputs run out. */
 function lineChart(slot, opts) {
-  const { series, ylabel, caption, bands, height = 190 } = opts;
+  const series = opts.series, caption = opts.caption, height = opts.height || 190;
   const live = series.filter(s => s.points.some(p => Number.isFinite(p[1])));
   if (!live.length) {
     slot.replaceChildren(Object.assign(el("div", "empty"),
       { textContent: "No values in this window." }));
     return;
   }
-  // The viewBox width tracks the container's real pixel width. With a fixed 640 the
-  // SVG was scaled down to fit a 370 px panel, and the 10 px axis text rendered at
-  // about 6 px — unreadable. Matching the two means 10 px means 10 px.
   const W = Math.max(300, Math.min(1000, Math.round(slot.clientWidth || 640)));
-  const H = height, m = { t: 10, r: 12, b: 22, l: 44 };
-  const xs = live.flatMap(s => s.points.map(p => p[0]));
-  const ys = live.flatMap(s => s.points.map(p => p[1])).filter(isFinite);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs);
-  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const H = height, m = { t: 10, r: 12, b: 22, l: 46 };
+  const xs = live.reduce((a, s) => a.concat(s.points.map(p => p[0])), []);
+  const ys = live.reduce((a, s) => a.concat(s.points.map(p => p[1])), [])
+                 .filter(v => Number.isFinite(v));
+  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+  let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
   if (y0 === y1) { y0 -= 1; y1 += 1; }
   const pad = (y1 - y0) * 0.12; y0 -= pad; y1 += pad;
-  // Clamp UP to zero, not down to it. The old test only fired when y0 was already
-  // positive, so a series sitting near zero got a padded axis running to -13 µg/m³ —
-  // a negative concentration, which is not a quantity that exists.
   if (opts.zeroFloor) y0 = Math.max(0, y0);
   const sx = v => m.l + (W - m.l - m.r) * (x1 === x0 ? 0.5 : (v - x0) / (x1 - x0));
   const sy = v => m.t + (H - m.t - m.b) * (1 - (v - y0) / (y1 - y0));
 
-  const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("class", "plot");
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", caption || ylabel || "chart");
-  const mk = (t, a) => { const n = document.createElementNS(NS, t);
-    for (const k in a) n.setAttribute(k, a[k]); return n; };
-
-  if (bands) bands.forEach(b => {
-    const yTop = sy(Math.min(b.hi, y1)), yBot = sy(Math.max(b.lo, y0));
-    if (yBot - yTop > 0.5) svg.append(mk("rect", { x: m.l, y: yTop, width: W - m.l - m.r,
-      height: yBot - yTop, fill: b.c, class: "band" }));
-  });
-
-  const ticks = 4;
-  for (let i = 0; i <= ticks; i++) {
-    const v = y0 + (y1 - y0) * i / ticks, y = sy(v);
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "plot", role: "img",
+                          "aria-label": caption || "chart" });
+  const mag = Math.max(Math.abs(y1 - y0), 1e-12);
+  for (let i = 0; i <= 4; i++) {
+    const v = y0 + (y1 - y0) * i / 4, y = sy(v);
     svg.append(mk("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, class: "grid" }));
     const tx = mk("text", { x: m.l - 7, y: y + 3, class: "tick", "text-anchor": "end" });
-    // Significant figures, not fixed decimals. Photolysis rates are around 0.008 per
-    // second, and a fixed one-decimal format printed every gridline as "0.0" — an axis
-    // that carried no information at all.
-    const mag = Math.max(Math.abs(y1 - y0), 1e-12);
-    tx.textContent = mag >= 100 ? v.toFixed(0)
-      : mag >= 10 ? v.toFixed(1)
-      : mag >= 1 ? v.toFixed(2)
-      : v.toPrecision(2);
+    tx.textContent = mag >= 100 ? v.toFixed(0) : mag >= 10 ? v.toFixed(1)
+                   : mag >= 1 ? v.toFixed(2) : v.toPrecision(2);
     svg.append(tx);
   }
   svg.append(mk("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, class: "axis" }));
-
-  const nT = 4;
-  for (let i = 0; i <= nT; i++) {
-    const t = x0 + (x1 - x0) * i / nT;
-    const tx = mk("text", { x: sx(t), y: H - m.b + 14, class: "tick", "text-anchor": i === 0 ? "start" : (i === nT ? "end" : "middle") });
-    const d = new Date(t);
-    tx.textContent = d.toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit" });
+  const nt = timeTicks(W - m.l - m.r);
+  for (let i = 0; i <= nt; i++) {
+    const t = x0 + (x1 - x0) * i / nt;
+    const tx = mk("text", { x: sx(t), y: H - m.b + 14, class: "tick",
+      "text-anchor": i === 0 ? "start" : (i === nt ? "end" : "middle") });
+    tx.textContent = new Date(t).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit" });
     svg.append(tx);
   }
 
-  // Direct labels are placed after all paths, and nudged apart when two series end at
-  // nearly the same value. Without this, "Uncoupled" and "Coupled" — which converge at
-  // night by design — printed on top of each other and read as one nonsense word.
   const labels = [];
   live.forEach(s => {
     const pts = s.points.filter(p => Number.isFinite(p[1]));
     if (!pts.length) return;
-    const d = pts.map((p, i) => `${i ? "L" : "M"}${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join(" ");
-    const path = mk("path", { d, class: "series", stroke: s.color });
+    const d = pts.map((p, i) => (i ? "L" : "M") + sx(p[0]).toFixed(1) + "," + sy(p[1]).toFixed(1)).join(" ");
+    const path = mk("path", { d: d, class: "series", stroke: s.color });
     if (s.dash) path.setAttribute("stroke-dasharray", "5 4");
     svg.append(path);
     const last = pts[pts.length - 1];
     labels.push({ name: s.name, color: s.color, y: sy(last[1]), x: sx(last[0]) });
   });
-  // One series needs no direct label: the panel title already names it, and a floating
-  // duplicate of the title is noise. Labels earn their place only when there is
-  // something to tell apart.
-  if (labels.length < 2) labels.length = 0;
-  labels.sort((a, b) => a.y - b.y);
-  const MIN_GAP = 13;
-  for (let i = 1; i < labels.length; i++) {
-    if (labels[i].y - labels[i - 1].y < MIN_GAP) labels[i].y = labels[i - 1].y + MIN_GAP;
+  if (labels.length >= 2) {
+    labels.sort((a, b) => a.y - b.y);
+    const spread = labels[labels.length - 1].y - labels[0].y;
+    if (spread >= 14) {
+      for (let i = 1; i < labels.length; i++) {
+        if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13;
+      }
+      labels.forEach(l => {
+        const y = Math.min(Math.max(l.y - 7, m.t + 9), H - m.b - 6);
+        const lab = mk("text", { x: l.x - 4, y: y, class: "dlabel", fill: l.color,
+                                 "text-anchor": "end" });
+        lab.textContent = l.name; svg.append(lab);
+      });
+    }
   }
-  labels.forEach(l => {
-    const y = Math.min(Math.max(l.y - 7, m.t + 9), H - m.b - 2);
-    const lab = mk("text", { x: l.x - 4, y, class: "dlabel", fill: l.color, "text-anchor": "end" });
-    lab.textContent = l.name;
-    svg.append(lab);
-  });
 
   const cross = mk("line", { class: "crosshair", y1: m.t, y2: H - m.b, x1: -99, x2: -99 });
   svg.append(cross);
@@ -733,21 +763,25 @@ function lineChart(slot, opts) {
     const px = (ev.clientX - bb.left) / bb.width * W;
     const t = x0 + (x1 - x0) * (px - m.l) / (W - m.l - m.r);
     cross.setAttribute("x1", px); cross.setAttribute("x2", px);
-    const rows = live.map(s => {
-      let best = null, bd = Infinity;
-      s.points.forEach(p => { const d = Math.abs(p[0] - t); if (d < bd && Number.isFinite(p[1])) { bd = d; best = p; } });
-      return [s.name, best ? fmt(best[1], opts.dp ?? 1) + (opts.unit ? " " + opts.unit : "") : "—"];
-    });
-    showTip(ev, new Date(t).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }), rows);
+    cross.dataset.on = "true";
+    showTip(ev, new Date(t).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit" }),
+      live.map(s => {
+        let best = null, bd = Infinity;
+        s.points.forEach(p => { const d = Math.abs(p[0] - t);
+          if (d < bd && Number.isFinite(p[1])) { bd = d; best = p; } });
+        const unit = opts.unit ? " " + opts.unit : "";
+        return [s.name, best ? fmt(best[1], opts.dp == null ? 1 : opts.dp) + unit : "n/a"];
+      }));
   });
-  hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("x1", -99); cross.setAttribute("x2", -99); });
+  hit.addEventListener("pointerleave", () => { hideTip(); cross.dataset.on = "false"; });
 
   const fig = el("figure", "chart");
   if (live.length > 1) {
     const key = el("div", "serieskey");
-    live.forEach(s => { const b = el("b");
-      const i = el("i"); i.style.background = s.color;
-      if (s.dash) i.style.background = `repeating-linear-gradient(90deg, ${s.color} 0 4px, transparent 4px 7px)`;
+    live.forEach(s => { const b = el("b"); const i = el("i");
+      i.style.background = s.dash
+        ? "repeating-linear-gradient(90deg, " + s.color + " 0 4px, transparent 4px 7px)"
+        : s.color;
       b.append(i, document.createTextNode(s.name)); key.append(b); });
     fig.append(key);
   }
@@ -756,7 +790,270 @@ function lineChart(slot, opts) {
   slot.replaceChildren(fig);
 }
 
-/* ---------- map ---------- */
+/* ---------- the time and height cross-section ----------
+   The signature chart, and the one this problem statement is really about. x is time,
+   y is height above ground. Each hourly column is shaded by static stability between
+   the levels bracketing it, the mixing depth is drawn as a line, and the inversion lid
+   is marked where one exists, so a lid reads as a lid instead of as a caption. */
+function crossSection(slot, data) {
+  const rows = data.series || [], levels = data.levels || [];
+  if (!rows.length || !levels.length) {
+    slot.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>No vertical profile in this run</b>The surface path has no "
+        + "pressure-level temperatures, so inversion strength in kelvin is genuinely "
+        + "unavailable there and is left empty rather than filled with a zero." }));
+    return;
+  }
+  const W = Math.max(320, Math.min(1100, Math.round(slot.clientWidth || 900)));
+  const H = 300, m = { t: 26, r: 16, b: 26, l: 52 };
+  const times = rows.map(r => new Date(r.time).getTime());
+  const x0 = Math.min.apply(null, times), x1 = Math.max.apply(null, times);
+
+  const stack = rows.map(r => {
+    const pts = [{ z: data.surface_height_m == null ? 2 : data.surface_height_m,
+                   t: r.temperature_2m }];
+    levels.forEach(lv => {
+      const z = r[lv.height], t = r[lv.temp];
+      if (Number.isFinite(z) && Number.isFinite(t)) pts.push({ z: z, t: t });
+    });
+    return pts.sort((a, b) => a.z - b.z);
+  });
+  const tops = stack.map(p => p.length ? p[p.length - 1].z : 0).filter(z => z > 0);
+  const commonTop = tops.length ? Math.min.apply(null, tops) : 400;
+  const yMax = Math.max(400, Math.floor(Math.min(commonTop, 1600) / 100) * 100);
+  const sx = v => m.l + (W - m.l - m.r) * (x1 === x0 ? 0.5 : (v - x0) / (x1 - x0));
+  const sy = z => m.t + (H - m.t - m.b) * (1 - Math.min(z, yMax) / yMax);
+
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "plot", role: "img",
+    "aria-label": "Time and height cross-section showing stability, mixing depth and the inversion lid" });
+
+  const colW = (W - m.l - m.r) / Math.max(rows.length - 1, 1);
+  stack.forEach((pts, i) => {
+    for (let k = 0; k + 1 < pts.length; k++) {
+      const dz = pts[k + 1].z - pts[k].z;
+      if (dz <= 0) continue;
+      /* Lapse rate in kelvin per 100 m. Positive means temperature falls with height,
+         which is unstable; negative means it rises, which is an inversion. */
+      const lapse = (pts[k].t - pts[k + 1].t) / dz * 100;
+      const norm = Math.max(0, Math.min(1, (lapse + 1.0) / 2.5));
+      svg.append(mk("rect", {
+        x: (sx(times[i]) - colW / 2).toFixed(1), y: sy(pts[k + 1].z).toFixed(1),
+        width: Math.max(colW, 1).toFixed(1),
+        height: Math.max(sy(pts[k].z) - sy(pts[k + 1].z), 0).toFixed(1),
+        fill: mixRamp(STAB, norm), opacity: 0.85, "shape-rendering": "crispEdges",
+      }));
+    }
+  });
+
+  const depth = rows.map((r, i) => [times[i], r.mixing_depth_m])
+                    .filter(p => Number.isFinite(p[1]));
+  if (depth.length) {
+    svg.append(mk("path", {
+      d: depth.map((p, i) => (i ? "L" : "M") + sx(p[0]).toFixed(1) + "," + sy(p[1]).toFixed(1)).join(" "),
+      class: "series", stroke: T.ink, "stroke-width": 2.2,
+    }));
+  }
+  /* The lid is marked per hour rather than joined into a line. A missing lid means no
+     lid at all, which is a different statement from a lid at ground level, and drawing
+     a line through the gap would assert something the model never said. */
+  rows.forEach((r, i) => {
+    if (!Number.isFinite(r.inversion_lid_m)) return;
+    svg.append(mk("rect", {
+      x: (sx(times[i]) - colW / 2).toFixed(1), y: (sy(r.inversion_lid_m) - 1.5).toFixed(1),
+      width: Math.max(colW, 1).toFixed(1), height: 3,
+      fill: T.bad, opacity: 0.9, "shape-rendering": "crispEdges",
+    }));
+  });
+
+  for (let i = 0; i <= 4; i++) {
+    const z = yMax * i / 4, y = sy(z);
+    svg.append(mk("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, class: "grid", opacity: 0.5 }));
+    const tx = mk("text", { x: m.l - 7, y: y + 3, class: "tick", "text-anchor": "end" });
+    tx.textContent = z.toFixed(0); svg.append(tx);
+  }
+  const yl = mk("text", { x: 4, y: 11, class: "alabel" });
+  yl.textContent = "metres above ground"; svg.append(yl);
+  const nt = timeTicks(W - m.l - m.r);
+  for (let i = 0; i <= nt; i++) {
+    const t = x0 + (x1 - x0) * i / nt;
+    const tx = mk("text", { x: sx(t), y: H - m.b + 14, class: "tick",
+      "text-anchor": i === 0 ? "start" : (i === nt ? "end" : "middle") });
+    tx.textContent = new Date(t).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit" });
+    svg.append(tx);
+  }
+
+  const hit = mk("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b,
+    fill: "transparent", style: "cursor:crosshair" });
+  svg.append(hit);
+  hit.addEventListener("pointermove", ev => {
+    const bb = svg.getBoundingClientRect();
+    const px = (ev.clientX - bb.left) / bb.width * W;
+    const t = x0 + (x1 - x0) * (px - m.l) / (W - m.l - m.r);
+    let bi = 0, bd = Infinity;
+    times.forEach((tt, i) => { const d = Math.abs(tt - t); if (d < bd) { bd = d; bi = i; } });
+    const r = rows[bi];
+    showTip(ev, new Date(times[bi]).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit" }), [
+      ["Mixing depth", fmt(r.mixing_depth_m, 0) + " m"],
+      ["Inversion lid", Number.isFinite(r.inversion_lid_m) ? fmt(r.inversion_lid_m, 0) + " m" : "none"],
+      ["Inversion strength", Number.isFinite(r.inversion_strength_k)
+        ? fmt(r.inversion_strength_k, 2) + " K" : "not available"],
+      ["Surface temperature", fmt(r.temperature_2m, 1) + " °C"],
+    ]);
+  });
+  hit.addEventListener("pointerleave", hideTip);
+
+  const key = el("div", "serieskey");
+  const b1 = el("b"), i1 = el("i"); i1.style.background = T.ink;
+  b1.append(i1, document.createTextNode("Mixing depth")); key.append(b1);
+  const b2 = el("b"), i2 = el("i"); i2.style.background = T.bad;
+  b2.append(i2, document.createTextNode("Inversion lid")); key.append(b2);
+
+  const fig = el("figure", "chart");
+  fig.append(key, svg);
+  fig.append(Object.assign(el("figcaption"), { textContent:
+    "Column shading is static stability between levels: blue is stable air that resists "
+    + "mixing, warm is unstable air that mixes freely. Where the lid sits low and the "
+    + "mixing depth collapses to meet it, whatever the city emits that night has almost "
+    + "nowhere to go. " + (data.note || "") }));
+  slot.replaceChildren(fig);
+}
+
+/* ---------- domain map ----------
+   Three things this has to say, in order of importance:
+     1. the air comes from outside the frame, hundreds of km upwind
+     2. the domain is far bigger than the city
+     3. it is modelled at two resolutions
+
+   An earlier version filled the whole stubble bounding box. That was worse than
+   useless: the belt runs to 32.5 N and the domain stops at 29.9 N, so the "belt" wash
+   covered two thirds of the map and read as though the entire region were on fire. The
+   box is a satellite search extent, not a landscape feature. It is now an outline that
+   visibly runs off the top edge, which is the true statement. */
+function domainMap(slot, d) {
+  const cells = d.cells || [], fires = d.fires || [], B = d.bounds;
+  const latSpan = B.lat[1] - B.lat[0], lonSpan = B.lon[1] - B.lon[0];
+  // A degree of longitude is shorter than a degree of latitude, by cos(latitude). At
+  // 28.5 N that is 0.879, so ignoring it stretches the map east to west by 14%.
+  const kx = Math.cos((B.lat[0] + B.lat[1]) / 2 * Math.PI / 180);
+  const W = 760, H = Math.round(W * (latSpan / (lonSpan * kx)));
+  const sx = lon => ((lon - B.lon[0]) / lonSpan) * W;
+  const sy = lat => ((B.lat[1] - lat) / latSpan) * H;
+
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "map", role: "img",
+    preserveAspectRatio: "xMidYMid meet",
+    "aria-label": "Delhi NCR forecast domain, the upwind stubble belt, and "
+      + fires.length + " active fire detections" });
+
+  const defs = mk("defs", {});
+  const pat = mk("pattern", { id: "belt", width: 7, height: 7,
+    patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" });
+  pat.append(mk("line", { x1: 0, y1: 0, x2: 0, y2: 7, stroke: T.s2,
+                          "stroke-width": 1, opacity: 0.30 }));
+  defs.append(pat); svg.append(defs);
+  svg.append(mk("rect", { x: 0, y: 0, width: W, height: H, fill: T.canvas }));
+
+  cells.forEach(c => {
+    const fine = c.tier === "delhi", g = fine ? 0.025 : 0.10;
+    svg.append(mk("rect", {
+      x: sx(c.lon - g / 2), y: sy(c.lat + g / 2),
+      width: Math.max((g / lonSpan) * W - 0.4, 0.6),
+      height: Math.max((g / latSpan) * H - 0.4, 0.6),
+      fill: fine ? T.s1 : RAMP[2], opacity: fine ? 0.26 : 0.16,
+    }));
+  });
+
+  const sb = d.stubble_bbox;
+  if (sb) {
+    const x = sx(Math.max(sb.lon[0], B.lon[0])), x2 = sx(Math.min(sb.lon[1], B.lon[1]));
+    const y2 = sy(Math.max(sb.lat[0], B.lat[0]));
+    // Deliberately drawn from ABOVE the frame so it reads as continuing off the top,
+    // which it does: the belt reaches 32.5 N and this map stops at 29.9 N.
+    const g = mk("g", {});
+    g.append(mk("rect", { x: x, y: -20, width: Math.max(x2 - x, 0),
+      height: Math.max(y2 + 20, 0), fill: "url(#belt)" }));
+    g.append(mk("line", { x1: x, y1: y2, x2: x2, y2: y2, stroke: T.s2,
+      "stroke-width": 1.2, "stroke-dasharray": "5 4", opacity: 0.75 }));
+    svg.append(g);
+    const lb = mk("text", { x: x + 8, y: 16, class: "alabel", fill: T.s2Ink });
+    lb.textContent = "stubble belt, continues north beyond this frame";
+    svg.append(lb);
+  }
+
+  const db = d.delhi_box;
+  if (db) {
+    svg.append(mk("rect", { x: sx(db.lon[0]), y: sy(db.lat[1]),
+      width: sx(db.lon[1]) - sx(db.lon[0]), height: sy(db.lat[0]) - sy(db.lat[1]),
+      fill: "none", stroke: T.brand, "stroke-width": 1.6 }));
+  }
+
+  // The headline: where today's smoke actually is, relative to the city it may reach.
+  const dl = d.delhi, fs = d.fire_summary || {};
+  if (dl && fires.length) {
+    const cx = fires.reduce((a, f) => a + f.lon, 0) / fires.length;
+    const cy = fires.reduce((a, f) => a + f.lat, 0) / fires.length;
+    const x1 = sx(cx), y1 = sy(cy), x2 = sx(dl.lon), y2 = sy(dl.lat);
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    if (len > 30) {
+      const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      const ex = x2 - ux * 12, ey = y2 - uy * 12;   // stop short of the city marker
+      svg.append(mk("line", { x1: x1 + ux * 8, y1: y1 + uy * 8, x2: ex, y2: ey,
+        stroke: T.s2Ink, "stroke-width": 1.6, "stroke-dasharray": "6 4", opacity: 0.8 }));
+      svg.append(mk("path", {
+        d: "M" + ex + "," + ey + " L" + (ex - ux * 9 - uy * 4.5) + "," + (ey - uy * 9 + ux * 4.5)
+           + " L" + (ex - ux * 9 + uy * 4.5) + "," + (ey - uy * 9 - ux * 4.5) + " Z",
+        fill: T.s2Ink, opacity: 0.8 }));
+      const mx = (x1 + ex) / 2, my = (y1 + ey) / 2;
+      const cap = mk("text", { x: mx, y: my - 6, class: "alabel", fill: T.s2Ink,
+                               "text-anchor": "middle" });
+      cap.textContent = fmt(fs.mean_distance_km, 0) + " km mean, toward Delhi";
+      svg.append(cap);
+    }
+  }
+
+  (d.districts || []).forEach(dd => {
+    const x = sx(dd.lon), y = sy(dd.lat);
+    svg.append(mk("circle", { cx: x, cy: y, r: 2, fill: T.inkMuted, opacity: 0.7 }));
+    // Flip the label inboard near the right edge, where it would otherwise be clipped.
+    const flip = x > W * 0.74;
+    const t = mk("text", { x: flip ? x - 5 : x + 5, y: y + 3, class: "tick",
+                           "text-anchor": flip ? "end" : "start" });
+    t.textContent = dd.name; svg.append(t);
+  });
+
+  fires.forEach(f => {
+    const c = mk("circle", { cx: sx(f.lon), cy: sy(f.lat),
+      r: Math.max(2.6, Math.min(7, Math.sqrt(f.frp_mw) * 0.9)),
+      fill: T.bad, opacity: 0.6, stroke: T.white, "stroke-width": 0.6 });
+    c.addEventListener("pointermove", ev => showTip(ev, "Fire detection", [
+      ["Radiative power", fmt(f.frp_mw, 1) + " MW"],
+      ["Confidence", f.confidence],
+      ["Position", f.lat.toFixed(2) + ", " + f.lon.toFixed(2)],
+    ]));
+    c.addEventListener("pointerleave", hideTip);
+    svg.append(c);
+  });
+
+  if (d.delhi) {
+    svg.append(mk("circle", { cx: sx(d.delhi.lon), cy: sy(d.delhi.lat), r: 4.5,
+      fill: T.brand, stroke: T.white, "stroke-width": 1.6 }));
+  }
+
+  const fig = el("figure", "chart");
+  const key = el("div", "serieskey area");
+  [["Delhi, 2.8 km cells", T.s1], ["NCR, 11 km cells", RAMP[2]],
+   ["Fire detection", T.bad]].forEach(k => {
+    const b = el("b"), i = el("i");
+    i.style.background = k[1]; b.append(i, document.createTextNode(k[0])); key.append(b);
+  });
+  fig.append(key, svg);
+  fig.append(Object.assign(el("figcaption"), { textContent:
+    "District names are spelled as the MoES workbook spells them, so a lookup against "
+    + "that sheet cannot silently miss a row. The dashed arrow runs from today's fire "
+    + "centroid to the city; it shows where the smoke is, not that it arrives. Whether "
+    + "any of it reaches the ground in Delhi is the transport model's question." }));
+  slot.replaceChildren(fig);
+}
+
 function drawMap(cells) {
   const slot = $("#map-slot");
   if (!cells || !cells.length) {
@@ -765,309 +1062,236 @@ function drawMap(cells) {
     return;
   }
   const lats = cells.map(c => c.lat), lons = cells.map(c => c.lon);
-  const la0 = Math.min(...lats), la1 = Math.max(...lats);
-  const lo0 = Math.min(...lons), lo1 = Math.max(...lons);
+  const la0 = Math.min.apply(null, lats), la1 = Math.max.apply(null, lats);
+  const lo0 = Math.min.apply(null, lons), lo1 = Math.max.apply(null, lons);
   const step = 0.025, W = 620;
   const nx = Math.round((lo1 - lo0) / step) + 1, ny = Math.round((la1 - la0) / step) + 1;
   const cw = W / nx, ch = cw * 1.08, H = ch * ny;
-  const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("class", "map");
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", `Delhi grid, ${cells.length} cells, AQI at +${S.horizon} hours`);
-
   const vals = cells.map(c => c.aqi).filter(v => v != null && Number.isFinite(v));
-  const vmin = vals.length ? Math.min(...vals) : 0;
-  const vmax = vals.length ? Math.max(...vals) : 1;
+  const vmin = vals.length ? Math.min.apply(null, vals) : 0;
+  const vmax = vals.length ? Math.max.apply(null, vals) : 1;
   const span = Math.max(vmax - vmin, 1e-6);
 
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "map", role: "img",
+    "aria-label": "Delhi grid, " + cells.length + " cells" });
   cells.forEach(c => {
     const b = bandOf(c.aqi);
-    const x = (c.lon - lo0) / step * cw;
-    const y = (la1 - c.lat) / step * ch;
-    const r = document.createElementNS(NS, "rect");
-    r.setAttribute("x", x.toFixed(2)); r.setAttribute("y", y.toFixed(2));
-    r.setAttribute("width", (cw - 0.6).toFixed(2)); r.setAttribute("height", (ch - 0.6).toFixed(2));
-    r.setAttribute("rx", "1.5");
-    r.setAttribute("class", "cell");
-    r.setAttribute("fill",
-      c.aqi == null || !Number.isFinite(c.aqi) ? "#e3e8ee"
-      : (S.mapMode === "relative" ? rampColor((c.aqi - vmin) / span) : b.c));
+    const r = mk("rect", {
+      x: ((c.lon - lo0) / step * cw).toFixed(2), y: ((la1 - c.lat) / step * ch).toFixed(2),
+      width: (cw - 0.6).toFixed(2), height: (ch - 0.6).toFixed(2), rx: 2, class: "cell",
+      fill: (c.aqi == null || !Number.isFinite(c.aqi)) ? T.noData
+            : (S.mapMode === "relative" ? mixRamp(RAMP, (c.aqi - vmin) / span) : b.c),
+    });
     r.addEventListener("pointermove", ev => showTip(ev,
-      b ? `${b.name} · AQI ${fmt(c.aqi)}` : "No index available", [
-        ["PM2.5", fmt(c.pm25, 1) + " µg/m³"],
-        ["Ozone", fmt(c.o3, 1) + " µg/m³"],
-        ["Driver", c.aqi_driver || "—"],
+      b ? b.name + ", AQI " + fmt(c.aqi) : "No index available", [
+        ["PM2.5", fmt(c.pm25, 1) + " µg/m³"], ["Ozone", fmt(c.o3, 1) + " µg/m³"],
+        ["Driver", c.aqi_driver || "n/a"],
         ["Mixing depth", fmt(c.mixing_depth_m) + " m"],
-        ["Inversion", c.inversion_strength_k != null ? fmt(c.inversion_strength_k, 2) + " K" : "—"],
+        ["Inversion", c.inversion_strength_k != null ? fmt(c.inversion_strength_k, 2) + " K" : "n/a"],
         ["Ventilation", fmt(c.ventilation_coeff) + " m²/s"],
         ["Plume share", fmt(c.plume_pm25, 2) + " µg/m³"],
-        ["Cell", `${c.lat.toFixed(3)}, ${c.lon.toFixed(3)}`],
       ]));
     r.addEventListener("pointerleave", hideTip);
     svg.append(r);
   });
   slot.replaceChildren(svg);
   $("#map-hint").textContent = S.mapMode === "relative"
-    ? `Relative scale, AQI ${Math.round(vmin)}–${Math.round(vmax)} · not CPCB colours`
-    : "Hover a cell for its full readout";
+    ? "relative scale, AQI " + Math.round(vmin) + " to " + Math.round(vmax) + ", not CPCB colours"
+    : "hover a cell for its full readout";
   $("#aqi-legend").style.opacity = S.mapMode === "relative" ? "0.35" : "1";
 }
 
 function drawLegend() {
-  const wrap = $("#aqi-legend");
-  wrap.replaceChildren();
+  const wrap = $("#aqi-legend"); wrap.replaceChildren();
   BANDS.forEach(b => {
     const n = el("span", "b");
     n.style.background = b.c; n.style.color = b.ink;
-    const s = el("span", null, `${b.name} ${b.lo}–${b.hi > 1000 ? "500+" : b.hi}`);
-    n.append(s); wrap.append(n);
+    n.append(el("span", null, b.name + " " + b.lo + " to " + (b.hi > 1000 ? "500+" : b.hi)));
+    wrap.append(n);
   });
+  const r = $("#stability-ramp");
+  if (r) r.style.background = "linear-gradient(90deg, " + STAB.join(",") + ")";
 }
 
-/* ---------- status chips ---------- */
 function drawChips(sum) {
   const wrap = $("#status-chips"); wrap.replaceChildren();
   const add = (cls, text) => { const c = el("span", "chip " + cls);
     c.append(el("span", "dot"), document.createTextNode(text)); wrap.append(c); };
   if (!sum || sum.__error) { add("bad", "API unreachable"); return; }
   const deg = sum.degraded || [];
-  const modelsMissing = deg.filter(d => d.startsWith("model_")).length;
+  const models = deg.filter(d => d.indexOf("model_") === 0).length;
   if (!deg.length) add("ok", "All stages live");
-  if (modelsMissing) add("warn", `${modelsMissing} heads untrained · persistence fallback`);
-  if (deg.includes("chemistry_prior")) add("warn", "No CAMS prior");
-  if (deg.includes("observations")) add("warn", "No station feed");
+  if (models) add("warn", models + " heads untrained");
+  if (deg.indexOf("chemistry_prior") >= 0) add("warn", "No CAMS prior");
+  if (deg.indexOf("observations") >= 0) add("warn", "No station feed");
   const gate = sum.coupling && sum.coupling.literature_gate;
   if (gate && gate.ok === true) add("ok", "Coupling within published bounds");
   else if (gate && gate.ok === false) add("bad", "Coupling outside published bounds");
-  if (sum.coupling && sum.coupling.converged === false) add("bad", "Solver did not converge");
+  if (sum.generated_at) {
+    $("#bar-sub").textContent = "generated " + new Date(sum.generated_at).toLocaleString()
+      + ", " + sum.cells + " cells";
+  }
 }
 
-/* ---------- views ---------- */
-async function loadGrapRisk() {
-  const slot = $("#grap-slot");
-  const d = await api(`/uncertainty?horizon=${S.horizon}`);
-  if (d.__error) { offline(slot, d); return; }
+/* ---------- loaders ---------- */
+async function loadDomain() {
+  const d = await api("/domain");
+  if (d.__error) { offline($("#domain-map"), d); offline($("#domain-fires"), d); return; }
+  domainMap($("#domain-map"), d);
+  $("#domain-hint").textContent = (d.cells || []).length.toLocaleString()
+    + " cells, two resolutions";
 
-  const wrap = el("div");
-  const lead = el("p", "note");
-  lead.innerHTML = "A point forecast just under a boundary says nothing about the risk "
-    + "of crossing it. These are probabilities, from a model fitted to the conditional "
-    + "distribution rather than the mean.";
-  wrap.append(lead);
-
-  const live = d.live;
-  if (!live || !live.series || !live.series.length) {
-    const box = el("p", "note caveat");
-    box.textContent = d.note || "No quantile head trained yet.";
-    wrap.append(box);
-  } else {
-    // Peak risk across the forecast window is what matters for a decision: an official
-    // needs to know whether the stage is breached at ANY hour, not on average.
-    const rows = live.series;
-    const t = el("table", "kv");
-    const head = el("tr");
-    ["GRAP stage", "peak risk", ""].forEach(h => head.append(el("th", null, h)));
-    t.append(head);
-    Object.keys(d.thresholds_ugm3 || {}).forEach(label => {
-      const vals = rows.map(r => r[label]).filter(v => Number.isFinite(v));
-      if (!vals.length) return;
-      const peak = Math.max.apply(null, vals);
-      const tr = el("tr");
-      tr.append(el("th", null, label.replace(/^AQI \d+ \(/, "").replace(/\)$/, "")));
-      tr.append(Object.assign(el("td", "n"), { textContent: (100 * peak).toFixed(0) + "%" }));
-      const bar = el("td");
-      const track = el("div");
-      track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:90px;overflow:hidden";
-      const fill = el("div");
-      const colour = peak > 0.66 ? "var(--bad)" : peak > 0.33 ? "var(--warn)" : "var(--ok)";
-      fill.style.cssText = "height:100%;width:" + (100 * peak).toFixed(0)
-        + "%;background:" + colour + ";border-radius:4px";
-      track.append(fill); bar.append(track); tr.append(bar);
-      t.append(tr);
-    });
-    wrap.append(t);
+  const f = d.fire_summary || {}, slot = $("#domain-fires");
+  if (!f.n_fires) {
+    slot.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>Nothing burning upwind</b>Outside the October and November paddy "
+        + "season this is the correct reading, not a missing feed. The engine is running; "
+        + "there is simply nothing to transport." }));
+    return;
   }
-
-  const v = d.validation && d.validation.heads && d.validation.heads.pm25_24h;
-  if (v) {
-    const cov = v.coverage || {};
-    const cap = el("p", "note caveat");
-    let txt = "Measured on a held-out season: the 80% interval actually contained the "
-      + "truth <b>" + (100 * cov.measured).toFixed(1) + "%</b> of the time ("
-      + cov.verdict + ").";
-    const g = v.grap || {};
-    const first = Object.values(g)[0];
-    if (first && first.brier_skill_score != null) {
-      txt += " The probabilities beat a climatological forecast at every threshold, "
-        + "with skill scores from " + Math.min.apply(null, Object.values(g)
-            .map(x => x.brier_skill_score)).toFixed(2) + " to "
-        + Math.max.apply(null, Object.values(g)
-            .map(x => x.brier_skill_score)).toFixed(2) + ".";
-    }
-    cap.innerHTML = txt;
-    wrap.append(cap);
-  }
-  slot.replaceChildren(wrap);
+  const t = el("table", "kv");
+  const row = (k, v) => { const tr = el("tr");
+    tr.append(el("th", null, k), Object.assign(el("td", "n"), { textContent: v })); t.append(tr); };
+  row("Detections", String(f.n_fires));
+  row("Total radiative power", fmt(f.total_frp_mw, 1) + " MW");
+  row("Mean distance to Delhi", fmt(f.mean_distance_km, 1) + " km");
+  row("Nearest", fmt(f.nearest_km, 1) + " km");
+  row("High confidence", String(f.high_confidence == null ? 0 : f.high_confidence));
+  slot.replaceChildren(t);
 }
 
-async function loadForecast() {
-  const [fc, sum] = await Promise.all([
-    api(`/forecast?horizon=${S.horizon}`), api("/summary")
-  ]);
-  S.forecast = fc; S.summary = sum;
-  drawChips(sum);
-  if (fc.__error) { offline($("#map-slot"), fc); }
-  else drawMap(fc.cells);
-
-  const slot = $("#summary-slot");
-  if (sum.__error) { offline(slot, sum); }
-  else {
-    // `filter` can legitimately return nothing (an hour where no cell has a usable
-    // index), and `reduce` with no initial value throws on an empty array — which is
-    // what left this whole panel stuck on its loading skeleton rather than showing an
-    // empty state. Guard both, and let the panel render "—" instead of dying.
-    const cells = (fc.cells || []).filter(c => c.aqi != null && Number.isFinite(c.aqi));
-    const mean = cells.length ? cells.reduce((a, c) => a + c.aqi, 0) / cells.length : null;
-    const worst = cells.length ? cells.reduce((a, c) => (c.aqi > a.aqi ? c : a), cells[0]) : null;
-    const b = bandOf(mean);
-    const g = el("div"); g.style.display = "grid"; g.style.gap = "14px";
-    const r1 = el("div", "readout");
-    const v = el("div", "v", b ? `${fmt(mean)}` : "—");
-    if (b) v.style.color = b.c === "#ffde33" ? "#8a6d00" : b.c;
-    r1.append(v, el("div", "l", b ? `City mean AQI · ${b.name}` : "City mean AQI"));
-    g.append(r1);
-    const t = el("table", "kv");
-    const row = (k, val) => { const tr = el("tr");
-      tr.append(el("th", null, k), Object.assign(el("td", "n"), { textContent: val })); t.append(tr); };
-    row("Cells modelled", String(cells.length));
-    row("Worst cell", worst ? `${fmt(worst.aqi)} (${bandOf(worst.aqi).name})` : "—");
-    if (sum.pm25) row("PM2.5 mean", `${fmt(sum.pm25.mean, 1)} µg/m³`);
-    if (sum.o3) row("Ozone mean", `${fmt(sum.o3.mean, 1)} µg/m³`);
-    if (sum.coupling && sum.coupling.mean_pm_amplification_pct != null)
-      row("Feedback adds", `${fmt(sum.coupling.mean_pm_amplification_pct, 1)} %`);
-    if (sum.fires) row("Active fires", String(sum.fires.n_fires ?? 0));
-    g.append(t);
-    slot.replaceChildren(g);
-    $("#bar-sub").textContent = sum.generated_at
-      ? `Generated ${new Date(sum.generated_at).toLocaleString()} · ${sum.cells} cells`
-      : "—";
+async function loadVertical() {
+  const res = await Promise.all([api("/profile"), api("/inversion")]);
+  const prof = res[0], inv = res[1];
+  if (prof.__error) { offline($("#xsec"), prof); } else {
+    crossSection($("#xsec"), prof);
+    $("#xsec-hint").textContent = prof.scope || "domain mean";
   }
-
-  loadGrapRisk();
-
-  const notes = $("#notes-slot");
-  if (sum.__error) notes.textContent = "—";
-  else {
-    const ul = el("ul"); ul.style.margin = "0"; ul.style.paddingLeft = "16px";
-    (sum.notes || []).forEach(n => ul.append(el("li", null, n)));
-    notes.replaceChildren(ul);
-    if ((sum.degraded || []).length) {
-      const d = el("p", "note caveat");
-      d.textContent = "Degraded: " + sum.degraded.join(", ") +
-        ". These stages did not run; the affected values fall back and are labelled rather than hidden.";
-      notes.append(d);
-    }
-  }
+  const host = $("#inv-charts");
+  if (inv.__error) { host.replaceChildren(el("div", "panel")); offline(host.firstChild, inv); return; }
+  const rows = inv.series || [];
+  const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]])
+                       .filter(p => Number.isFinite(p[0]));
+  const panels = [
+    { title: "Inversion strength", key: "inversion_strength_k", unit: "K", color: T.s1, dp: 2,
+      cap: "Temperature excess of the air aloft over the 2 m reading. Above zero means a lid: air gets warmer with height and nothing released underneath can rise through it." },
+    { title: "Mixing depth", key: "mixing_depth_m", unit: "m", color: T.s2, dp: 0,
+      cap: "The depth the day's emissions are diluted into: the shallower of the modelled boundary layer and the inversion lid. Halve it and you double the concentration." },
+    { title: "Ventilation coefficient", key: "ventilation_coeff", unit: "m²/s", color: T.s3, dp: 0,
+      cap: "Mixing depth times the wind through that depth: the volume flux available to carry pollution away. Below 6000 is poor, below 3000 is severe stagnation." },
+  ];
+  host.replaceChildren();
+  panels.forEach(p => {
+    const panel = el("div", "panel"), h = el("header");
+    h.append(el("h3", null, p.title)); panel.append(h);
+    const slot = el("div"); panel.append(slot); host.append(panel);
+    lineChart(slot, { series: [{ name: p.title, color: p.color, points: pts(p.key) }],
+      unit: p.unit, dp: p.dp, caption: p.cap, height: 170,
+      zeroFloor: p.key !== "inversion_strength_k" });
+  });
 }
 
 async function loadCoupling() {
   const c = await api("/coupling");
-  S.coupling = c;
   const loop = $("#loop-slot");
   if (c.__error) { offline(loop, c); offline($("#coupling-chart"), c); return; }
-  const d = c.diagnostics || {};
-  const gate = d.literature_gate || {};
-  const inRegime = (gate.checks) || {};
-  const pick = (k, dp, unit) => {
-    const v = inRegime[k] && inRegime[k].value;
-    return v == null ? "—" : `${fmt(v, dp)}<small> ${unit}</small>`;
+  const d = c.diagnostics || {}, gate = d.literature_gate || {}, checks = gate.checks || {};
+  const pick = (k, dp, unit, abs) => {
+    let v = checks[k] && checks[k].value;
+    if (abs && v != null) v = Math.abs(v);
+    return v == null ? "n/a" : fmt(v, dp) + "<small> " + unit + "</small>";
   };
   const steps = [
-    ["1", "PM2.5 → optical depth", pick("__none", 0, ""), "Aerosol mass becomes an optical depth, using an elasticity fitted on paired CAMS output."],
-    ["2", "Optical depth → sunlight", pick("sw_reduction_pct", 1, "% lost"), "Beer–Lambert, minus the forward-scattered light that still reaches the ground."],
-    ["3", "Sunlight → temperature", pick("dT_daytime_k", 2, "K"), "Surface energy balance: less absorbed shortwave means less sensible heat."],
-    ["4", "Temperature → mixed layer", pick("pbl_suppression_pct", 1, "% shallower"), "Encroachment — the layer deepens with the square root of accumulated heat."],
-    ["4b", "Mixed layer → wind", pick("wind_reduction_pct", 2, "% slower"), "Less mixing carries less momentum down from aloft, so the surface wind slackens."],
-    ["5", "Mixed layer → PM2.5", pick("pm_amplification_pct", 1, "% higher"), "Box model: the same emitted mass in a shallower layer is more concentrated."],
+    ["1", "PM2.5 to optical depth",
+     d.aod_model && d.aod_model.b != null ? fmt(d.aod_model.b, 2) + "<small> elasticity</small>" : "n/a",
+     "Aerosol mass becomes an optical depth, using an elasticity fitted on paired CAMS output."],
+    ["2", "Optical depth to sunlight", pick("sw_reduction_pct", 1, "% lost"),
+     "Beer and Lambert extinction, minus the forward-scattered light that still reaches the ground."],
+    ["3", "Sunlight to temperature", pick("dT_daytime_k", 2, "K cooler", true),
+     "Surface energy balance: less absorbed shortwave means less sensible heat."],
+    ["4", "Temperature to mixed layer", pick("pbl_suppression_pct", 1, "% shallower"),
+     "Encroachment: the layer deepens with the square root of accumulated heat."],
+    ["4b", "Mixed layer to wind", pick("wind_reduction_pct", 2, "% slower"),
+     "Less mixing carries less momentum down from aloft, so the surface wind slackens."],
+    ["5", "Mixed layer to PM2.5", pick("pm_amplification_pct", 1, "% higher"),
+     "Box model: the same emitted mass in a shallower layer is more concentrated."],
   ];
-  const aodStep = d.aod_model && d.aod_model.b != null
-    ? `${fmt(d.aod_model.b, 2)}<small> elasticity</small>` : "—";
-  steps[0][2] = aodStep;
-
   loop.replaceChildren();
-  steps.forEach(([n, what, val, why]) => {
+  steps.forEach(st => {
     const s = el("div", "step");
-    s.append(el("div", "n", `Step ${n}`), el("div", "what", what));
-    const v = el("div", "val"); v.innerHTML = val; s.append(v);
-    s.append(el("div", "why", why));
+    s.append(el("div", "n", "Step " + st[0]), el("div", "what", st[1]));
+    const v = el("div", "val"); v.innerHTML = st[2]; s.append(v);
+    s.append(el("div", "why", st[3]));
     loop.append(s);
   });
 
-  const series = (c.series || []);
-  const pts = k => series.map(r => [new Date(r.time).getTime(), r[k]]).filter(p => Number.isFinite(p[0]));
+  const rows = c.series || [];
+  const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]])
+                       .filter(p => Number.isFinite(p[0]));
   lineChart($("#coupling-chart"), {
-    series: S.feedback ? [
-      { name: "Uncoupled", color: "var(--baseline)", points: pts("pm25_uncoupled"), dash: true },
-      { name: "Coupled", color: "#3b62d4", points: pts("pm25_coupled") },
-    ] : [
-      { name: "Uncoupled", color: "var(--baseline)", points: pts("pm25_uncoupled"), dash: true },
-    ],
+    series: S.feedback
+      ? [{ name: "Uncoupled", color: T.baseline, points: pts("pm25_uncoupled"), dash: true },
+         { name: "Coupled", color: T.s1, points: pts("pm25_coupled") }]
+      : [{ name: "Uncoupled", color: T.baseline, points: pts("pm25_uncoupled"), dash: true }],
     unit: "µg/m³", dp: 1, zeroFloor: true,
     caption: S.feedback
-      ? "The gap between the two lines is the feedback. It opens in daylight when aerosol can dim the sun, and closes at night when there is no sunlight to block — which is the correct behaviour rather than a gap in the data."
+      ? "The gap between the two lines is the feedback. It opens in daylight when aerosol can dim the sun, and closes at night when there is no sunlight to block, which is the correct behaviour rather than a gap in the data."
       : "Feedback off: only the uncoupled baseline. Turn it back on to see what the loop adds.",
   });
 
   loadPhotolysis();
 
   const g = $("#gate-slot");
-  if (!gate.checks) { g.innerHTML = `<p class="note">Not enough high-aerosol daylight hours in this run to judge (${gate.n_in_regime ?? 0}).</p>`; }
-  else {
-    const t = el("table", "kv");
-    const head = el("tr");
-    head.append(el("th", null, "Quantity"), el("th", null, "Modelled"), el("th", null, "Published"), el("th", null, ""));
-    t.append(head);
-    const labels = { sw_reduction_pct: ["Shortwave reduction", "%"], dT_daytime_k: ["Daytime cooling", "K"],
-      pbl_suppression_pct: ["Boundary-layer suppression", "%"], pm_amplification_pct: ["PM2.5 amplification", "%"],
-      wind_reduction_pct: ["Surface wind slackening", "%"] };
-    Object.entries(gate.checks).forEach(([k, v]) => {
-      const tr = el("tr");
-      const [lab, unit] = labels[k] || [k, ""];
-      tr.append(el("th", null, lab));
-      tr.append(Object.assign(el("td", "n"), { textContent: `${fmt(v.value, 2)} ${unit}` }));
-      tr.append(Object.assign(el("td", "n"), { textContent: `${v.expected[0]}–${v.expected[1]}` }));
-      const st = el("td", "n");
-      const chip = el("span", "chip " + (v.ok ? "ok" : "bad"));
-      chip.append(el("span", "dot"), document.createTextNode(v.ok ? "within" : "outside"));
-      st.append(chip); tr.append(st);
-      t.append(tr);
-    });
-    g.replaceChildren(t);
-    const meta = el("p", "note"); meta.style.marginTop = "10px";
-    meta.textContent = `${gate.n_in_regime} hours in regime · solver ${d.converged ? "converged" : "did NOT converge"} in ${d.iterations} iterations · ${d.diverged_rows ?? 0} rows fell back.`;
-    g.append(meta);
+  if (!Object.keys(checks).length) {
+    g.innerHTML = "<p class=\"note\">Not enough high-aerosol daylight hours in this run to judge ("
+      + (gate.n_in_regime == null ? 0 : gate.n_in_regime) + ").</p>";
+    return;
   }
+  const labels = { sw_reduction_pct: ["Shortwave reduction", "%"],
+    dT_daytime_k: ["Daytime cooling", "K"],
+    pbl_suppression_pct: ["Boundary-layer suppression", "%"],
+    pm_amplification_pct: ["PM2.5 amplification", "%"],
+    wind_reduction_pct: ["Surface wind slackening", "%"] };
+  // Published bounds are magnitudes, and so is the comparison the solver makes.
+  const magnitude = v => (v == null || !Number.isFinite(v)) ? v : Math.abs(v);
+  const t = el("table", "kv"), head = el("tr");
+  head.append(el("th", null, "Quantity"), el("th", "n", "Modelled"),
+              el("th", "n", "Published"), el("th", null, ""));
+  t.append(head);
+  Object.keys(checks).forEach(k => {
+    const v = checks[k], lab = labels[k] || [k, ""];
+    const tr = el("tr");
+    tr.append(el("th", null, lab[0]));
+    tr.append(Object.assign(el("td", "n"), {
+      textContent: fmt(magnitude(v.value), 2) + " " + lab[1] }));
+    tr.append(Object.assign(el("td", "n"), { textContent: v.expected[0] + " to " + v.expected[1] }));
+    const st = el("td"), chip = el("span", "chip " + (v.ok ? "ok" : "bad"));
+    chip.append(el("span", "dot"), document.createTextNode(v.ok ? "within" : "outside"));
+    st.append(chip); tr.append(st); t.append(tr);
+  });
+  g.replaceChildren(t);
+  const meta = el("p", "note"); meta.style.marginTop = "10px";
+  meta.textContent = gate.n_in_regime.toLocaleString()
+    + " cell-hours in regime (one cell for one hour, not one hour of city average), "
+    + "solver " + (d.converged ? "converged" : "did NOT converge") + " in " + d.iterations
+    + " iterations, " + (d.diverged_rows == null ? 0 : d.diverged_rows) + " rows fell back.";
+  g.append(meta);
 }
 
 async function loadPhotolysis() {
   const d = await api("/photolysis");
   const cs = $("#photo-chart"), cc = $("#photo-counter");
   if (d.__error) { offline(cs, d); offline(cc, d); return; }
-
   const rows = d.series || [];
   const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]])
                        .filter(p => Number.isFinite(p[0]));
   if (!rows.length) {
-    cs.replaceChildren(Object.assign(el("div", "empty"), {
-      innerHTML: "<b>No photolysis series</b>The forecast has not produced J values yet." }));
+    cs.replaceChildren(Object.assign(el("div", "empty"),
+      { textContent: "No photolysis series in this run." }));
   } else {
     lineChart(cs, {
-      series: [
-        { name: "Clean air", color: "var(--baseline)", points: pts("j_no2_pristine"), dash: true },
-        { name: "With aerosol", color: "#3b62d4", points: pts("j_no2") },
-      ],
+      series: [{ name: "Clean air", color: T.baseline, points: pts("j_no2_pristine"), dash: true },
+               { name: "With aerosol", color: T.s1, points: pts("j_no2") }],
       unit: "per s", dp: 5, zeroFloor: true, height: 170,
       caption: "J(NO2), the rate at which sunlight splits nitrogen dioxide and starts ozone "
              + "production. The gap between the lines is the ultraviolet the aerosol is "
@@ -1075,118 +1299,82 @@ async function loadPhotolysis() {
              + "photolysis in the dark.",
     });
   }
-
   const c = d.counterfactual;
   if (!c || !c.verdict) {
     cc.replaceChildren(Object.assign(el("div", "empty"), {
       innerHTML: "<b>No counterfactual yet</b>Run <code>python scripts/ozone_sensitivity.py</code>" }));
     return;
   }
-  const wrap = el("div");
-  const lead = el("p", "note");
+  const wrap = el("div"), lead = el("p", "note");
   lead.innerHTML = "A statistical forecast can only interpolate weather it has seen. It "
     + "cannot answer <b>what would ozone be if the aerosol halved</b>, because that "
     + "atmosphere is not in the training data. A mechanism can.";
   wrap.append(lead);
-
-  const t = el("table", "kv");
-  const head = el("tr");
-  ["Aerosol cut", "Ozone change", ""].forEach(h => head.append(el("th", null, h)));
+  const t = el("table", "kv"), head = el("tr");
+  head.append(el("th", null, "Aerosol cut"), el("th", "n", "Ozone change"), el("th", null, ""));
   t.append(head);
   (c.sensitivity || []).forEach(r => {
     const tr = el("tr");
-    tr.append(el("th", null, "-" + fmt(r.aod_cut_pct, 0) + "% AOD"));
+    tr.append(el("th", null, "minus " + fmt(r.aod_cut_pct, 0) + "% AOD"));
     const sign = r.o3_change_daytime_pct > 0 ? "+" : "";
-    tr.append(Object.assign(el("td", "n"), {
-      textContent: sign + fmt(r.o3_change_daytime_pct, 2) + "%" }));
-    const bar = el("td");
-    const track = el("div");
+    tr.append(Object.assign(el("td", "n"), { textContent: sign + fmt(r.o3_change_daytime_pct, 2) + "%" }));
+    const bar = el("td"), track = el("div");
     track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:80px;overflow:hidden";
     const fill = el("div");
-    const w = Math.min(100, Math.abs(r.o3_change_daytime_pct) * 3.5).toFixed(0);
-    fill.style.cssText = "height:100%;width:" + w + "%;background:var(--s1);border-radius:4px";
-    track.append(fill); bar.append(track); tr.append(bar);
-    t.append(tr);
+    fill.style.cssText = "height:100%;width:"
+      + Math.min(100, Math.abs(r.o3_change_daytime_pct) * 3.5).toFixed(0)
+      + "%;background:var(--s1);border-radius:4px";
+    track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
   });
   wrap.append(t);
-
-  const v = c.verdict;
+  const v = c.verdict, mv = v.modelled_o3_change_at_50pct_aod_cut;
   const box = el("p", "note caveat");
-  const mv = v.modelled_o3_change_at_50pct_aod_cut;
   box.innerHTML = "At a 50% cut this model gives <b>" + (mv > 0 ? "+" : "") + fmt(mv, 2)
     + "%</b> against a published Delhi figure of <b>+" + fmt(v.published, 0) + "%</b>: same "
     + "sign, and within a factor of two of a number it was never fitted to and never saw. "
     + "The remaining gap is the expected direction, because the published value comes from "
-    + "a box model with full VOC chemistry and we model only the direct photolysis pathway."
-    + (c.split ? " Split: " + c.split + "." : "");
+    + "a box model with full VOC chemistry and we model only the direct photolysis pathway.";
   wrap.append(box);
   cc.replaceChildren(wrap);
 }
 
-async function loadInversion() {
-  const d = await api("/inversion");
-  S.inversion = d;
-  const host = $("#inv-charts");
-  if (d.__error) { host.replaceChildren(el("div", "panel")); offline(host.firstChild, d); return; }
-  const rows = d.series || [];
-  const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]]).filter(p => Number.isFinite(p[0]));
-  const panels = [
-    { title: "Inversion strength", key: "inversion_strength_k", unit: "K", color: "#3b62d4", dp: 2,
-      cap: "Temperature excess of the air aloft over the 2 m reading. Above zero means a lid: air gets warmer with height and nothing released underneath can rise through it." },
-    { title: "Mixing depth", key: "mixing_depth_m", unit: "m", color: "#c2701c", dp: 0,
-      cap: "The depth the day's emissions are diluted into: the shallower of the modelled boundary layer and the inversion lid. Halve it and you double the concentration." },
-    { title: "Ventilation coefficient", key: "ventilation_coeff", unit: "m²/s", color: "#0f9b8e", dp: 0,
-      cap: "Mixing depth × wind through that depth: the volume flux available to carry pollution away. Below 6000 is poor, below 3000 is severe stagnation." },
-  ];
-  host.replaceChildren();
-  panels.forEach(p => {
-    const panel = el("div", "panel");
-    const h = el("header");
-    h.append(el("h3", null, p.title));
-    panel.append(h);
-    const slot = el("div"); panel.append(slot); host.append(panel);
-    lineChart(slot, { series: [{ name: p.title, color: p.color, points: pts(p.key) }],
-      unit: p.unit, dp: p.dp, caption: p.cap, height: 170, zeroFloor: p.key !== "inversion_strength_k" });
-  });
-  if (d.method === "surface") {
-    const n = el("p", "note");
-    n.style.gridColumn = "1 / -1";
-    n.textContent = "Surface-proxy path: this run has no pressure-level temperatures, so inversion strength in kelvin is genuinely unavailable and is left empty rather than filled with a zero.";
-    host.append(n);
-  }
-}
-
-async function loadPlume() {
+async function loadTransport() {
   const d = await api("/plume");
   const fs = $("#fires-slot");
   if (d.__error) { offline(fs, d); offline($("#plume-chart"), d); return; }
   const f = d.fires || {};
   if (!f.n_fires) {
     fs.replaceChildren(Object.assign(el("div", "empty"), {
-      innerHTML: "<b>No active fires in the stubble belt</b>Outside the October–November paddy season this is the correct reading, not a missing feed. The engine is running; there is simply nothing burning upwind." }));
+      innerHTML: "<b>No active fires in the stubble belt</b>Outside the October and "
+        + "November paddy season this is the correct reading, not a missing feed." }));
   } else {
     const t = el("table", "kv");
     const row = (k, v) => { const tr = el("tr");
       tr.append(el("th", null, k), Object.assign(el("td", "n"), { textContent: v })); t.append(tr); };
     row("Detections", String(f.n_fires));
-    row("Total radiative power", `${fmt(f.total_frp_mw, 1)} MW`);
-    row("Mean distance", `${fmt(f.mean_distance_km, 1)} km`);
-    row("Nearest", `${fmt(f.nearest_km, 1)} km`);
-    row("High confidence", String(f.high_confidence ?? 0));
+    row("Total radiative power", fmt(f.total_frp_mw, 1) + " MW");
+    row("Mean distance", fmt(f.mean_distance_km, 1) + " km");
+    row("Nearest", fmt(f.nearest_km, 1) + " km");
+    row("High confidence", String(f.high_confidence == null ? 0 : f.high_confidence));
     fs.replaceChildren(t);
   }
   const rows = d.contribution || [];
-  const pts = rows.map(r => [new Date(r.time).getTime(), r.plume_pm25]).filter(p => Number.isFinite(p[0]));
+  const pts = rows.map(r => [new Date(r.time).getTime(), r.plume_pm25])
+                  .filter(p => Number.isFinite(p[0]));
   if (!pts.length || pts.every(p => !p[1])) {
     $("#plume-chart").replaceChildren(Object.assign(el("div", "empty"), {
-      innerHTML: "<b>No modelled arrival</b>Either nothing is burning, or the wind is carrying the smoke somewhere other than Delhi. A thousand fires with an easterly wind are somebody else's problem that day, and the honest answer is to say so." }));
-    renderPlumeCalibration();
+      innerHTML: "<b>No modelled arrival</b>Either nothing is burning, or the wind is "
+        + "carrying the smoke somewhere other than Delhi. A thousand fires with an "
+        + "easterly wind are somebody else's problem that day, and the honest answer is "
+        + "to say so." }));
   } else {
-    renderPlumeCalibration();
-    lineChart($("#plume-chart"), { series: [{ name: "Plume PM2.5", color: "#c2701c", points: pts }],
+    lineChart($("#plume-chart"), {
+      series: [{ name: "Plume PM2.5", color: T.s2, points: pts }],
       unit: "µg/m³", dp: 2, zeroFloor: true, height: 170,
-      caption: "Modelled surface contribution from transported stubble smoke. Reported as transport plausibility, never as a measured emission." });
+      caption: "Modelled surface contribution from transported stubble smoke. Reported as "
+             + "transport plausibility, never as a measured emission." });
   }
+  renderPlumeCalibration();
 }
 
 async function renderPlumeCalibration() {
@@ -1197,134 +1385,272 @@ async function renderPlumeCalibration() {
       innerHTML: "<b>Not calibrated yet</b>Run <code>python scripts/plume_calibrate.py</code>" }));
     return;
   }
-  const wrap = el("div");
-  const lead = el("p", "note");
+  const wrap = el("div"), lead = el("p", "note");
   lead.innerHTML = "Correlation is the meaningful column. Only a single scale factor is "
     + "fitted, absorbing emission-factor uncertainty, satellite detection limits and "
     + "burn-duration assumptions, and scaling cannot improve a correlation. So this ranks "
     + "the <b>physics</b>, not the magnitude.";
   wrap.append(lead);
-
-  const t = el("table", "kv");
-  const head = el("tr");
-  ["Vertical treatment", "r", "RMSE", "Peak", "DSS peak", ""].forEach(
-    h => head.append(el("th", null, h)));
+  const t = el("table", "kv"), head = el("tr");
+  head.append(el("th", null, "Vertical treatment"), el("th", "n", "r"), el("th", "n", "RMSE"),
+              el("th", "n", "Peak"), el("th", "n", "DSS peak"), el("th", null, ""));
   t.append(head);
   const NAMES = { A: "Injection height fixed", B: "Entrained, no residual layer",
-                  C: "Entrained + residual layer" };
-  const entries = Object.entries(d.variants || {})
-    .filter(kv => kv[1] && kv[1].available)
-    .sort((a, b) => (b[1].correlation || -9) - (a[1].correlation || -9));
-  entries.forEach(kv => {
-    const k = kv[0], v = kv[1];
-    const tr = el("tr");
-    tr.append(el("th", null, k + " - " + (NAMES[k] || "")));
-    tr.append(Object.assign(el("td", "n"), {
-      textContent: (v.correlation > 0 ? "+" : "") + fmt(v.correlation, 3) }));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.rmse_after_scaling, 2) }));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.modelled_peak_scaled, 1) }));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.dss_peak, 1) }));
-    const badge = el("td", "n");
-    if (k === d.shipped_variant) {
-      const chip = el("span", "chip ok");
-      chip.append(el("span", "dot"), document.createTextNode("shipped"));
-      badge.append(chip);
-    }
-    tr.append(badge);
-    t.append(tr);
-  });
+                  C: "Entrained plus residual layer" };
+  Object.keys(d.variants || {})
+    .filter(k => d.variants[k] && d.variants[k].available)
+    .sort((a, b) => (d.variants[b].correlation || -9) - (d.variants[a].correlation || -9))
+    .forEach(k => {
+      const v = d.variants[k], tr = el("tr");
+      tr.append(el("th", null, k + ", " + (NAMES[k] || "")));
+      tr.append(Object.assign(el("td", "n"), {
+        textContent: (v.correlation > 0 ? "+" : "") + fmt(v.correlation, 3) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.rmse_after_scaling, 2) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.modelled_peak_scaled, 1) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(v.dss_peak, 1) }));
+      const badge = el("td");
+      if (k === d.shipped_variant) {
+        const chip = el("span", "chip ok");
+        chip.append(el("span", "dot"), document.createTextNode("shipped"));
+        badge.append(chip);
+      }
+      tr.append(badge); t.append(tr);
+    });
   wrap.append(t);
-
   const cap = el("p", "note caveat");
   cap.innerHTML = "The DSS attribution is <b>daily</b>, so it settles day-to-day timing "
     + "and nothing finer: it cannot separate these treatments on their behaviour through "
-    + "the night, which is where the shipped one is most questionable. Source: MoES/IITM "
-    + "WRF-Chem Decision Support System, cited not redistributed.";
+    + "the night, which is where the shipped one is most questionable. Source: MoES and "
+    + "IITM WRF-Chem Decision Support System, cited not redistributed.";
   wrap.append(cap);
   slot.replaceChildren(wrap);
+}
+
+async function loadForecast() {
+  const res = await Promise.all([api("/forecast?horizon=" + S.horizon), api("/summary")]);
+  const fc = res[0], sum = res[1];
+  S.forecast = fc; S.summary = sum;
+  drawChips(sum);
+  if (fc.__error) offline($("#map-slot"), fc); else drawMap(fc.cells);
+
+  const slot = $("#summary-slot");
+  if (sum.__error) { offline(slot, sum); } else {
+    const cells = (fc.cells || []).filter(c => c.aqi != null && Number.isFinite(c.aqi));
+    const mean = cells.length ? cells.reduce((a, c) => a + c.aqi, 0) / cells.length : null;
+    const worst = cells.length ? cells.reduce((a, c) => (c.aqi > a.aqi ? c : a), cells[0]) : null;
+    const b = bandOf(mean);
+    const g = el("div"); g.style.display = "grid"; g.style.gap = "14px";
+    const r1 = el("div", "readout");
+    const v = el("div", "v", b ? fmt(mean) : "n/a");
+    if (b) v.style.color = b.c === "#ffde33" ? T.moderateInk : b.c;
+    r1.append(v, el("div", "l", b ? "City mean AQI, " + b.name : "City mean AQI"));
+    g.append(r1);
+    const t = el("table", "kv");
+    const row = (k, val) => { const tr = el("tr");
+      tr.append(el("th", null, k), Object.assign(el("td", "n"), { textContent: val })); t.append(tr); };
+    row("Cells modelled", String(cells.length));
+    row("Worst cell", worst ? fmt(worst.aqi) + " (" + bandOf(worst.aqi).name + ")" : "n/a");
+    if (sum.pm25) row("PM2.5 mean", fmt(sum.pm25.mean, 1) + " µg/m³");
+    if (sum.o3) row("Ozone mean", fmt(sum.o3.mean, 1) + " µg/m³");
+    if (sum.coupling && sum.coupling.mean_pm_amplification_pct != null)
+      row("Feedback adds", fmt(sum.coupling.mean_pm_amplification_pct, 1) + " %");
+    g.append(t);
+    slot.replaceChildren(g);
+  }
+
+  const notes = $("#notes-slot");
+  if (sum.__error) notes.textContent = "n/a"; else {
+    const ul = el("ul"); ul.style.margin = "0"; ul.style.paddingLeft = "16px";
+    (sum.notes || []).forEach(n => ul.append(el("li", null, n)));
+    notes.replaceChildren(ul);
+    if ((sum.degraded || []).length) {
+      const dd = el("p", "note caveat");
+      dd.textContent = "Degraded: " + sum.degraded.join(", ")
+        + ". These stages did not run; the affected values fall back and are labelled "
+        + "rather than hidden.";
+      notes.append(dd);
+    }
+  }
+  loadGrapRisk();
+}
+
+async function loadGrapRisk() {
+  const slot = $("#grap-slot");
+  const d = await api("/uncertainty?horizon=" + S.horizon);
+  if (d.__error) { offline(slot, d); return; }
+  const wrap = el("div"), lead = el("p", "note");
+  lead.innerHTML = "A point forecast just under a boundary says nothing about the risk of "
+    + "crossing it. These are probabilities, from a model fitted to the conditional "
+    + "distribution rather than the mean.";
+  wrap.append(lead);
+
+  const live = d.live;
+  if (!live || !live.series || !live.series.length) {
+    const box = el("p", "note caveat");
+    box.textContent = d.note || "No quantile head trained yet.";
+    wrap.append(box);
+  } else {
+    const t = el("table", "kv"), head = el("tr");
+    head.append(el("th", null, "GRAP stage"), el("th", "n", "peak risk"), el("th", null, ""));
+    t.append(head);
+    Object.keys(d.thresholds_ugm3 || {}).forEach(label => {
+      const vals = live.series.map(r => r[label]).filter(v => Number.isFinite(v));
+      if (!vals.length) return;
+      const peak = Math.max.apply(null, vals), tr = el("tr");
+      tr.append(el("th", null, label.replace(/^AQI \d+ \(/, "").replace(/\)$/, "")));
+      tr.append(Object.assign(el("td", "n"), { textContent: (100 * peak).toFixed(0) + "%" }));
+      const bar = el("td"), track = el("div");
+      track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:90px;overflow:hidden";
+      const fill = el("div");
+      const colour = peak > 0.66 ? "var(--bad)" : peak > 0.33 ? "var(--warn)" : "var(--ok)";
+      fill.style.cssText = "height:100%;width:" + (100 * peak).toFixed(0)
+        + "%;background:" + colour + ";border-radius:4px";
+      track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
+    });
+    wrap.append(t);
+  }
+
+  const v = d.validation && d.validation.heads && d.validation.heads.pm25_24h;
+  if (v && v.coverage) {
+    const cap = el("p", "note caveat");
+    let txt = "Measured on a held-out season: the 80% interval actually contained the truth "
+      + "<b>" + (100 * v.coverage.measured).toFixed(1) + "%</b> of the time ("
+      + v.coverage.verdict + ").";
+    const g = v.grap || {};
+    const sk = Object.keys(g).map(k => g[k].brier_skill_score).filter(x => x != null);
+    if (sk.length) {
+      txt += " The probabilities beat a climatological forecast at every threshold, with "
+        + "skill scores from " + Math.min.apply(null, sk).toFixed(2) + " to "
+        + Math.max.apply(null, sk).toFixed(2) + ".";
+    }
+    cap.innerHTML = txt;
+    wrap.append(cap);
+  }
+  slot.replaceChildren(wrap);
+}
+
+async function loadEvidence() {
+  const res = await Promise.all([api("/validation"), api("/loso")]);
+  const val = res[0], loso = res[1], vs = $("#val-slot");
+  if (val.__error) {
+    vs.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>No metrics yet</b>Run <code>python scripts/train.py</code>" }));
+  } else {
+    const heads = val.heads || {}, t = el("table", "kv"), head = el("tr");
+    head.append(el("th", null, "Head"));
+    ["RMSE", "Persistence", "vs persistence", "r²", "n"].forEach(h => head.append(el("th", "n", h)));
+    t.append(head);
+    Object.keys(heads).forEach(name => {
+      const m = heads[name], tr = el("tr");
+      tr.append(el("th", null, name));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.rmse, 2) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.persistence_rmse, 2) }));
+      const imp = el("td", "n");
+      const chip = el("span", "chip " + (m.improvement_pct > 0 ? "ok" : "bad"));
+      chip.append(el("span", "dot"), document.createTextNode(
+        (m.improvement_pct > 0 ? "+" : "") + fmt(m.improvement_pct, 1) + "%"));
+      imp.append(chip); tr.append(imp);
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.r2, 3) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: String(m.n == null ? "n/a" : m.n) }));
+      t.append(tr);
+    });
+    const wrap = el("div"); wrap.append(t);
+    const cap = el("p", "note caveat");
+    cap.textContent = "Panel: " + (val.rows || 0).toLocaleString() + " rows from "
+      + val.stations + " stations. Split: " + (val.split || "chronological") + ". "
+      + (val.note || "");
+    wrap.append(cap);
+    vs.replaceChildren(wrap);
+  }
+
+  const ls = $("#loso-slot");
+  if (loso.__error) {
+    ls.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>Not run yet</b>Run <code>python scripts/loso.py</code>" }));
+  } else {
+    const wrap = el("div"), lead = el("p", "note");
+    lead.innerHTML = "The forecast serves over a thousand cells and about forty contain an "
+      + "instrument. This removes a station from training entirely and predicts a place the "
+      + "model has never seen. Persistence still uses that station's own history, which the "
+      + "model is denied.";
+    wrap.append(lead);
+    const t = el("table", "kv"), head = el("tr");
+    head.append(el("th", null, "Target"));
+    ["Stations", "RMSE", "Persistence", "vs persistence", "Beat"].forEach(
+      h => head.append(el("th", "n", h)));
+    t.append(head);
+    const tg = loso.targets || {};
+    Object.keys(tg).forEach(name => {
+      const r = tg[name], tr = el("tr");
+      tr.append(el("th", null, name));
+      tr.append(Object.assign(el("td", "n"), { textContent: String(r.stations_evaluated) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.mean_rmse, 2) }));
+      tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.mean_persistence_rmse, 2) }));
+      const imp = el("td", "n");
+      const chip = el("span", "chip " + (r.mean_improvement_pct > 0 ? "ok" : "bad"));
+      chip.append(el("span", "dot"), document.createTextNode(
+        (r.mean_improvement_pct > 0 ? "+" : "") + fmt(r.mean_improvement_pct, 1) + "%"));
+      imp.append(chip); tr.append(imp);
+      tr.append(Object.assign(el("td", "n"), {
+        textContent: r.stations_beating_persistence + "/" + r.stations_evaluated }));
+      t.append(tr);
+    });
+    wrap.append(t);
+    ls.replaceChildren(wrap);
+  }
+  loadScenario();
 }
 
 async function loadScenario() {
-  const d = await api(`/scenario?kind=${S.scenKind}`);
+  const d = await api("/scenario?kind=" + S.scenKind);
   const slot = $("#scen-slot");
   if (d.__error) { offline(slot, d); return; }
   const rows = (d.targets || []).filter(r => r.reduction === 0.4)
-    .sort((a, b) => b.mean_ugm3 - a.mean_ugm3).slice(0, 12);
-  if (!rows.length) { slot.replaceChildren(Object.assign(el("div", "empty"), { textContent: "No scenario rows." })); return; }
-  const max = Math.max(...rows.map(r => r.mean_ugm3));
-  const t = el("table", "kv");
-  const head = el("tr");
-  head.append(el("th", null, "Target"), el("th", null, "20% cut"), el("th", null, "40% cut"), el("th", null, ""));
+    .sort((a, b) => b.mean_ugm3 - a.mean_ugm3).slice(0, 10);
+  if (!rows.length) {
+    slot.replaceChildren(Object.assign(el("div", "empty"), { textContent: "No scenario rows." }));
+    return;
+  }
+  const max = Math.max.apply(null, rows.map(r => r.mean_ugm3));
+  const twenty = {};
+  (d.targets || []).filter(r => r.reduction === 0.2)
+    .forEach(r => { twenty[r.target] = r.mean_ugm3; });
+  const t = el("table", "kv"), head = el("tr");
+  head.append(el("th", null, "Target"), el("th", "n", "20% cut"),
+              el("th", "n", "40% cut"), el("th", null, ""));
   t.append(head);
-  const twenty = new Map((d.targets || []).filter(r => r.reduction === 0.2).map(r => [r.target, r.mean_ugm3]));
   rows.forEach(r => {
     const tr = el("tr");
     tr.append(el("th", null, r.label || r.target));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(twenty.get(r.target), 2) }));
+    tr.append(Object.assign(el("td", "n"), { textContent: fmt(twenty[r.target], 2) }));
     tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.mean_ugm3, 2) }));
-    const bar = el("td");
-    const track = el("div");
-    track.style.cssText = `height:7px;border-radius:4px;background:var(--panel-2);overflow:hidden;min-width:90px`;
+    const bar = el("td"), track = el("div");
+    track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:80px;overflow:hidden";
     const fill = el("div");
-    fill.style.cssText = `height:100%;width:${(r.mean_ugm3 / max * 100).toFixed(1)}%;background:var(--s1);border-radius:4px`;
-    track.append(fill); bar.append(track); tr.append(bar);
-    t.append(tr);
-  });
-  const wrap = el("div");
-  wrap.append(t);
-  const cap = el("p", "note caveat");
-  cap.textContent = `Values are mean PM2.5 reduction in µg/m³. ${d.caveat} Source: ${d.source}.`;
-  wrap.append(cap);
-  slot.replaceChildren(wrap);
-}
-
-async function loadValidation() {
-  const d = await api("/validation");
-  const slot = $("#val-slot");
-  if (d.__error) {
-    slot.replaceChildren(Object.assign(el("div", "empty"), {
-      innerHTML: "<b>No metrics yet</b>Train the heads first:<br><code>python scripts/train.py --loso</code>" }));
-    return;
-  }
-  const heads = d.heads || {};
-  if (!Object.keys(heads).length) { slot.replaceChildren(Object.assign(el("div", "empty"), { textContent: "No heads trained." })); return; }
-  const t = el("table", "kv");
-  const head = el("tr");
-  ["Head", "RMSE", "Persistence", "vs persistence", "r²", "n"].forEach(h => head.append(el("th", null, h)));
-  t.append(head);
-  Object.entries(heads).forEach(([name, m]) => {
-    const tr = el("tr");
-    tr.append(el("th", null, name));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.rmse, 2) }));
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.persistence_rmse, 2) }));
-    const imp = el("td", "n");
-    const good = m.improvement_pct > 0;
-    const chip = el("span", "chip " + (good ? "ok" : "bad"));
-    chip.append(el("span", "dot"), document.createTextNode(`${m.improvement_pct > 0 ? "+" : ""}${fmt(m.improvement_pct, 1)}%`));
-    imp.append(chip); tr.append(imp);
-    tr.append(Object.assign(el("td", "n"), { textContent: fmt(m.r2, 3) }));
-    tr.append(Object.assign(el("td", "n"), { textContent: String(m.n ?? "—") }));
-    t.append(tr);
+    fill.style.cssText = "height:100%;width:" + (r.mean_ugm3 / max * 100).toFixed(1)
+      + "%;background:var(--s1);border-radius:4px";
+    track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
   });
   const wrap = el("div"); wrap.append(t);
   const cap = el("p", "note caveat");
-  cap.textContent = `Panel: ${d.rows?.toLocaleString?.() ?? d.rows} rows from ${d.stations} stations, ${d.window?.[0]?.slice(0,10)} to ${d.window?.[1]?.slice(0,10)}. ${d.note || ""}`;
+  cap.textContent = "Mean PM2.5 reduction in µg/m³. " + d.caveat + " Source: " + d.source + ".";
   wrap.append(cap);
   slot.replaceChildren(wrap);
 }
 
-const LOADERS = { forecast: loadForecast, coupling: loadCoupling, inversion: loadInversion,
-                  plume: loadPlume, scenario: loadScenario, validation: loadValidation };
-const TITLES = { forecast: "Forecast", coupling: "Coupling", inversion: "Inversion",
-                 plume: "Plume", scenario: "Scenarios", validation: "Validation" };
+/* ---------- routing ---------- */
+const LOADERS = { domain: loadDomain, vertical: loadVertical, coupling: loadCoupling,
+                  transport: loadTransport, forecast: loadForecast, evidence: loadEvidence };
+const TITLES = { domain: "Domain", vertical: "Vertical structure", coupling: "Coupling",
+                 transport: "Transport", forecast: "Forecast", evidence: "Evidence" };
 
-function go(view, push = true) {
-  if (!LOADERS[view]) view = "forecast";
+function go(view, push) {
+  if (push === undefined) push = true;
+  if (!LOADERS[view]) view = "domain";
   S.view = view;
-  // Deep-linkable views. A reviewer can send a colleague the coupling panel rather
-  // than "open the dashboard and click the second thing".
   if (push && location.hash.slice(1) !== view) location.hash = view;
-  document.querySelectorAll(".view").forEach(v => v.dataset.active = String(v.dataset.view === view));
+  document.querySelectorAll(".view").forEach(v =>
+    v.dataset.active = String(v.dataset.view === view));
   document.querySelectorAll("#nav button").forEach(b =>
     b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
   $("#bar-title").textContent = TITLES[view];
@@ -1363,21 +1689,19 @@ $("#fb-toggle").addEventListener("change", e => {
   loadCoupling();
 });
 $("#refresh").addEventListener("click", async () => {
-  const b = $("#refresh"); b.disabled = true; b.textContent = "Refreshing…";
+  const b = $("#refresh"); b.disabled = true; b.textContent = "Refreshing";
   await api("/summary?refresh=true");
   await LOADERS[S.view]();
   b.disabled = false; b.textContent = "Refresh";
 });
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea")) return;
-  const keys = { "1": "forecast", "2": "coupling", "3": "inversion",
-                 "4": "plume", "5": "scenario", "6": "validation" };
+  const keys = { "1": "domain", "2": "vertical", "3": "coupling",
+                 "4": "transport", "5": "forecast", "6": "evidence" };
   if (keys[e.key]) go(keys[e.key]);
 });
+addEventListener("hashchange", () => go(location.hash.slice(1) || "domain", false));
 
-addEventListener("hashchange", () => go(location.hash.slice(1) || "forecast", false));
-
-// Allow ?map=relative so a screenshot or a shared link can open in either scale.
 const _q = new URLSearchParams(location.search);
 if (_q.get("map") === "relative") {
   S.mapMode = "relative";
@@ -1386,7 +1710,8 @@ if (_q.get("map") === "relative") {
 }
 
 drawLegend();
-go(location.hash.slice(1) || "forecast", false);
+api("/summary").then(drawChips);
+go(location.hash.slice(1) || "domain", false);
 </script>
 </body>
 </html>

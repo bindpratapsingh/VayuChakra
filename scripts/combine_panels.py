@@ -44,6 +44,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--panels", default="winters_panel,train_panel")
     ap.add_argument("--out", default="combined_panel")
+    ap.add_argument("--allow-missing", action="store_true",
+                    help="proceed even if a named panel is absent; off by default so a "
+                         "failed upstream build cannot pass silently")
     ap.add_argument("--keep-chem", action="store_true",
                     help="keep CAMS columns even though they cover only part of the "
                          "record; see the module docstring for why this is off")
@@ -54,7 +57,17 @@ def main() -> int:
     for name in names:
         path = C.DATA / f"{name}.parquet"
         if not path.exists():
-            print(f"[combine] missing {path.name} - skipping")
+            # Skipping quietly is how a failed multi-winter build turned into a
+            # "successful" single-winter retrain: combine dropped the missing panel,
+            # every downstream step ran on the remaining one, and the pipeline
+            # reported six green stages for a model that had seen one winter.
+            print(f"[combine] ERROR: {path.name} does not exist.")
+            print("[combine] Refusing to silently produce a panel that is missing one "
+                  "of its named inputs. Build it, or pass --allow-missing if you "
+                  "genuinely mean to combine only what is present.")
+            if not args.allow_missing:
+                return 2
+            print("[combine] --allow-missing given, continuing without it")
             continue
         df = pd.read_parquet(path)
         df["source_panel"] = name

@@ -110,6 +110,21 @@ def add_wind_components(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _downcast(df: pd.DataFrame) -> pd.DataFrame:
+    """float64 to float32 before the panel gets wide.
+
+    Every value here carries three or four significant figures at best: a temperature
+    from a reanalysis, a pollutant concentration from a reference monitor, an optical
+    depth. float32 holds about seven, so nothing measurable is lost, and
+    `make_supervised` already casts to float32 further down the pipeline. Doing it here
+    instead halves the frame before the operations that need a second copy of it.
+    """
+    for col in df.columns:
+        if df[col].dtype == "float64":
+            df[col] = df[col].astype("float32")
+    return df
+
+
 def add_lags(df: pd.DataFrame, cols: tuple[str, ...] = ("pm25", "o3", "no2")) -> pd.DataFrame:
     """Lagged and rolling pollutant history, per station.
 
@@ -118,9 +133,17 @@ def add_lags(df: pd.DataFrame, cols: tuple[str, ...] = ("pm25", "o3", "no2")) ->
     hours earlier - a subtle corruption that never raises an error and quietly teaches
     the model the wrong autocorrelation.
     """
-    out = df.sort_values(["station_id", "time"]).copy()
+    out = df.sort_values(["station_id", "time"], ignore_index=True)
+
+    # Only the pollutant columns take part in this, so the reindex and the concat run
+    # over about twenty columns instead of the panel's hundred and thirty. Doing it on
+    # the whole frame needed a second full copy of the panel, and on the five-winter
+    # build that was the allocation that failed: 1.2 million rows of float64 is 1.4 GB
+    # before the copy. The wide columns are joined back afterwards.
+    lag_cols = [c for c in cols if c in out.columns]
+    slim = out[["station_id", "time", *lag_cols]]
     pieces = []
-    for sid, grp in out.groupby("station_id", sort=False):
+    for sid, grp in slim.groupby("station_id", sort=False):
         g = grp.set_index("time")
         full = pd.date_range(g.index.min(), g.index.max(), freq="h", tz="UTC")
         g = g.reindex(full)
@@ -139,8 +162,14 @@ def add_lags(df: pd.DataFrame, cols: tuple[str, ...] = ("pm25", "o3", "no2")) ->
             g[f"{col}_delta_6h"] = g[col].shift(1) - g[col].shift(7)
         g = g.reset_index().rename(columns={"index": "time"})
         pieces.append(g)
-    result = pd.concat(pieces, ignore_index=True)
-    return result.dropna(subset=["time"])
+    lagged = pd.concat(pieces, ignore_index=True).dropna(subset=["time"])
+    del pieces
+
+    # Left-join FROM the lagged frame so the row set stays the continuous hourly axis,
+    # exactly as it was when the reindex was applied to the whole panel.
+    rest = out.drop(columns=lag_cols)
+    del out
+    return lagged.merge(rest, on=["station_id", "time"], how="left")
 
 
 def add_pbl_anomaly(df: pd.DataFrame) -> pd.DataFrame:
@@ -221,6 +250,7 @@ def build_panel(
         else:
             print(f"[dataset] chemistry prior unavailable: {c.note}")
 
+    panel = _downcast(panel)
     panel = add_lags(panel)
     panel = add_wind_components(panel)
     panel = add_pbl_anomaly(panel)
