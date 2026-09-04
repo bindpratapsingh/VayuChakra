@@ -1,0 +1,37 @@
+{
+  "panel": "train_panel",
+  "split": "holdout 2025-11-01..2026-02-28",
+  "rows": 536670,
+  "stations": 40,
+  "window": [
+    "2025-02-01 00:00:00+00:00",
+    "2026-08-31 18:00:00+00:00"
+  ],
+  "note": "panel=train_panel; chem=yes; inversion=surface",
+  "heads": {
+    "o3_24h": {
+      "rmse": 20.0811,
+      "mae": 11.3636,
+      "bias": 0.5435,
+      "r2": 0.7602,
+      "n": 90734,
+      "persistence_rmse": 26.3825,
+      "improvement_pct": 23.8845,
+      "n_features": 156,
+      "top_features": [
+        "o3_lag_1h",
+        "o3_lag_24h",
+        "target_direct_radiation",
+        "o3_lag_48h",
+        "target_cams_o3",
+        "target_inversion_lid_m",
+        "target_pbl_climatology_m",
+        "target_shortwave_radiation",
+        "target_relative_humidity_2m",
+        "target_wind_speed_100m",
+        "is_stagnant",
+        "o3_roll_72h"
+      ]
+    }
+  }
+}

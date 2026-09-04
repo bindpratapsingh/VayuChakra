@@ -1,0 +1,84 @@
+{
+  "panel": "train_panel",
+  "rows": 536670,
+  "stations": 40,
+  "window": [
+    "2025-02-01 00:00:00+00:00",
+    "2026-08-31 18:00:00+00:00"
+  ],
+  "note": "panel=train_panel; chem=yes; inversion=surface",
+  "heads": {
+    "o3_24h": {
+      "rmse": 17.6113,
+      "mae": 10.5766,
+      "bias": 1.1438,
+      "r2": 0.6076,
+      "n": 89072,
+      "persistence_rmse": 22.0066,
+      "improvement_pct": 19.9729,
+      "n_features": 156,
+      "top_features": [
+        "o3_lag_24h",
+        "o3_lag_1h",
+        "target_direct_radiation",
+        "target_shortwave_radiation",
+        "o3_lag_48h",
+        "target_cams_o3",
+        "target_relative_humidity_2m",
+        "o3_delta_6h",
+        "target_inversion_lid_m",
+        "target_mixing_depth_m",
+        "target_boundary_layer_height",
+        "o3_roll_72h"
+      ]
+    },
+    "o3_48h": {
+      "rmse": 18.4845,
+      "mae": 11.4041,
+      "bias": 1.6794,
+      "r2": 0.5669,
+      "n": 88921,
+      "persistence_rmse": 23.1788,
+      "improvement_pct": 20.2527,
+      "n_features": 156,
+      "top_features": [
+        "o3_lag_24h",
+        "o3_lag_1h",
+        "target_direct_radiation",
+        "o3_lag_48h",
+        "target_shortwave_radiation",
+        "target_cams_o3",
+        "target_mixing_depth_m",
+        "target_inversion_lid_m",
+        "target_relative_humidity_2m",
+        "is_winter",
+        "o3_roll_72h",
+        "target_boundary_layer_height"
+      ]
+    },
+    "o3_72h": {
+      "rmse": 19.0453,
+      "mae": 12.0577,
+      "bias": 2.1922,
+      "r2": 0.5405,
+      "n": 88740,
+      "persistence_rmse": 23.4173,
+      "improvement_pct": 18.6701,
+      "n_features": 156,
+      "top_features": [
+        "o3_lag_24h",
+        "target_direct_radiation",
+        "target_cams_o3",
+        "o3_lag_1h",
+        "o3_lag_48h",
+        "target_is_inversion",
+        "target_shortwave_radiation",
+        "target_relative_humidity_2m",
+        "target_inversion_lid_m",
+        "target_mixing_depth_m",
+        "o3_roll_72h",
+        "target_boundary_layer_height"
+      ]
+    }
+  }
+}

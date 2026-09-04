@@ -1,0 +1,157 @@
+{
+  "panel": "train_panel",
+  "split": "holdout 2025-11-01..2026-02-28",
+  "rows": 536670,
+  "stations": 40,
+  "window": [
+    "2025-02-01 00:00:00+00:00",
+    "2026-08-31 18:00:00+00:00"
+  ],
+  "note": "panel=train_panel; chem=yes; inversion=surface",
+  "heads": {
+    "pm10_24h": {
+      "rmse": 131.1262,
+      "mae": 89.8467,
+      "bias": -4.8551,
+      "r2": 0.3075,
+      "n": 91004,
+      "persistence_rmse": 143.8106,
+      "improvement_pct": 8.8202,
+      "n_features": 156,
+      "top_features": [
+        "target_is_monsoon",
+        "dew_point_2m",
+        "target_mixing_depth_m",
+        "target_is_post_diwali",
+        "target_cams_no2",
+        "is_diwali",
+        "pm25_lag_1h",
+        "target_boundary_layer_height",
+        "soil_temperature_0_to_7cm",
+        "target_cams_pm25",
+        "target_cams_o3",
+        "target_stagnation_hours"
+      ]
+    },
+    "pm10_48h": {
+      "rmse": 135.2924,
+      "mae": 92.6217,
+      "bias": -14.0363,
+      "r2": 0.2707,
+      "n": 90989,
+      "persistence_rmse": 163.3843,
+      "improvement_pct": 17.1938,
+      "n_features": 156,
+      "top_features": [
+        "target_is_monsoon",
+        "dew_point_2m",
+        "target_mixing_depth_m",
+        "target_is_post_diwali",
+        "wind_u_100m",
+        "target_cams_pm25",
+        "target_boundary_layer_height",
+        "target_hour_sin",
+        "target_cams_no2",
+        "target_cams_pm10",
+        "pm25_lag_1h",
+        "wind_speed_100m"
+      ]
+    },
+    "pm10_72h": {
+      "rmse": 131.5865,
+      "mae": 91.3141,
+      "bias": -8.2926,
+      "r2": 0.3076,
+      "n": 91242,
+      "persistence_rmse": 169.5277,
+      "improvement_pct": 22.3805,
+      "n_features": 156,
+      "top_features": [
+        "target_is_monsoon",
+        "dew_point_2m",
+        "target_mixing_depth_m",
+        "hour_cos",
+        "target_is_post_diwali",
+        "target_boundary_layer_height",
+        "target_cams_pm25",
+        "pbl_climatology_m",
+        "target_cams_no2",
+        "cams_dust",
+        "pbl_anomaly",
+        "target_cams_o3"
+      ]
+    },
+    "no2_24h": {
+      "rmse": 24.3634,
+      "mae": 16.7367,
+      "bias": 2.768,
+      "r2": 0.6375,
+      "n": 90880,
+      "persistence_rmse": 27.6298,
+      "improvement_pct": 11.822,
+      "n_features": 156,
+      "top_features": [
+        "no2_lag_1h",
+        "no2_lag_24h",
+        "target_mixing_depth_m",
+        "target_boundary_layer_height",
+        "target_ventilation_coeff",
+        "no2_roll_24h",
+        "no2_lag_48h",
+        "no2_roll_72h",
+        "target_cams_no2",
+        "target_hour",
+        "dew_point_2m",
+        "relative_humidity_2m"
+      ]
+    },
+    "no2_48h": {
+      "rmse": 26.5195,
+      "mae": 18.6419,
+      "bias": 4.0413,
+      "r2": 0.5698,
+      "n": 90867,
+      "persistence_rmse": 31.0113,
+      "improvement_pct": 14.4844,
+      "n_features": 156,
+      "top_features": [
+        "no2_lag_1h",
+        "no2_lag_24h",
+        "target_mixing_depth_m",
+        "target_boundary_layer_height",
+        "no2_lag_48h",
+        "no2_roll_72h",
+        "no2_roll_24h",
+        "target_ventilation_coeff",
+        "target_cams_no2",
+        "cloud_cover",
+        "target_hour",
+        "target_relative_humidity_2m"
+      ]
+    },
+    "no2_72h": {
+      "rmse": 27.8936,
+      "mae": 19.6931,
+      "bias": 3.3796,
+      "r2": 0.5228,
+      "n": 91121,
+      "persistence_rmse": 32.329,
+      "improvement_pct": 13.7197,
+      "n_features": 156,
+      "top_features": [
+        "no2_lag_1h",
+        "no2_lag_24h",
+        "target_mixing_depth_m",
+        "target_boundary_layer_height",
+        "no2_lag_48h",
+        "target_is_monsoon",
+        "target_ventilation_coeff",
+        "no2_roll_72h",
+        "no2_roll_24h",
+        "is_monsoon",
+        "target_cams_no2",
+        "target_relative_humidity_2m"
+      ]
+    }
+  }
+}

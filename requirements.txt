@@ -1,0 +1,16 @@
+# VayuChakra — local development only. No deployment dependencies.
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+xgboost>=2.0
+pyarrow>=14.0
+openpyxl>=3.1
+fastapi>=0.110
+uvicorn>=0.27
+pytest>=8.0
+# Deliberately absent:
+#   scikit-learn  - XGBoost's native Booster API covers everything we need, and the
+#                   environment does not have sklearn installed.
+#   requests      - urllib from the standard library is enough for the handful of
+#                   endpoints we call, and net.py wraps it with caching and retries.
+#   python-dotenv - config.py parses .env in nine lines.

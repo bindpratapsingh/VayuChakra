@@ -1,0 +1,42 @@
+{
+  "horizon_h": 24,
+  "split": "season-block hold-out 2025-11-01 to 2026-02-28",
+  "photolysis": {
+    "k": 1.0,
+    "summer_reduction": 0.2203,
+    "winter_reduction": 0.1982,
+    "overall_reduction": 0.2098,
+    "n_summer": 151022,
+    "n_winter": 107626,
+    "in_reference_range": true,
+    "method": "first-principles-unfitted"
+  },
+  "sensitivity": [
+    {
+      "aod_cut_pct": 25.0,
+      "o3_change_all_pct": 8.26,
+      "o3_change_daytime_pct": 6.23,
+      "o3_change_winter_day_pct": 6.23
+    },
+    {
+      "aod_cut_pct": 50.0,
+      "o3_change_all_pct": 11.61,
+      "o3_change_daytime_pct": 12.79,
+      "o3_change_winter_day_pct": 12.79
+    },
+    {
+      "aod_cut_pct": 75.0,
+      "o3_change_all_pct": 17.64,
+      "o3_change_daytime_pct": 24.29,
+      "o3_change_winter_day_pct": 24.29
+    }
+  ],
+  "verdict": {
+    "modelled_o3_change_at_50pct_aod_cut": 12.79,
+    "published": 25.0,
+    "same_sign": true,
+    "within_factor_of_3": true,
+    "source": "Nelson et al., Faraday Discussions 226 (2021), APHH-India"
+  },
+  "note": "Counterfactual, not a forecast. AOD and the photolysis terms derived from it are perturbed together, because changing one alone describes an atmosphere that cannot exist."
+}

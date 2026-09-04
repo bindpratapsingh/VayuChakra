@@ -1,0 +1,249 @@
+{
+  "panel": "train_panel",
+  "horizon_h": 24,
+  "note": "each station held out of training entirely; persistence still uses that station's own history, which the model is denied",
+  "targets": {
+    "pm25": {
+      "available": true,
+      "stations": 10,
+      "mean_rmse": 32.157,
+      "mean_persistence_rmse": 57.159,
+      "mean_improvement_pct": 43.542,
+      "per_station": [
+        {
+          "station_id": 8118,
+          "rmse": 28.4619,
+          "mae": 18.0496,
+          "bias": 4.1569,
+          "r2": 0.8515,
+          "n": 13361,
+          "persistence_rmse": 48.3766,
+          "improvement_pct": 41.166,
+          "km_from_delhi": 2.9
+        },
+        {
+          "station_id": 5586,
+          "rmse": 41.5251,
+          "mae": 17.8546,
+          "bias": -0.2208,
+          "r2": 0.6838,
+          "n": 12389,
+          "persistence_rmse": 53.1364,
+          "improvement_pct": 21.8518,
+          "km_from_delhi": 7.1
+        },
+        {
+          "station_id": 10831,
+          "rmse": 35.9412,
+          "mae": 22.3608,
+          "bias": -6.2019,
+          "r2": 0.8663,
+          "n": 12246,
+          "persistence_rmse": 62.9103,
+          "improvement_pct": 42.8691,
+          "km_from_delhi": 15.8
+        },
+        {
+          "station_id": 8365,
+          "rmse": 32.9391,
+          "mae": 20.3133,
+          "bias": -1.6248,
+          "r2": 0.8778,
+          "n": 12243,
+          "persistence_rmse": 62.9808,
+          "improvement_pct": 47.6997,
+          "km_from_delhi": 6.5
+        },
+        {
+          "station_id": 8917,
+          "rmse": 30.6029,
+          "mae": 19.1689,
+          "bias": -3.128,
+          "r2": 0.8841,
+          "n": 12217,
+          "persistence_rmse": 60.0416,
+          "improvement_pct": 49.0305,
+          "km_from_delhi": 9.4
+        },
+        {
+          "station_id": 6929,
+          "rmse": 26.0875,
+          "mae": 18.4351,
+          "bias": 8.8772,
+          "r2": 0.8467,
+          "n": 12205,
+          "persistence_rmse": 48.3179,
+          "improvement_pct": 46.0085,
+          "km_from_delhi": 2.8
+        },
+        {
+          "station_id": 5613,
+          "rmse": 40.133,
+          "mae": 19.9165,
+          "bias": 2.8274,
+          "r2": 0.7855,
+          "n": 12190,
+          "persistence_rmse": 70.6792,
+          "improvement_pct": 43.2181,
+          "km_from_delhi": 3.5
+        },
+        {
+          "station_id": 6356,
+          "rmse": 29.1279,
+          "mae": 18.0629,
+          "bias": 3.6468,
+          "r2": 0.846,
+          "n": 12184,
+          "persistence_rmse": 52.9707,
+          "improvement_pct": 45.0113,
+          "km_from_delhi": 6.8
+        },
+        {
+          "station_id": 6931,
+          "rmse": 29.7134,
+          "mae": 19.0226,
+          "bias": 0.6794,
+          "r2": 0.8559,
+          "n": 12166,
+          "persistence_rmse": 54.3212,
+          "improvement_pct": 45.3005,
+          "km_from_delhi": 14.2
+        },
+        {
+          "station_id": 6960,
+          "rmse": 27.04,
+          "mae": 17.5117,
+          "bias": 2.8953,
+          "r2": 0.895,
+          "n": 12149,
+          "persistence_rmse": 57.8528,
+          "improvement_pct": 53.2607,
+          "km_from_delhi": 7.7
+        }
+      ],
+      "stations_beating_persistence": 10,
+      "stations_evaluated": 10
+    },
+    "o3": {
+      "available": true,
+      "stations": 10,
+      "mean_rmse": 15.279,
+      "mean_persistence_rmse": 23.319,
+      "mean_improvement_pct": 32.615,
+      "per_station": [
+        {
+          "station_id": 5586,
+          "rmse": 12.3435,
+          "mae": 7.0901,
+          "bias": 1.3541,
+          "r2": 0.3693,
+          "n": 12415,
+          "persistence_rmse": 14.1518,
+          "improvement_pct": 12.778,
+          "km_from_delhi": 7.1
+        },
+        {
+          "station_id": 10831,
+          "rmse": 17.3931,
+          "mae": 10.212,
+          "bias": -0.4531,
+          "r2": 0.811,
+          "n": 12278,
+          "persistence_rmse": 27.1056,
+          "improvement_pct": 35.8319,
+          "km_from_delhi": 15.8
+        },
+        {
+          "station_id": 8365,
+          "rmse": 19.6226,
+          "mae": 12.726,
+          "bias": -2.7708,
+          "r2": 0.8667,
+          "n": 12226,
+          "persistence_rmse": 31.7722,
+          "improvement_pct": 38.2396,
+          "km_from_delhi": 6.5
+        },
+        {
+          "station_id": 5613,
+          "rmse": 14.324,
+          "mae": 7.9116,
+          "bias": 1.4168,
+          "r2": 0.5174,
+          "n": 12225,
+          "persistence_rmse": 17.1984,
+          "improvement_pct": 16.7135,
+          "km_from_delhi": 3.5
+        },
+        {
+          "station_id": 6929,
+          "rmse": 15.5564,
+          "mae": 9.8969,
+          "bias": 0.6264,
+          "r2": 0.8777,
+          "n": 12213,
+          "persistence_rmse": 27.2615,
+          "improvement_pct": 42.9365,
+          "km_from_delhi": 2.8
+        },
+        {
+          "station_id": 8917,
+          "rmse": 14.6792,
+          "mae": 9.2939,
+          "bias": -0.027,
+          "r2": 0.8671,
+          "n": 12211,
+          "persistence_rmse": 25.6113,
+          "improvement_pct": 42.6848,
+          "km_from_delhi": 9.4
+        },
+        {
+          "station_id": 8235,
+          "rmse": 16.1008,
+          "mae": 9.521,
+          "bias": 0.8603,
+          "r2": 0.8118,
+          "n": 12153,
+          "persistence_rmse": 24.0592,
+          "improvement_pct": 33.0785,
+          "km_from_delhi": 13.7
+        },
+        {
+          "station_id": 6931,
+          "rmse": 15.884,
+          "mae": 10.1902,
+          "bias": 0.2998,
+          "r2": 0.8108,
+          "n": 12127,
+          "persistence_rmse": 25.2291,
+          "improvement_pct": 37.0412,
+          "km_from_delhi": 14.2
+        },
+        {
+          "station_id": 6934,
+          "rmse": 14.4261,
+          "mae": 9.7415,
+          "bias": -0.2602,
+          "r2": 0.8356,
+          "n": 12127,
+          "persistence_rmse": 23.3333,
+          "improvement_pct": 38.1741,
+          "km_from_delhi": 13.9
+        },
+        {
+          "station_id": 10486,
+          "rmse": 12.4577,
+          "mae": 8.0483,
+          "bias": 1.7189,
+          "r2": 0.804,
+          "n": 12099,
+          "persistence_rmse": 17.465,
+          "improvement_pct": 28.6704,
+          "km_from_delhi": 15.1
+        }
+      ],
+      "stations_beating_persistence": 10,
+      "stations_evaluated": 10
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-09-04T13:03:55Z",
+  "coupling_ablation": {
+    "available": true,
+    "window": {
+      "from": "2025-11-01",
+      "to": "2026-02-28"
+    },
+    "overall": {
+      "uncoupled_rmse": 82.76,
+      "coupled_rmse": 82.85,
+      "uncoupled_bias": 0.0,
+      "coupled_bias": 4.21,
+      "scoring": "both arms re-centred to zero mean bias, so this measures shape and timing rather than which arm was allowed to fit an intercept",
+      "n": 48181,
+      "rmse_improvement_pct": -0.11
+    },
+    "by_regime": {
+      "stagnant_episode": {
+        "n": 40047,
+        "uncoupled_rmse": 83.95,
+        "coupled_rmse": 84.01,
+        "improvement_pct": -0.07
+      },
+      "well_ventilated": {
+        "n": 8134,
+        "uncoupled_rmse": 76.61,
+        "coupled_rmse": 76.77,
+        "improvement_pct": -0.21
+      },
+      "high_aerosol": {
+        "n": 28440,
+        "uncoupled_rmse": 83.29,
+        "coupled_rmse": 83.0,
+        "improvement_pct": 0.35
+      }
+    },
+    "coupling": {
+      "available": true,
+      "rows": 48181,
+      "iterations": 7,
+      "converged": true,
+      "diverged_rows": 0,
+      "max_residual_ugm3": 0.259,
+      "mean_sw_reduction_pct": 11.29,
+      "mean_dT_daytime_k": -0.667,
+      "mean_pbl_suppression_pct": 5.49,
+      "mean_pm_amplification_pct": 2.78,
+      "mean_wind_reduction_pct": 0.55,
+      "aod_model": {
+        "b": 0.49300955252737705,
+        "r2": 0.2396894964209464,
+        "n": 48181,
+        "method": "cams-paired-elasticity"
+      }
+    },
+    "literature_gate": {
+      "ok": true,
+      "checks": {
+        "sw_reduction_pct": {
+          "value": 13.497,
+          "expected": [
+            5.0,
+            35.0
+          ],
+          "ok": true
+        },
+        "dT_daytime_k": {
+          "value": -0.744,
+          "expected": [
+            0.1,
+            2.5
+          ],
+          "ok": true
+        },
+        "pbl_suppression_pct": {
+          "value": 6.997,
+          "expected": [
+            5.0,
+            35.0
+          ],
+          "ok": true
+        },
+        "pm_amplification_pct": {
+          "value": 7.497,
+          "expected": [
+            2.0,
+            30.0
+          ],
+          "ok": true
+        },
+        "wind_reduction_pct": {
+          "value": 1.458,
+          "expected": [
+            0.5,
+            6.0
+          ],
+          "ok": true
+        }
+      },
+      "n_in_regime": 13109,
+      "regime": {
+        "min_aod": 0.5,
+        "min_sw_wm2": 50.0,
+        "note": "high-aerosol daylight hours, matching the conditions the published Delhi figures were measured in"
+      },
+      "all_conditions_for_reference": {
+        "sw_reduction_pct": 11.29,
+        "dT_daytime_k": -0.667,
+        "pbl_suppression_pct": 5.49,
+        "pm_amplification_pct": 2.78,
+        "wind_reduction_pct": 0.55
+      },
+      "converged": true,
+      "iterations": 7
+    },
+    "note": "Uncoupled baseline is the bias-corrected CAMS prior, so the ONLY difference between the two runs is the radiative feedback."
+  }
+}

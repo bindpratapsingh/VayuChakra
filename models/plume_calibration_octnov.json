@@ -1,0 +1,47 @@
+{
+  "window": [
+    "2021-10-06",
+    "2021-11-30"
+  ],
+  "variants": {
+    "A": {
+      "available": true,
+      "n_days": 54,
+      "correlation": 0.596,
+      "scale_factor": 4.7924,
+      "rmse_after_scaling": 8.28,
+      "modelled_peak_raw": 5.773,
+      "modelled_peak_scaled": 27.67,
+      "dss_peak": 38.02,
+      "modelled_mean_scaled": 4.12,
+      "dss_mean": 7.66
+    },
+    "B": {
+      "available": true,
+      "n_days": 54,
+      "correlation": 0.369,
+      "scale_factor": 0.1055,
+      "rmse_after_scaling": 9.95,
+      "modelled_peak_raw": 212.788,
+      "modelled_peak_scaled": 22.44,
+      "dss_peak": 38.02,
+      "modelled_mean_scaled": 2.82,
+      "dss_mean": 7.66
+    },
+    "C": {
+      "available": true,
+      "n_days": 54,
+      "correlation": 0.525,
+      "scale_factor": 2.7323,
+      "rmse_after_scaling": 8.9,
+      "modelled_peak_raw": 8.973,
+      "modelled_peak_scaled": 24.52,
+      "dss_peak": 38.02,
+      "modelled_mean_scaled": 3.66,
+      "dss_mean": 7.66
+    }
+  },
+  "target": "MoES/IITM DSS daily stubble attribution (third-party, cited)",
+  "fitted": "one multiplicative scale factor per variant, through the origin",
+  "note": "The scale absorbs emission-factor uncertainty (5-8 g/kg for cereal straw), satellite detection limits, and burn-duration assumptions. Physics parameters are NOT fitted."
+}
