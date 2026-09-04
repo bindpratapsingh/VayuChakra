@@ -1,0 +1,52 @@
+# VayuChakra on Render, free tier.
+#
+# ONE service, serving both the API and the dashboard it drives. Two free services cost
+# roughly 1,440 instance-hours a month against a 750-hour allowance, which is what got a
+# previous account suspended. One service costs half that and removes the cross-origin
+# hop as a bonus.
+#
+# NO healthCheckPath. This is not an oversight. With one configured on a free service,
+# Render's edge intermittently dropped the instance from routing: 20 to 37 percent of
+# requests came back 404 with `x-render-routing: no-server`, and those never reached
+# uvicorn at all, so the application log showed only the successes and looked healthy.
+# Clearing it took the failure rate to zero. If you add one back, expect that.
+#
+# VAYUCHAKRA_SNAPSHOT=1 is the whole reason this fits. The live pipeline peaks at about
+# 1.1 GB and this tier gives 512 MB, so the instance replays a bundle captured by
+# scripts/export_snapshot.py from the same API at full resolution: 420 cells at 2.8 km,
+# all four pollutants, the coupled solver, photolysis and the plume. A deployment gives
+# up freshness, not resolution or physics, and the dashboard says so on every view.
+#
+# There is no keepalive, by choice. The service sleeps after 15 minutes idle and takes
+# roughly 50 seconds to wake. That is the price of staying inside the free allowance
+# instead of burning it and being suspended again.
+
+services:
+  - type: web
+    name: vayuchakra
+    runtime: python
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1
+    autoDeploy: true
+    envVars:
+      # Serve the precomputed bundle rather than running the pipeline.
+      - key: VAYUCHAKRA_SNAPSHOT
+        value: "1"
+      # Never enable this here. It would start a background thread trying to build a
+      # 1.1 GB frame every hour on a 512 MB instance.
+      - key: VAYUCHAKRA_REFRESH
+        value: "0"
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: PIP_DISABLE_PIP_VERSION_CHECK
+        value: "1"
+      # Unused while VAYUCHAKRA_SNAPSHOT=1, since nothing calls out to a network. Set
+      # so that flipping to live mode on a larger instance needs no further work.
+      # sync: false keeps the values out of this file and in the Render dashboard.
+      - key: OPENAQ_API_KEY
+        sync: false
+      - key: FIRMS_MAP_KEY
+        sync: false

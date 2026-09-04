@@ -1,4 +1,9 @@
-# VayuChakra — local development only. No deployment dependencies.
+# VayuChakra runtime.
+#
+# The same list serves local development and the Render deployment. In snapshot mode
+# the server never runs the pipeline, but api/main.py imports the vayuchakra package at
+# module load, so the scientific stack still has to be installed. Measured RSS of the
+# hosted process is about 130 MB against a 512 MB tier.
 numpy>=1.26
 pandas>=2.1
 scipy>=1.11

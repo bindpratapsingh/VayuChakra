@@ -14,6 +14,7 @@ cold or `refresh=true` is passed explicitly.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 import threading
@@ -23,8 +24,9 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -37,11 +39,75 @@ app = FastAPI(title="VayuChakra",
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"])
 
+# ─── Snapshot mode ───────────────────────────────────────────────────────────
+#
+# The live pipeline needs about 1.1 GB at peak and the free hosting tier gives 512 MB,
+# so a deployed instance serves a bundle captured beforehand by scripts/export_snapshot.py
+# instead of running the pipeline. The bundle is produced by this same API at full
+# resolution, so what ships is exactly what the endpoints return, just not recomputed.
+#
+# Freshness is what a deployment gives up, not fidelity. Every payload carries the time
+# it was generated and the dashboard shows it, because a forecast whose age is not
+# visible is worse than no forecast.
+SNAPSHOT_DIR = Path(os.getenv(
+    "VAYUCHAKRA_SNAPSHOT_DIR",
+    str(Path(__file__).resolve().parent.parent / "data" / "snapshot")))
+SNAPSHOT_MODE = os.getenv("VAYUCHAKRA_SNAPSHOT", "0") == "1"
+
+
+def _snapshot_key(path: str, query: str) -> str:
+    """Route to bundle filename, ignoring parameters that cannot change the answer.
+
+    `refresh` is dropped deliberately: in snapshot mode there is nothing to refresh, and
+    a Refresh click must return the bundle rather than fall through and try to build a
+    forecast the instance has no memory for.
+    """
+    from urllib.parse import parse_qsl, urlencode
+    pairs = [(k, v) for k, v in parse_qsl(query) if k != "refresh"]
+    stem = path.strip("/").replace("/", "__") or "index"
+    return stem + ("__" + urlencode(pairs) if pairs else "") + ".json"
+
+
+_SNAPSHOT_FILES: dict[str, Path] = {}
+if SNAPSHOT_MODE and SNAPSHOT_DIR.is_dir():
+    _SNAPSHOT_FILES = {q.name: q for q in SNAPSHOT_DIR.glob("*.json")}
+
+
+#: The dashboard ships from this same service rather than a second one. Two free Render
+#: services cost roughly 1,440 instance-hours a month against a 750-hour allowance, and
+#: that is what got the previous account suspended. One service serving both the API and
+#: the page it drives costs half as much and removes the cross-origin hop entirely.
+DASHBOARD = Path(__file__).resolve().parent.parent / "dashboard"
+
 #: Snapshot cache. A forecast is valid for an hour; upstream models only run four
 #: times a day, so recomputing more often burns time without changing the answer.
 _LOCK = threading.Lock()
 _CACHE: dict[str, Any] = {"at": 0.0, "result": None}
 CACHE_TTL = 3600.0
+
+
+@app.middleware("http")
+async def serve_snapshot(request, call_next):
+    """Answer from the bundle before routing, when this instance has no pipeline.
+
+    Deliberately ahead of the routes rather than inside each one. Putting it in the
+    handlers would mean twenty places to remember, and the one forgotten would be the
+    one that tries to build a 1.1 GB frame on a 512 MB instance and takes the whole
+    service down with it.
+
+    /health is the exception and stays live: it is cheap, and it is the endpoint that
+    has to tell the truth about what mode this instance is in.
+    """
+    if (not SNAPSHOT_MODE or request.method != "GET"
+            or request.url.path == "/health"):
+        return await call_next(request)
+
+    hit = _SNAPSHOT_FILES.get(_snapshot_key(request.url.path, request.url.query))
+    if hit is None:
+        return await call_next(request)
+    return Response(content=hit.read_bytes(), media_type="application/json",
+                    headers={"x-vayuchakra-snapshot": "1",
+                             "cache-control": "public, max-age=600"})
 
 
 def _clean(obj):
@@ -119,6 +185,13 @@ def health():
     return _clean({
         "status": "ok",
         "domain": {"lat": [C.LAT_MIN, C.LAT_MAX], "lon": [C.LON_MIN, C.LON_MAX]},
+        # The grid is a deploy-time setting: the free tier runs a coarser one so the
+        # domain fits in 512 MB. Report what is actually in force, so nobody reads a
+        # hosted number as if it came from the full-resolution configuration.
+        "grid": {"cells": len(grid.build_grid()),
+                 "ncr_step_deg": C.GRID_STEP_DEG,
+                 "delhi_step_deg": C.DELHI_GRID_STEP_DEG,
+                 "delhi_step_km": round(C.DELHI_GRID_STEP_DEG * 111.0, 1)},
         "grid_cells": len(grid.build_grid()),
         "horizons_h": list(C.HORIZONS_H),
         "trained_heads": [m.replace(".meta", "") for m in models],
@@ -126,7 +199,29 @@ def health():
         "dss_workbook": dss.available(),
         "cache_age_s": round(time.time() - _CACHE["at"], 1) if _CACHE["result"] else None,
         "auto_refresh": _REFRESH,
+        "snapshot": _snapshot_status(),
     })
+
+
+def _snapshot_status() -> dict:
+    """Whether this instance computes forecasts or replays a bundle, and how old it is."""
+    if not SNAPSHOT_MODE:
+        return {"mode": "live", "note": "this instance runs the pipeline on demand"}
+    manifest = SNAPSHOT_DIR / "manifest.json"
+    at = None
+    if manifest.exists():
+        try:
+            at = json.loads(manifest.read_text(encoding="utf-8")).get("generated_at")
+        except Exception:
+            at = None
+    return {
+        "mode": "snapshot",
+        "generated_at": at,
+        "routes": len(_SNAPSHOT_FILES),
+        "note": ("Serving a bundle captured from this same API at full resolution. "
+                 "The live pipeline peaks at about 1.1 GB and this tier allows 512 MB, "
+                 "so what is given up is freshness, not resolution or physics."),
+    }
 
 
 @app.get("/forecast")
@@ -293,7 +388,7 @@ def dss_endpoint():
 
 def _artefact(name: str):
     """Read a result file written by one of the offline scripts."""
-    import json
+    # json is imported at module level
     path = C.MODELS / name
     if not path.exists():
         return None
@@ -484,7 +579,7 @@ def validation():
     own metadata, which is written at fit time and cannot drift from the booster it
     describes.
     """
-    import json
+    # json is imported at module level
     metrics = sorted(C.MODELS.glob("metrics*.json"))
     if not metrics:
         raise HTTPException(404, detail="no metrics yet - run scripts/train.py")
@@ -524,3 +619,12 @@ def validation():
     out["metrics_file"] = chosen.name
     out["metrics_source"] = why
     return _clean(out)
+
+
+# ─── The dashboard, served from this same origin ─────────────────────────────
+#
+# Mounted last, deliberately. A mount at "/" catches every path that no route above
+# claimed, so registering it earlier would swallow /forecast, /profile and the rest and
+# return 404s from a static file handler instead.
+if DASHBOARD.is_dir():
+    app.mount("/", StaticFiles(directory=str(DASHBOARD), html=True), name="dashboard")

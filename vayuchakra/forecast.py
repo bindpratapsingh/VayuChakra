@@ -221,6 +221,12 @@ def run(
                               now.isoformat(), ["meteorology"])
     grid_met = dataset.add_wind_components(indices.enrich(m.frame))
     grid_met = dataset.add_pbl_anomaly(grid_met)
+    # Same cast as the training path, and for the same reason. The frame is 821 cells by
+    # 504 hours by ~218 columns, and in float64 that is 1.9 GB at peak, which is nearly
+    # four times what the free hosting tier allows. Nothing here carries more than four
+    # significant figures, and make_supervised already casts to float32 before any head
+    # sees a value, so this changes the arithmetic's width, not the answer.
+    grid_met = dataset._downcast(grid_met)
     notes.append(f"meteorology: {m.ok_cells} cells, {m.source}, "
                  f"{grid_met['inversion_method'].iloc[0]} inversion path")
 

@@ -1,0 +1,106 @@
+{
+  "generated_at": "2026-09-04T18:07:37Z",
+  "base": "http://127.0.0.1:8100",
+  "routes": {
+    "/health": {
+      "file": "health.json",
+      "status": "ok",
+      "bytes": 570
+    },
+    "/summary": {
+      "file": "summary.json",
+      "status": "ok",
+      "bytes": 1889
+    },
+    "/forecast?horizon=24": {
+      "file": "forecast__horizon=24.json",
+      "status": "ok",
+      "bytes": 140475
+    },
+    "/forecast?horizon=48": {
+      "file": "forecast__horizon=48.json",
+      "status": "ok",
+      "bytes": 139169
+    },
+    "/forecast?horizon=72": {
+      "file": "forecast__horizon=72.json",
+      "status": "ok",
+      "bytes": 138690
+    },
+    "/profile": {
+      "file": "profile.json",
+      "status": "ok",
+      "bytes": 54239
+    },
+    "/domain": {
+      "file": "domain.json",
+      "status": "ok",
+      "bytes": 47279
+    },
+    "/coupling": {
+      "file": "coupling.json",
+      "status": "ok",
+      "bytes": 78153
+    },
+    "/photolysis": {
+      "file": "photolysis.json",
+      "status": "ok",
+      "bytes": 31545
+    },
+    "/inversion": {
+      "file": "inversion.json",
+      "status": "ok",
+      "bytes": 58957
+    },
+    "/plume": {
+      "file": "plume.json",
+      "status": "ok",
+      "bytes": 12769
+    },
+    "/plume/calibration": {
+      "file": "plume__calibration.json",
+      "status": "ok",
+      "bytes": 1056
+    },
+    "/uncertainty?horizon=24": {
+      "file": "uncertainty__horizon=24.json",
+      "status": "ok",
+      "bytes": 44138
+    },
+    "/uncertainty?horizon=48": {
+      "file": "uncertainty__horizon=48.json",
+      "status": "ok",
+      "bytes": 2175
+    },
+    "/uncertainty?horizon=72": {
+      "file": "uncertainty__horizon=72.json",
+      "status": "ok",
+      "bytes": 2175
+    },
+    "/validation": {
+      "file": "validation.json",
+      "status": "ok",
+      "bytes": 5173
+    },
+    "/loso": {
+      "file": "loso.json",
+      "status": "ok",
+      "bytes": 3733
+    },
+    "/scenario?kind=delhi_sector": {
+      "file": "scenario__kind=delhi_sector.json",
+      "status": "ok",
+      "bytes": 1773
+    },
+    "/scenario?kind=district": {
+      "file": "scenario__kind=district.json",
+      "status": "ok",
+      "bytes": 4857
+    },
+    "/dss": {
+      "file": "dss.json",
+      "status": "ok",
+      "bytes": 1184
+    }
+  }
+}

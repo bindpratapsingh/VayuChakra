@@ -303,8 +303,8 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
       <button data-view="evidence"><span class="k">6</span><span>Evidence</span><span class="sub">every validation number</span></button>
     </nav>
     <div class="rail-foot">
-      Local instance, not deployed<br>
-      <span id="foot-api">127.0.0.1:8100</span>
+      <span id="foot-env">starting</span><br>
+      <span id="foot-api">connecting</span>
     </div>
   </aside>
 
@@ -572,8 +572,15 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 
 <script>
 "use strict";
-const API = "http://127.0.0.1:8100";
-document.getElementById("foot-api").textContent = API.replace("http://", "");
+/* Where the API lives.
+   Hosted, the dashboard is served by the same FastAPI process that answers these
+   routes, so an empty base makes every fetch same-origin and there is no CORS hop.
+   Locally the page is usually served by a plain static server on another port, so it
+   still has to name the API explicitly. */
+const LOCAL = ["127.0.0.1", "localhost", ""].indexOf(location.hostname) >= 0;
+const API = (LOCAL && location.port !== "8100") ? "http://127.0.0.1:8100" : "";
+document.getElementById("foot-api").textContent =
+  API ? API.replace("http://", "") : location.host;
 
 /* Colours that have to be literals.
    SVG presentation attributes cannot read a CSS custom property, so every colour drawn
@@ -1717,6 +1724,46 @@ if (_q.get("map") === "relative") {
 }
 
 drawLegend();
+api("/health").then(h => {
+  if (h.__error) { $("#foot-env").textContent = "API unreachable"; return; }
+  const g = h.grid || {}, snap = h.snapshot || {};
+  let env = snap.mode === "snapshot" ? "Precomputed snapshot" : "Live pipeline";
+  if (g.delhi_step_deg) {
+    env += ", " + (g.cells || "?") + " cells at " + (g.delhi_step_deg * 111).toFixed(1) + " km";
+  }
+  $("#foot-env").textContent = env;
+
+  // A forecast whose age is not visible is worse than no forecast. On a deployment
+  // this is the difference between "the model says 76" and "the model said 76, some
+  // number of days ago", and only one of those is a true statement.
+  if (snap.mode !== "snapshot") return;
+  const when = snap.generated_at ? new Date(snap.generated_at) : null;
+  const bar = $("#status-chips");
+  const chip = el("span", "chip warn");
+  const ageH = when ? (Date.now() - when.getTime()) / 3.6e6 : null;
+  const age = ageH == null ? "unknown age"
+            : ageH < 48 ? Math.round(ageH) + " h old"
+            : Math.round(ageH / 24) + " days old";
+  chip.append(el("span", "dot"), document.createTextNode("Snapshot, " + age));
+  chip.title = (snap.note || "") + (when ? " Generated " + when.toLocaleString() + "." : "");
+  bar.prepend(chip);
+
+  const note = el("div", "note");
+  note.style.cssText = "grid-column:1/-1;background:var(--warn-wash,#fdf7ee);"
+    + "border:1px solid color-mix(in srgb, var(--warn) 34%, var(--line));"
+    + "border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px";
+  note.innerHTML = "<b>This is a precomputed forecast</b>, captured "
+    + (when ? when.toLocaleString() : "at an unknown time")
+    + " by the same pipeline at full resolution: " + (g.cells || "?")
+    + " cells at " + (g.delhi_step_deg * 111).toFixed(1) + " km, all four pollutants, "
+    + "the coupled solver, photolysis and the plume. The free hosting tier allows "
+    + "512 MB and the live pipeline peaks at about 1.1 GB, so a deployment gives up "
+    + "freshness rather than resolution or physics. Run it locally for a live forecast.";
+  document.querySelectorAll(".view").forEach(v => {
+    const h = v.querySelector("header");
+    if (h) h.insertAdjacentElement("afterend", note.cloneNode(true));
+  });
+});
 api("/summary").then(drawChips);
 go(location.hash.slice(1) || "domain", false);
 </script>

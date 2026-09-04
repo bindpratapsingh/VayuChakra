@@ -66,11 +66,18 @@ LON_MIN, LON_MAX = 75.8, 78.1
 #: cells (cheap to run every hour on a laptop), fine enough to resolve the Delhi-to-
 #: Panipat gradient the DSS cares about. The high-resolution ward layer is produced by
 #: interpolating this grid onto ward centroids, exactly as AirGrid does.
-GRID_STEP_DEG = 0.10
+#:
+#: Overridable, because the free hosting tier has 512 MB of RAM and the full grid does
+#: not fit in it. Setting VAYUCHAKRA_GRID_STEP / VAYUCHAKRA_DELHI_GRID_STEP coarsens the
+#: domain rather than truncating it, so the hosted instance forecasts the same area at
+#: lower resolution instead of forecasting a smaller area. Which of those two things a
+#: deployment did is exactly the sort of detail that gets lost, so /health reports the
+#: live values and the dashboard prints them.
+GRID_STEP_DEG = float(os.getenv("VAYUCHAKRA_GRID_STEP", "0.10"))
 
 #: Fine tier over Delhi NCT: ~2.8 km. "High-resolution" in the PS means the city, and
 #: this is where every forecast is actually consumed.
-DELHI_GRID_STEP_DEG = 0.025
+DELHI_GRID_STEP_DEG = float(os.getenv("VAYUCHAKRA_DELHI_GRID_STEP", "0.025"))
 
 #: Central Delhi. Used for city-level series and as the anchor for single-point pulls.
 DELHI_LAT, DELHI_LON = 28.6139, 77.2090
