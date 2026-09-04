@@ -279,7 +279,7 @@ def run(
                 state = state.merge(pl[["cell_id", "time", "plume_pm25"]],
                                     on=["cell_id", "time"], how="left")
                 notes.append(f"plume: {len(fires)} fires, "
-                             f"peak contribution {pl['plume_pm25'].max():.1f} ug/m3")
+                             f"peak contribution {pl['plume_pm25'].max():.1f} µg/m³")
         else:
             notes.append("no active fires in the stubble belt (correct off-season)")
     if "plume_pm25" not in state.columns:
