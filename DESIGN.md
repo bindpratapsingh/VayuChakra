@@ -392,3 +392,31 @@ not.
 - Empty states say **why** a thing is empty. "No active fires in the stubble belt"
   reads as a broken feed unless it also says that outside October and November this is
   the correct reading.
+
+## 11. The report is a different surface, and it is typeset
+
+`docs/REPORT.html` deliberately departs from the one rule this document is most
+committed to: **the product UI uses `system-ui` and nothing else.** That rule was
+written about the dashboard, and it holds there. A dashboard is scanned and operated,
+so a display pairing buys nothing and costs a font request on a cold instance.
+
+The report is read, not operated. It is the artefact a judge or a reviewer sits with,
+and typography is what carries a document. So it pairs on a real contrast axis:
+
+| role | face | why |
+|---|---|---|
+| headings | **Newsreader** | an editorial serif with enough weight to give a technical report gravity, italic used only for the one phrase in the title that is the thesis |
+| body | **IBM Plex Sans** | humanist, institutional, reads at length; a genuine contrast against the serif rather than a second sans that is nearly the same |
+| figures, labels, file paths | **IBM Plex Mono** | tabular by construction, and it marks every path and identifier as a literal thing on disk |
+
+The palette does **not** depart. It is the same atmospheric indigo, the same cool
+neutral ground biased toward that indigo rather than toward warmth, and the same
+semantic green and ochre for pass and gap. The report should look like it came from
+the same place as the product, and it does, because colour is what carries that and
+colour is unchanged.
+
+Three tokens exist only in the report and are listed here so they are not mistaken for
+drift: `--dot-hollow` and `--dot-stroke` (the persistence marker in the dumbbell chart,
+which must read as an outline against the filled model marker in both themes), and
+`--connector` (the segment between the pair, which must sit visually behind both dots
+without disappearing on the dark ground).
