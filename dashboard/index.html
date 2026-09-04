@@ -105,12 +105,12 @@ p { margin: 0; }
 .nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
 .nav button {
   all: unset; cursor: pointer; display: grid;
-  grid-template-columns: 14px 1fr; gap: 9px; align-items: baseline;
+  grid-template-columns: 18px 1fr; gap: 10px; align-items: baseline;
   padding: 8px 11px; border-radius: var(--r-sm); font-size: 0.875rem;
   color: rgba(255,255,255,0.80);
   transition: background 160ms var(--ease), color 160ms var(--ease);
 }
-.nav button .k { font-size: 0.6875rem; opacity: 0.5; font-variant-numeric: tabular-nums; }
+.nav button .k { display: none; }
 .nav button .sub { grid-column: 2; font-size: 0.6875rem; opacity: 0.55; line-height: 1.3; margin-top: 1px; }
 .nav button > span:nth-child(2) { line-height: 1.25; }
 .nav button:hover { background: rgba(255,255,255,0.09); color: #fff; }
@@ -376,6 +376,37 @@ svg.cycle .pulse { fill: var(--s2); }
 .note { font-size: 0.8125rem; color: var(--ink-muted); line-height: 1.5; }
 .note.caveat { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 12px; }
 
+.why { margin-top: 10px; font-size: 0.8125rem; }
+.why > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 5px;
+  color: var(--ink-muted); font-weight: 600; padding: 2px 0;
+  transition: color 160ms var(--ease);
+}
+.why > summary::-webkit-details-marker { display: none; }
+.why > summary::before {
+  content: ""; width: 0; height: 0; flex: none;
+  border-left: 5px solid currentColor; border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 180ms var(--ease);
+}
+.why[open] > summary::before { transform: rotate(90deg); }
+.why > summary:hover { color: var(--ink); }
+.why > summary:focus-visible { outline: 2px solid var(--brand-active); outline-offset: 2px; border-radius: 2px; }
+.why > div {
+  color: var(--ink-muted); line-height: 1.55; padding: 8px 0 2px 12px;
+  border-left: 1px solid var(--line); margin-top: 6px; max-width: 74ch;
+}
+.why > div p + p { margin-top: 8px; }
+
+/* ── the mark ─────────────────────────────────────────────────────────────────
+   A ring that does not close, with an arrowhead: the cycle the product is named for.
+   The bar across it is the inversion lid. Two ideas, one glyph, and it survives being
+   shrunk to a favicon because it is three strokes. */
+.mark { display: flex; align-items: center; gap: 10px; }
+.mark svg { flex: none; }
+.nav button .ic { grid-row: 1 / span 2; align-self: center; opacity: 0.75; }
+.nav button[aria-current="page"] .ic { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
   .skeleton { animation: none; background: var(--panel-2); }
@@ -398,17 +429,29 @@ svg.cycle .pulse { fill: var(--s2); }
 
   <aside class="rail">
     <div class="brand">
-      <div class="name">VayuChakra</div>
-      <div class="deva">वायु चक्र</div>
-      <div class="tag">Coupled weather and chemistry forecasting for Delhi NCR</div>
+      <div class="mark">
+        <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M26 12.6A11 11 0 1 1 21.2 6.4" fill="none" stroke="currentColor"
+                stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M20.4 2.4 L26.6 6.9 L20.1 10.6" fill="none" stroke="currentColor"
+                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8.5 18.6 H23.5" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" opacity="0.55"/>
+        </svg>
+        <div>
+          <div class="name">VayuChakra</div>
+          <div class="deva">वायु चक्र</div>
+        </div>
+      </div>
+      <div class="tag">Coupled weather and chemistry forecasting, Delhi NCR</div>
     </div>
     <nav class="nav" id="nav" aria-label="Views">
-      <button data-view="domain" aria-current="page"><span class="k">1</span><span>Where the air comes from</span><span class="sub">Domain and fire sources</span></button>
-      <button data-view="vertical"><span class="k">2</span><span>The lid over the city</span><span class="sub">Inversion and mixing depth</span></button>
-      <button data-view="coupling"><span class="k">3</span><span>The loop we close</span><span class="sub">Two-way aerosol coupling</span></button>
-      <button data-view="transport"><span class="k">4</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
-      <button data-view="forecast"><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
-      <button data-view="evidence"><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
+      <button data-view="domain" aria-current="page"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h15v13h-15z" opacity=".55"/><circle cx="12" cy="8" r="2"/><path d="M12 10.5v3"/></svg><span class="k">1</span><span>Where the air comes from</span><span class="sub">Domain and fire sources</span></button>
+      <button data-view="vertical"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 5.5h14"/><path d="M5 10h10" opacity=".55"/><path d="M7 14.5h6" opacity=".4"/></svg><span class="k">2</span><span>The lid over the city</span><span class="sub">Inversion and mixing depth</span></button>
+      <button data-view="coupling"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.4 7.6A7 7 0 1 1 13.3 3.6"/><path d="M12.8 1.4 16.8 4.3 12.7 6.7"/></svg><span class="k">3</span><span>The loop we close</span><span class="sub">Two-way aerosol coupling</span></button>
+      <button data-view="transport"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5h9a2.5 2.5 0 1 0-2.5-2.5" opacity=".55"/><path d="M2 10.5h13"/><path d="M12 7.8 15.4 10.5 12 13.2"/><path d="M2 14.5h7" opacity=".55"/></svg><span class="k">4</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
+      <button data-view="forecast"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 16.5v-13" opacity=".55"/><path d="M2.5 16.5h15" opacity=".55"/><path d="M5 13l3.5-4.5 3 2.5L17 5"/></svg><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
+      <button data-view="evidence"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V9m4.5 7.5V4m4.5 12.5v-5" opacity=".55"/><path d="M13.5 13.8 15.6 16 18.5 11.6"/></svg><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
     </nav>
     <div class="rail-foot">
       <span id="foot-env">starting</span><br>
@@ -437,11 +480,12 @@ svg.cycle .pulse { fill: var(--s2); }
       <header>
         <h2>The modelled region, and where its air comes from</h2>
         <div class="finding is-loading" id="f-domain">Reading the instrument.</div>
-        <p>Delhi's worst air is not made in Delhi. Through October and November, smoke from
-           paddy stubble burning in Punjab and Haryana travels 200 to 400 km on the
-           north-westerly flow and arrives over a city that often cannot ventilate. A
-           city-only view cannot show that, so the domain runs from Alwar to Karnal and the
-           fire sources are drawn where they actually are.</p>
+        <p>Delhi's worst air is not made in Delhi, so the domain runs from Alwar to Karnal.</p>
+        <details class="why"><summary>Why the domain is this big</summary><div>
+          <p>Through October and November, smoke from paddy stubble burning in Punjab and
+          Haryana travels 200 to 400 km on the north-westerly flow and arrives over a city
+          that often cannot ventilate. A city-only view cannot show that mechanism at all,
+          so the sources are drawn where they actually are.</p></div></details>
       </header>
       <div class="cols portrait">
         <div class="panel">
@@ -454,14 +498,13 @@ svg.cycle .pulse { fill: var(--s2); }
         <div style="display:grid;gap:14px;align-content:start">
           <div class="panel">
             <header><h3>Why two resolutions</h3></header>
-            <p class="note">The forecast is consumed in Delhi, so the city is modelled at
-              about 2.8 km. The rest of the NCR only has to carry a plume toward it, and
-              11 km is enough for that. A uniform fine grid over the whole box would be
-              roughly 11,000 cells, most of them farmland.</p>
-            <p class="note caveat">The honest resolution is coarser than the display grid.
-              Meteorology arrives at about 11 km and the chemistry prior at about 40 km, so
-              predicted fields are smoothed to 6 km. That removes structure the model
-              cannot justify rather than inventing structure it does not have.</p>
+            <p class="note">Delhi at 2.8 km, the wider NCR at 11 km. A uniform fine grid
+              would be roughly 11,000 cells, most of them farmland.</p>
+            <details class="why"><summary>The honest resolution is coarser than the grid</summary><div>
+              <p>Meteorology arrives at about 11 km and the chemistry prior at about 40 km,
+              so predicted fields are smoothed to 6 km. That removes structure the model
+              cannot justify rather than inventing structure it does not
+              have.</p></div></details>
           </div>
           <div class="panel">
             <header><h3>Fire sources</h3><span class="hint">VIIRS and MODIS, last 3 days</span></header>
@@ -476,11 +519,12 @@ svg.cycle .pulse { fill: var(--s2); }
       <header>
         <h2>Vertical structure over time</h2>
         <div class="finding is-loading" id="f-vertical">Reading the instrument.</div>
-        <p>This is the chart the problem statement is really about. A temperature inversion
-           is air that gets warmer with height, and it puts a lid on the city: whatever is
-           emitted underneath cannot escape upward, so concentration climbs even when
-           emissions are flat. Everything else in this system reports a surface number.
-           Here the lid itself is drawn, in time and height.</p>
+        <p>An inversion is air that gets warmer with height. It puts a lid on the city.</p>
+        <details class="why"><summary>Why a lid matters</summary><div>
+          <p>Whatever is emitted underneath an inversion cannot escape upward, so
+          concentration climbs even when emissions are flat. Everything else in this system
+          reports a surface number; this is the one view that draws the lid itself, in time
+          and height.</p></div></details>
       </header>
       <div class="panel" style="margin-bottom:14px">
         <header>
@@ -498,13 +542,12 @@ svg.cycle .pulse { fill: var(--s2); }
         <div class="panel"><div class="skeleton sk-block" style="height:170px"></div></div>
         <div class="panel"><div class="skeleton sk-block" style="height:170px"></div></div>
       </div>
-      <div class="panel" style="margin-top:14px">
-        <header><h3>Why three charts and not one</h3></header>
-        <p class="note">Inversion strength is in kelvin, mixing depth in metres,
-          ventilation coefficient in m²·s⁻¹. Plotting them on one pair of axes needs two or
-          three y-scales, which lets whoever draws the chart choose the story by choosing
-          the scaling. Three panels sharing one x-axis compare honestly.</p>
-      </div>
+      <details class="why" style="margin-top:16px"><summary>Why three charts and not one</summary><div>
+        <p>Inversion strength is in kelvin, mixing depth in metres, ventilation coefficient
+        in m²·s⁻¹. Plotting them on one pair of axes needs two or three y-scales, which
+        lets whoever draws the chart choose the story by choosing the scaling. Three panels
+        sharing one x-axis compare honestly.</p>
+      </div></details>
     </section>
 
     <!-- ============ 3 COUPLING ============ -->
@@ -512,12 +555,14 @@ svg.cycle .pulse { fill: var(--s2); }
       <header>
         <h2>The two-way coupling</h2>
         <div class="finding is-loading" id="f-coupling">Reading the instrument.</div>
-        <p>Every conventional forecast treats weather as an input only. The real atmosphere
-           runs a loop: aerosol blocks sunlight, the surface heats less, the mixed layer
-           grows shallower, the wind slackens, and the same emissions end up more
-           concentrated, which blocks more sunlight. That loop is what this product is
-           named after, and it is solved to convergence against a pristine-atmosphere
-           control.</p>
+        <p>Conventional forecasts treat weather as an input only. The real atmosphere runs
+           a loop, and this solves it.</p>
+        <details class="why"><summary>What the loop is</summary><div>
+          <p>Aerosol blocks sunlight, the surface heats less, the mixed layer grows
+          shallower, the wind slackens, and the same emissions end up more concentrated,
+          which blocks more sunlight. Because the last step feeds the first it is solved to
+          convergence rather than evaluated once, against a pristine-atmosphere
+          control.</p></div></details>
       </header>
 
       <div class="panel" style="margin-bottom:14px">
@@ -533,11 +578,9 @@ svg.cycle .pulse { fill: var(--s2); }
         <div id="cycle-slot"></div>
         <div class="loop" id="loop-slot"></div>
         <div class="loopback">
-          <b>&#8635;</b><span>Because the last step feeds the first, this is <b>solved</b>
-          rather than evaluated: damped fixed-point iteration, every response clipped to a
-          physical range. When a cell will not converge it falls back to the uncoupled
-          answer and is counted, rather than shipping a number the solver could not
-          reach.</span>
+          <b>&#8635;</b><span>Damped fixed-point iteration, every response clipped to a
+          physical range. A cell that will not converge falls back to the uncoupled answer
+          and is counted.</span>
         </div>
       </div>
 
@@ -546,12 +589,12 @@ svg.cycle .pulse { fill: var(--s2); }
           <h3>Photolysis, the stronger pathway</h3>
           <span class="hint">aerosol blocks ultraviolet, so less ozone is made</span>
         </header>
-        <p class="note" style="margin-bottom:12px">
-          There are two aerosol mechanisms and they are not equal. Dimming the sun to cool
-          the surface and shallow the mixed layer changes ozone by 1 to 3 percent. Blocking
-          the ultraviolet that drives the photochemistry changes it by 10 to 12 percent.
-          The second is the one that matters, and it acts on ozone directly.
-        </p>
+        <details class="why" style="margin:0 0 12px"><summary>Why this pathway and not the other</summary><div>
+          <p>There are two aerosol mechanisms and they are not equal. Dimming the sun to
+          cool the surface and shallow the mixed layer changes ozone by 1 to 3 percent.
+          Blocking the ultraviolet that drives the photochemistry changes it by 10 to 12
+          percent. The second is the one that matters, and it acts on ozone
+          directly.</p></div></details>
         <div class="cols two">
           <div id="photo-chart"><div class="skeleton sk-block" style="height:170px"></div></div>
           <div id="photo-counter"><div class="skeleton sk-line" style="width:80%"></div></div>
@@ -568,10 +611,12 @@ svg.cycle .pulse { fill: var(--s2); }
           <header><h3>Against published Delhi values</h3>
             <span class="hint">magnitudes, over high-aerosol daylight hours</span></header>
           <div id="gate-slot"><div class="skeleton sk-line" style="width:80%"></div></div>
-          <p class="note caveat">Bounds come from the regime the published figures were
-            measured in: winter haze episodes in daylight. A season-wide average, which
-            includes clean afternoons and nights when the radiative feedback is correctly
-            zero, is a different quantity and is reported separately rather than judged.</p>
+          <details class="why"><summary>Why these bounds</summary><div>
+            <p>They come from the regime the published figures were measured in: winter
+            haze episodes in daylight. A season-wide average, which includes clean
+            afternoons and nights when the radiative feedback is correctly zero, is a
+            different quantity and is reported separately rather than judged.</p>
+          </div></details>
         </div>
       </div>
     </section>
@@ -581,11 +626,12 @@ svg.cycle .pulse { fill: var(--s2); }
       <header>
         <h2>Stubble plume transport</h2>
         <div class="finding is-loading" id="f-transport">Reading the instrument.</div>
-        <p>Each satellite fire detection is released as a parcel and carried forward on the
-           forecast wind, spreading as it travels. It contributes to Delhi's air only when
-           and where it actually arrives, and only if the inversion lid lets it reach the
-           ground. Smoke can sit overhead while monitors read clean, then land abruptly
-           mid-morning when convection reconnects it.</p>
+        <p>Every fire detection is released as a parcel and carried on the forecast wind.</p>
+        <details class="why"><summary>Why counting fires is not enough</summary><div>
+          <p>A detection contributes to Delhi's air only when and where it actually
+          arrives, and only if the lid lets it reach the ground. Smoke can sit overhead
+          while monitors read clean, then land abruptly mid-morning when convection
+          reconnects it to the surface.</p></div></details>
       </header>
       <div class="cols two">
         <div class="panel">
@@ -612,8 +658,7 @@ svg.cycle .pulse { fill: var(--s2); }
         <h2>Surface product: the 72-hour AQI outlook</h2>
         <div class="finding is-loading" id="f-forecast">Reading the instrument.</div>
         <p>PM2.5 and ozone are predicted separately, then combined into the CPCB National
-           AQI using the published breakpoint table rather than predicted directly.
-           Severity is always stated three ways: colour, band name and number.</p>
+           AQI. Severity is always colour, band name and number.</p>
       </header>
       <div class="cols two">
         <div class="panel">
@@ -655,9 +700,8 @@ svg.cycle .pulse { fill: var(--s2); }
       <header>
         <h2>Evidence</h2>
         <div class="finding is-loading" id="f-evidence">Reading the instrument.</div>
-        <p>Persistence, meaning "tomorrow looks like today", is the baseline that matters
-           and is embarrassingly hard to beat at 24 hours. Any head that fails to beat it is
-           reported as failing to beat it, and negative results appear here too.</p>
+        <p>Scored against persistence, the baseline that is embarrassingly hard to beat.
+           Negative results appear here too.</p>
       </header>
       <div class="panel" style="margin-bottom:14px">
         <header><h3>Forecast heads</h3><span class="hint">held-out evaluation</span></header>
@@ -1035,10 +1079,7 @@ function crossSection(slot, data) {
   const fig = el("figure", "chart");
   fig.append(key, svg);
   fig.append(Object.assign(el("figcaption"), { textContent:
-    "Column shading is static stability between levels: blue is stable air that resists "
-    + "mixing, warm is unstable air that mixes freely. Where the lid sits low and the "
-    + "mixing depth collapses to meet it, whatever the city emits that night has almost "
-    + "nowhere to go. " + (data.note || "") }));
+    "Blue is stable air that resists mixing, warm is unstable air that mixes freely." }));
   slot.replaceChildren(fig);
 }
 
@@ -1510,20 +1551,15 @@ async function loadDomain() {
   const f = d.fire_summary || {}, slot = $("#domain-fires");
   const nCells = (d.cells || []).length;
   setFinding("domain", f.n_fires
-    ? num(f.n_fires, 0) + " fires are burning upwind right now, averaging "
-      + num(f.mean_distance_km, 0, "km") + " from Delhi, the nearest "
-      + num(f.nearest_km, 0, "km") + " away. Whether any of that smoke reaches the "
-      + "city depends on the wind and on whether the lid lets it down, which is what "
-      + "the next three views work out."
-    : "Nothing is burning upwind today, so today the city's air is its own. "
-      + "Through October and November this map fills with fire and the answer changes. "
-      + "The domain covers " + num(nCells, 0) + " cells from Alwar to Karnal so that "
-      + "when it does, the source is on screen and not off it.");
+    ? num(f.n_fires, 0) + " fires burning upwind, a mean "
+      + num(f.mean_distance_km, 0, "km") + " from Delhi. Whether the smoke arrives "
+      + "depends on the wind and the lid."
+    : "Nothing burning upwind today. Through October and November this map fills with "
+      + "fire, and " + num(nCells, 0) + " cells is what it takes to see the source.");
   if (!f.n_fires) {
     slot.replaceChildren(Object.assign(el("div", "empty"), {
       innerHTML: "<b>Nothing burning upwind</b>Outside the October and November paddy "
-        + "season this is the correct reading, not a missing feed. The engine is running; "
-        + "there is simply nothing to transport." }));
+        + "season this is the correct reading, not a missing feed." }));
     return;
   }
   const t = el("table", "kv");
@@ -1548,13 +1584,12 @@ async function loadVertical() {
     const deep = rows.map(r => r.mixing_depth_m).filter(v => Number.isFinite(v));
     setFinding("vertical", lids.length
       ? "A lid closes over Delhi in " + num(lids.length, 0) + " of the next "
-        + num(rows.length, 0) + " hours. At its lowest it sits "
-        + num(Math.min.apply(null, lids), 0, "m") + " above the ground, with the mixed "
-        + "layer shrinking to " + num(Math.min.apply(null, deep), 0, "m") + " beneath "
-        + "it. That is the whole volume a night's emissions get to dilute into."
-      : "No inversion forms anywhere in this window: the air stays unstable and the "
-        + "city ventilates freely. That is the summer answer, and it is why the same "
-        + "emissions produce a different December.");
+        + num(rows.length, 0) + " hours, at its lowest "
+        + num(Math.min.apply(null, lids), 0, "m") + " up. Beneath it the mixed layer "
+        + "shrinks to " + num(Math.min.apply(null, deep), 0, "m")
+        + ", and that is the whole volume a night's emissions dilute into."
+      : "No inversion forms in this window. The city ventilates freely, which is the "
+        + "summer answer and why the same emissions produce a different December.");
   }
   const host = $("#inv-charts");
   if (inv.__error) { host.replaceChildren(el("div", "panel")); offline(host.firstChild, inv); return; }
@@ -1563,11 +1598,11 @@ async function loadVertical() {
                        .filter(p => Number.isFinite(p[0]));
   const panels = [
     { title: "Inversion strength", key: "inversion_strength_k", unit: "K", color: T.s1, dp: 2,
-      cap: "Temperature excess of the air aloft over the 2 m reading. Above zero means a lid: air gets warmer with height and nothing released underneath can rise through it." },
+      cap: "Above zero means a lid: the air aloft is warmer than the surface." },
     { title: "Mixing depth", key: "mixing_depth_m", unit: "m", color: T.s2, dp: 0,
-      cap: "The depth the day's emissions are diluted into: the shallower of the modelled boundary layer and the inversion lid. Halve it and you double the concentration." },
+      cap: "The depth emissions dilute into. Halve it and you double the concentration." },
     { title: "Ventilation coefficient", key: "ventilation_coeff", unit: "m²/s", color: T.s3, dp: 0,
-      cap: "Mixing depth times the wind through that depth: the volume flux available to carry pollution away. Below 6000 is poor, below 3000 is severe stagnation." },
+      cap: "Depth times wind. Below 6000 is poor, below 3000 is severe stagnation." },
   ];
   host.replaceChildren();
   panels.forEach(p => {
@@ -1633,16 +1668,15 @@ async function loadCoupling() {
   const amp = checks.pm_amplification_pct && checks.pm_amplification_pct.value;
   const sw = checks.sw_reduction_pct && checks.sw_reduction_pct.value;
   setFinding("coupling", total
-    ? "In high-aerosol daylight the haze removes " + num(sw, 1, "%") + " of the sunlight "
-      + "reaching the ground, and the loop that follows adds " + num(amp, 1, "%")
-      + " to PM2.5 that a one-way forecast never sees. "
+    ? "Haze removes " + num(sw, 1, "%") + " of the sunlight, and the loop that follows "
+      + "adds " + num(amp, 1, "%") + " to PM2.5 that a one-way forecast never sees. "
       + (passed === total
           ? "All " + total + " magnitudes land <span class=\"g\">inside published "
-            + "Delhi values</span>, none of which the model was fitted to."
-          : "<span class=\"q\">" + (total - passed) + " of " + total + " magnitudes "
-            + "fall outside published Delhi values</span>, and are reported as failing.")
-    : "Not enough high-aerosol daylight in this window to judge the loop against "
-      + "published values. The solver ran; there was simply no haze for it to act on.");
+            + "Delhi values</span> the model was never fitted to."
+          : "<span class=\"q\">" + (total - passed) + " of " + total
+            + " fall outside published values</span> and are reported as failing.")
+    : "Not enough high-aerosol daylight here to judge the loop. The solver ran; there "
+      + "was no haze for it to act on.");
 
   const rows = c.series || [];
   const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]])
@@ -1654,8 +1688,8 @@ async function loadCoupling() {
       : [{ name: "Uncoupled", color: T.baseline, points: pts("pm25_uncoupled"), dash: true }],
     unit: "µg/m³", dp: 1, zeroFloor: true,
     caption: S.feedback
-      ? "The gap between the two lines is the feedback. It opens in daylight when aerosol can dim the sun, and closes at night when there is no sunlight to block, which is the correct behaviour rather than a gap in the data."
-      : "Feedback off: only the uncoupled baseline. Turn it back on to see what the loop adds.",
+      ? "The gap is the feedback: it opens in daylight and closes at night."
+      : "Feedback off. Turn it back on to see what the loop adds.",
   });
 
   loadPhotolysis();
@@ -1808,10 +1842,8 @@ async function loadPhotolysis() {
       series: [{ name: "Clean air", color: T.baseline, points: pts("j_no2_pristine"), dash: true },
                { name: "With aerosol", color: T.s1, points: pts("j_no2") }],
       unit: "per s", dp: 5, zeroFloor: true, height: 170,
-      caption: "J(NO2), the rate at which sunlight splits nitrogen dioxide and starts ozone "
-             + "production. The gap between the lines is the ultraviolet the aerosol is "
-             + "removing. Both are zero at night, which is not missing data: there is no "
-             + "photolysis in the dark.",
+      caption: "J(NO2), the rate sunlight splits nitrogen dioxide. The gap is the "
+             + "ultraviolet the aerosol removes.",
     });
   }
   const c = d.counterfactual;
@@ -1821,9 +1853,8 @@ async function loadPhotolysis() {
     return;
   }
   const wrap = el("div"), lead = el("p", "note");
-  lead.innerHTML = "A statistical forecast can only interpolate weather it has seen. It "
-    + "cannot answer <b>what would ozone be if the aerosol halved</b>, because that "
-    + "atmosphere is not in the training data. A mechanism can.";
+  lead.innerHTML = "A statistical model cannot answer <b>what if the aerosol halved</b>: "
+    + "that atmosphere is not in its training data. A mechanism can.";
   wrap.append(lead);
   const t = el("table", "kv"), head = el("tr");
   head.append(el("th", null, "Aerosol cut"), el("th", "n", "Ozone change"), el("th", null, ""));
@@ -1844,11 +1875,9 @@ async function loadPhotolysis() {
   wrap.append(t);
   const v = c.verdict, mv = v.modelled_o3_change_at_50pct_aod_cut;
   const box = el("p", "note caveat");
-  box.innerHTML = "At a 50% cut this model gives <b>" + (mv > 0 ? "+" : "") + fmt(mv, 2)
-    + "%</b> against a published Delhi figure of <b>+" + fmt(v.published, 0) + "%</b>: same "
-    + "sign, and within a factor of two of a number it was never fitted to and never saw. "
-    + "The remaining gap is the expected direction, because the published value comes from "
-    + "a box model with full VOC chemistry and we model only the direct photolysis pathway.";
+  box.innerHTML = "At a 50% cut: <b>" + (mv > 0 ? "+" : "") + fmt(mv, 2)
+    + "%</b> against a published Delhi figure of <b>+" + fmt(v.published, 0)
+    + "%</b>. Same sign, within a factor of two, and never fitted to it.";
   wrap.append(box);
   cc.replaceChildren(wrap);
 }
@@ -1878,29 +1907,23 @@ async function loadTransport() {
                   .filter(p => Number.isFinite(p[0]));
   const peak = pts.length ? Math.max.apply(null, pts.map(x => x[1] || 0)) : 0;
   setFinding("transport", !f.n_fires
-    ? "There are no fires in the stubble belt to transport. The model is running and "
-      + "has nothing to carry, which is the correct reading outside the paddy season."
+    ? "No fires to transport. Correct outside the paddy season, not a missing feed."
     : peak > 0
-      ? num(f.n_fires, 0) + " fires, " + num(f.total_frp_mw, 0, "MW") + " of radiative "
-        + "power, a mean " + num(f.mean_distance_km, 0, "km") + " upwind. Enough of it "
-        + "arrives to add " + num(peak, 1, "µg/m³") + " to Delhi's surface PM2.5 at peak."
-      : num(f.n_fires, 0) + " fires are burning, a mean " + num(f.mean_distance_km, 0, "km")
-        + " away, and <span class=\"g\">none of it reaches Delhi</span>. The wind is "
-        + "carrying the smoke somewhere else today. A thousand fires with the wrong wind "
-        + "are somebody else's problem, and saying so is the point of modelling transport "
-        + "rather than counting fires.");
+      ? num(f.n_fires, 0) + " fires " + num(f.mean_distance_km, 0, "km")
+        + " upwind, and enough arrives to add " + num(peak, 1, "µg/m³")
+        + " to Delhi's PM2.5 at peak."
+      : num(f.n_fires, 0) + " fires burning, and <span class=\"g\">none of it reaches "
+        + "Delhi</span>. Today the wind carries it elsewhere, which is the point of "
+        + "modelling transport rather than counting fires.");
   if (!pts.length || pts.every(p => !p[1])) {
     $("#plume-chart").replaceChildren(Object.assign(el("div", "empty"), {
-      innerHTML: "<b>No modelled arrival</b>Either nothing is burning, or the wind is "
-        + "carrying the smoke somewhere other than Delhi. A thousand fires with an "
-        + "easterly wind are somebody else's problem that day, and the honest answer is "
-        + "to say so." }));
+      innerHTML: "<b>No modelled arrival</b>The wind is carrying the smoke somewhere "
+        + "other than Delhi today." }));
   } else {
     lineChart($("#plume-chart"), {
       series: [{ name: "Plume PM2.5", color: T.s2, points: pts }],
       unit: "µg/m³", dp: 2, zeroFloor: true, height: 170,
-      caption: "Modelled surface contribution from transported stubble smoke. Reported as "
-             + "transport plausibility, never as a measured emission." });
+      caption: "Transport plausibility, never a measured emission." });
   }
   renderPlumeCalibration();
 }
@@ -1914,10 +1937,8 @@ async function renderPlumeCalibration() {
     return;
   }
   const wrap = el("div"), lead = el("p", "note");
-  lead.innerHTML = "Correlation is the meaningful column. Only a single scale factor is "
-    + "fitted, absorbing emission-factor uncertainty, satellite detection limits and "
-    + "burn-duration assumptions, and scaling cannot improve a correlation. So this ranks "
-    + "the <b>physics</b>, not the magnitude.";
+  lead.innerHTML = "Correlation is the column that matters: scaling cannot improve it, "
+    + "so this ranks the <b>physics</b>, not the magnitude.";
   wrap.append(lead);
   const t = el("table", "kv"), head = el("tr");
   head.append(el("th", null, "Vertical treatment"), el("th", "n", "r"), el("th", "n", "RMSE"),
@@ -1946,11 +1967,14 @@ async function renderPlumeCalibration() {
     });
   makeSortable(t, { skip: [5] });
   wrap.append(t);
-  const cap = el("p", "note caveat");
-  cap.innerHTML = "The DSS attribution is <b>daily</b>, so it settles day-to-day timing "
-    + "and nothing finer: it cannot separate these treatments on their behaviour through "
-    + "the night, which is where the shipped one is most questionable. Source: MoES and "
-    + "IITM WRF-Chem Decision Support System, cited not redistributed.";
+  const cap = el("details", "why");
+  const capBody = el("div");
+  capBody.innerHTML = "<p>The attribution is <b>daily</b>, so it settles day-to-day "
+    + "timing and nothing finer. It cannot separate these treatments on their behaviour "
+    + "through the night, which is where the shipped one is most questionable.</p>"
+    + "<p>Source: MoES and IITM WRF-Chem Decision Support System, cited not "
+    + "redistributed.</p>";
+  cap.append(el("summary", null, "What this cannot settle"), capBody);
   wrap.append(cap);
   slot.replaceChildren(wrap);
 }
@@ -1988,15 +2012,15 @@ async function loadForecast() {
     g.append(t);
     slot.replaceChildren(g);
     setFinding("forecast", b
-      ? "Across Delhi the mean AQI " + S.horizon + " hours out is " + num(mean, 0)
-        + ", which is <b class=\"n\">" + b.name + "</b>. The worst cell reaches "
-        + num(worst ? worst.aqi : null, 0) + ". "
+      ? "Mean AQI " + S.horizon + " hours out is " + num(mean, 0)
+        + ", <b class=\"n\">" + b.name + "</b>, worst cell "
+        + num(worst ? worst.aqi : null, 0) + "."
         + (sum.coupling && sum.coupling.mean_pm_amplification_pct != null
-            ? "Of that, " + num(sum.coupling.mean_pm_amplification_pct, 1, "%")
-              + " is the feedback loop, which a conventional forecast would have missed."
+            ? " " + num(sum.coupling.mean_pm_amplification_pct, 1, "%")
+              + " of it is feedback a conventional forecast would miss."
             : "")
-      : "No index could be formed for this horizon. CPCB requires at least three "
-        + "pollutants including a particulate, and this run does not have them.");
+      : "No index for this horizon: CPCB needs three pollutants including a "
+        + "particulate, and this run lacks them.");
   }
 
   const notes = $("#notes-slot");
@@ -2007,8 +2031,7 @@ async function loadForecast() {
     if ((sum.degraded || []).length) {
       const dd = el("p", "note caveat");
       dd.textContent = "Degraded: " + sum.degraded.join(", ")
-        + ". These stages did not run; the affected values fall back and are labelled "
-        + "rather than hidden.";
+        + ". These fall back and are labelled rather than hidden.";
       notes.append(dd);
     }
   }
@@ -2020,9 +2043,8 @@ async function loadGrapRisk() {
   const d = await api("/uncertainty?horizon=" + S.horizon);
   if (d.__error) { offline(slot, d); return; }
   const wrap = el("div"), lead = el("p", "note");
-  lead.innerHTML = "A point forecast just under a boundary says nothing about the risk of "
-    + "crossing it. These are probabilities, from a model fitted to the conditional "
-    + "distribution rather than the mean.";
+  lead.innerHTML = "A point forecast just under a boundary says nothing about the risk "
+    + "of crossing it. These are probabilities.";
   wrap.append(lead);
 
   const live = d.live;
@@ -2102,12 +2124,10 @@ async function loadEvidence() {
       ? (beat === imps.length
           ? "<span class=\"g\">All " + num(imps.length, 0) + " forecast heads beat "
             + "persistence</span>, by " + num(Math.min.apply(null, imps), 1, "%")
-            + " to " + num(Math.max.apply(null, imps), 1, "%")
-            + ". Persistence is the baseline that matters and it is embarrassingly hard "
-            + "to beat at 24 hours, which is exactly why it is the one reported."
+            + " to " + num(Math.max.apply(null, imps), 1, "%") + "."
           : num(beat, 0) + " of " + num(imps.length, 0) + " heads beat persistence. "
             + "<span class=\"q\">" + (imps.length - beat) + " do not</span>, and are "
-            + "listed below as failing rather than quietly dropped.")
+            + "listed as failing rather than dropped.")
       : "No trained heads to score. Run scripts/train.py to populate this.");
 
     makeSortable(t);
@@ -2126,10 +2146,8 @@ async function loadEvidence() {
       innerHTML: "<b>Not run yet</b>Run <code>python scripts/loso.py</code>" }));
   } else {
     const wrap = el("div"), lead = el("p", "note");
-    lead.innerHTML = "The forecast serves over a thousand cells and about forty contain an "
-      + "instrument. This removes a station from training entirely and predicts a place the "
-      + "model has never seen. Persistence still uses that station's own history, which the "
-      + "model is denied.";
+    lead.innerHTML = "A station is removed from training entirely, then predicted. "
+      + "Persistence still gets that station's own history; the model does not.";
     wrap.append(lead);
     const t = el("table", "kv"), head = el("tr");
     head.append(el("th", null, "Target"));
@@ -2294,13 +2312,10 @@ api("/health").then(h => {
   note.style.cssText = "grid-column:1/-1;background:var(--warn-wash,#fdf7ee);"
     + "border:1px solid color-mix(in srgb, var(--warn) 34%, var(--line));"
     + "border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px";
-  note.innerHTML = "<b>This is a precomputed forecast</b>, captured "
+  note.innerHTML = "<b>Precomputed forecast</b>, captured "
     + (when ? when.toLocaleString() : "at an unknown time")
-    + " by the same pipeline at full resolution: " + (g.cells || "?")
-    + " cells at " + (g.delhi_step_deg * 111).toFixed(1) + " km, all four pollutants, "
-    + "the coupled solver, photolysis and the plume. The free hosting tier allows "
-    + "512 MB and the live pipeline peaks at about 1.1 GB, so a deployment gives up "
-    + "freshness rather than resolution or physics. Run it locally for a live forecast.";
+    + " by this same pipeline at full resolution. A free instance cannot run it live, so "
+    + "a deployment gives up freshness, not resolution or physics.";
   document.querySelectorAll(".view").forEach(v => {
     const h = v.querySelector("header");
     if (h) h.insertAdjacentElement("afterend", note.cloneNode(true));
