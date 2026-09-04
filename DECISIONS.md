@@ -1317,8 +1317,10 @@ Verified again here: 20 of 20 requests clean, no such header.
 against a 750-hour allowance, which is what suspended the previous account. The
 dashboard is mounted at `/` on the API process.
 
-**No keepalive, by request.** The service sleeps after 15 minutes and wakes in about
-50 seconds. That is the price of staying inside the allowance rather than burning it.
+**No keepalive, by request.** The service sleeps after 15 minutes idle and pays a
+wake-up on the next request. That is the price of staying inside the allowance rather
+than burning it. The wake-up time is Render's documented behaviour and was not measured
+here, so it is not quoted as a number anywhere that matters.
 
 **The name cooldown is real but only bites reused names.** `vayuchakra` had never been
 used and got the clean `vayuchakra.onrender.com`, where recreated services previously

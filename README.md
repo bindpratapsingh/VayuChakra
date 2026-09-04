@@ -7,7 +7,7 @@
 
 ### ▶ [vayuchakra.onrender.com](https://vayuchakra.onrender.com)
 
-**Give it about 50 seconds on the first click.** It runs on a free instance with no
+**Give it up to a minute on the first click.** It runs on a free instance with no
 keep-alive, so it sleeps after 15 minutes idle and cold-starts on the next request.
 That is deliberate: a keep-alive would burn the free allowance and get the account
 suspended, which is how the sibling project's deployment ended.
@@ -420,7 +420,7 @@ One service on Render's free tier, serving both the API and the dashboard it dri
 | Config | [`render.yaml`](render.yaml) |
 | Mode | `VAYUCHAKRA_SNAPSHOT=1`, replaying [`data/snapshot/`](data/snapshot/) |
 | Memory | about 130 MB resident against a 512 MB limit |
-| Cold start | roughly 50 seconds after 15 minutes idle, by choice |
+| Cold start | Render spins a free instance down after 15 minutes idle; the next request pays the wake-up, typically well under a minute. Not measured here, so treat it as Render's documented behaviour rather than a benchmark. |
 | Secrets | `OPENAQ_API_KEY` and `FIRMS_MAP_KEY` are set in Render, never in git |
 
 Three decisions are worth stating, because each of them was learned by getting it
