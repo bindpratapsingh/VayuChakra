@@ -355,11 +355,21 @@ def run(
     # --- coupling ---------------------------------------------------------
     coupling: dict = {}
     if with_coupling and "pm25" in out.columns and out["pm25"].notna().any():
-        out["pm25_uncoupled"] = out["pm25"]
+        # All four species the problem statement names go into the solver, not only
+        # PM2.5. PM2.5 is still the one that carries the return path to the atmosphere,
+        # because it is what the AOD model is calibrated on and what actually drives the
+        # radiative feedback; the other three respond to the coupled meteorology it
+        # produces. Each is snapshotted uncoupled first, so the ablation and the
+        # dashboard can show both states rather than only the answer.
+        for _species in ("pm25", "pm10", "no2", "o3"):
+            if _species in out.columns and out[_species].notna().any():
+                out[f"{_species}_uncoupled"] = out[_species]
         aod_model = feedback.calibrate_aod(out) if "cams_aod" in out.columns else feedback.DEFAULT_AOD
         res = feedback.solve(out, aod_model=aod_model)
         out = res.frame
-        out["pm25"] = out["pm25_coupled"]
+        for _species in ("pm25", "pm10", "no2", "o3"):
+            if f"{_species}_coupled" in out.columns:
+                out[_species] = out[f"{_species}_coupled"]
         coupling = res.summary()
         coupling["literature_gate"] = feedback.check_against_literature(res)
         notes.append(f"coupling: {res.iterations} iterations, "

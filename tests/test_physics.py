@@ -410,3 +410,101 @@ def test_grap_thresholds_match_the_cpcb_table():
         idx = float(aqi.sub_index(np.array([conc]), "pm25")[0])
         expected = float(label.split()[1])
         assert idx == pytest.approx(expected, abs=1.0), f"{label}: {conc} -> AQI {idx}"
+
+
+# ─── All four species in the loop (C6, D-060) ────────────────────────────────
+def _four_species_frame(n: int = 48, aod: float = 0.9) -> pd.DataFrame:
+    """A day of haze with all four pollutants present, for the species coupling."""
+    t = pd.date_range("2026-01-01", periods=n, freq="h", tz="UTC")
+    sw = np.clip(np.sin(np.linspace(0, 2 * np.pi, n)) * 600, 0, None)
+    return pd.DataFrame({
+        "cell_id": 1, "time": t, "lat": 28.6, "lon": 77.2,
+        "shortwave_radiation": sw, "mixing_depth_m": 200 + sw / 2,
+        "cams_aod": aod, "cams_pm25": 150.0,
+        "pm25_uncoupled": 150.0, "pm10_uncoupled": 260.0,
+        "no2_uncoupled": 55.0, "o3_uncoupled": 40.0,
+        "relative_humidity_2m": 60.0,
+    })
+
+
+def test_all_four_named_species_are_coupled():
+    """The problem statement names PM2.5, PM10, O3 and NOx. All four must respond."""
+    res = feedback.solve(_four_species_frame())
+    assert set(res.summary()["species_coupled"]) == {"pm25", "pm10", "no2", "o3"}
+    for col in ("pm25_coupled", "pm10_coupled", "no2_coupled", "o3_coupled"):
+        assert col in res.frame.columns
+
+
+def test_pm10_responds_but_less_than_pm25():
+    """PM10 is fine plus coarse, and the coarse half sediments out of a collapsing lid.
+
+    So it must move - a silent no-op would be the failure this catches - and it must
+    move proportionally less than the PM2.5 it contains.
+    """
+    out = feedback.solve(_four_species_frame()).frame
+    pm25 = out["pm_amplification_frac"].dropna()
+    pm10 = out["pm10_amplification_frac"].dropna()
+    assert pm10.max() > 0.0, "PM10 was handed to the solver and did not move"
+    assert pm10.max() < pm25.max()
+
+
+def test_pm10_below_pm25_does_not_produce_a_negative_coarse_term():
+    """Instrument disagreement puts PM10 under PM2.5 in real data. It must not invert."""
+    df = _four_species_frame()
+    df["pm10_uncoupled"] = 120.0            # below the 150 PM2.5, as observations do
+    out = feedback.solve(df).frame
+    assert (out["pm10_coupled"] >= out["pm10_uncoupled"] - 1e-9).all()
+
+
+def test_no2_rises_by_both_routes_and_more_than_dilution_alone():
+    """Dilution and suppressed photolytic loss point the same way under haze."""
+    out = feedback.solve(_four_species_frame()).frame
+    day = out["shortwave_radiation"] > 50
+    dilution_only = feedback.no2_response(
+        out["no2_uncoupled"].to_numpy(), out["mixing_depth_pristine_m"].to_numpy(),
+        out["mixing_depth_coupled_m"].to_numpy(), np.ones(len(out)))
+    assert (out.loc[day, "no2_coupled"] > dilution_only[day.to_numpy()] - 1e-9).all()
+    assert out.loc[day, "no2_amplification_frac"].max() > 0
+
+
+def test_ozone_falls_under_haze_and_never_rises():
+    """Attenuated ultraviolet cannot make more ozone. The sign is the whole test."""
+    out = feedback.solve(_four_species_frame(aod=1.4)).frame
+    resp = out["o3_response_frac"].dropna()
+    assert len(resp) > 0
+    assert resp.max() <= 1e-9, "ozone rose under haze: the pathway is wired backwards"
+
+
+def test_species_coupling_is_a_no_op_at_night():
+    """No sunlight means no photolysis to suppress, so NO2 and O3 keep their values."""
+    t = pd.date_range("2026-01-01T18:00:00Z", periods=6, freq="h", tz="UTC")
+    df = pd.DataFrame({
+        "cell_id": 1, "time": t, "lat": 28.6, "lon": 77.2,
+        "shortwave_radiation": 0.0, "mixing_depth_m": 120.0,
+        "cams_aod": 1.2, "cams_pm25": 200.0, "pm25_uncoupled": 200.0,
+        "pm10_uncoupled": 330.0, "no2_uncoupled": 60.0, "o3_uncoupled": 25.0,
+        "relative_humidity_2m": 70.0,
+    })
+    out = feedback.solve(df).frame
+    assert np.allclose(out["no2_coupled"], 60.0, atol=1e-6)
+    assert np.allclose(out["o3_coupled"], 25.0, atol=1e-6)
+    assert np.allclose(out["pm10_coupled"], 330.0, atol=1e-6)
+
+
+def test_the_gate_covers_every_species_that_was_coupled():
+    """A species handed to the solver must be judged, not quietly exempted."""
+    res = feedback.solve(_four_species_frame())
+    checks = feedback.check_against_literature(res)["checks"]
+    for name in ("pm_amplification_pct", "pm10_amplification_pct",
+                 "no2_amplification_pct", "o3_response_pct"):
+        assert name in checks, f"{name} was coupled but never gated"
+
+
+def test_a_species_that_was_not_supplied_is_absent_rather_than_zero():
+    """"Not coupled" and "coupled to no effect" must stay distinguishable."""
+    df = _four_species_frame().drop(columns=["pm10_uncoupled", "o3_uncoupled"])
+    s = feedback.solve(df).summary()
+    assert s["mean_pm10_amplification_pct"] is None
+    assert s["mean_o3_response_pct"] is None
+    assert s["mean_no2_amplification_pct"] is not None
+    assert set(s["species_coupled"]) == {"pm25", "no2"}

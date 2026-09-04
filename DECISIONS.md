@@ -1337,3 +1337,73 @@ reviewer needs to see.
 
 **Chunking the pipeline over cell batches.** It would cap the per-row cost but not the
 283 MB fixed cost, which is the part that does not fit.
+
+## D-060
+
+**All four species the problem statement names are now in the loop, and PM2.5 is still
+the only one that drives it.**
+
+The PS asks for *"two-way feedback between meteorology (temperature, wind, PBL height)
+and chemistry (PM2.5, PM10, O3, NOx)"*. The meteorological half was complete. The
+chemical half was not, and reading the code rather than the write-up made that plain:
+`forecast.py` applied the solved result to the `pm25` column and no other. PM10 and NO2
+were predicted and then left alone; O3 saw aerosol only through features computed from
+the **baseline** AOD, before the solver ran.
+
+So one of four species was coupled, against a clause that enumerates all four.
+
+**What each species needed, and what it did not.**
+
+*PM10 needs no parameter for most of its mass.* PM10 is PM2.5 plus a coarse excess.
+The fine part responds exactly as PM2.5 does, because it **is** the PM2.5 the solver has
+already coupled, so its increment carries over untouched. Only the coarse excess needs
+an assumption: the box model assumes conserved mass, and coarse dust is not conserved
+over the hours a nocturnal layer takes to collapse. Deposition velocities near 1-3 cm/s
+against 0.1-0.3 cm/s for the fine mode mean sedimentation removes a real share of it.
+`COARSE_DILUTION_EFFICIENCY = 0.5` damps the coarse dilution by half. Splitting the
+species this way means the one free parameter touches only the mass it is actually
+uncertain about.
+
+*NO2 has two routes and they agree.* Dilution, at full efficiency because a gas does not
+sediment; and suppressed photolytic loss, because J(NO2) is the rate NO2 is split. At
+steady state with source S and loss `(k_photo*J + k_other)*[NO2]`, attenuating J to `a*J`
+multiplies NO2 by `1 / (1 - phi*(1 - a))`. `phi = 0.7`, inside the 0.6-0.9 reported for
+urban daytime. That the two routes point the same way under haze is a check on the
+implementation, not a coincidence: a sign error in either would show as disagreement.
+
+*Ozone gets only the closure term, and that is the important part.* The O3 head is
+already trained on `j_no2`, `j_no2_ratio` and `j_attenuation`. The bulk of the
+aerosol-to-ozone effect is therefore already inside its prediction, and multiplying that
+prediction by a full photolysis response would count the same physics twice. What the
+head cannot know is that the solver **moved** the aerosol. So the correction applied is
+the ratio of ratios: photolysis surviving the converged AOD over photolysis surviving
+the AOD the features were built from. It is small by construction and it should be.
+Sub-linear in J at `O3_J_SENSITIVITY = 0.6`, because the radical chain saturates and
+accumulated ozone responds more weakly than instantaneous production.
+
+**Why three of the four are solved after convergence rather than inside the iteration.**
+
+Not a shortcut, and worth stating precisely because it looks like one. Iteration is
+required where a quantity feeds back on itself. PM2.5 does: it sets the aerosol optical
+depth that dims the sun that shallows the layer that concentrates the PM2.5. Coarse
+dust, NO2 and ozone at these concentrations do not change the shortwave budget enough to
+close a loop through it, so iterating them would change nothing except the runtime. They
+respond to the converged meteorology; PM2.5 carries the return path. That is still
+two-way feedback across all four species, and it is the physically honest arrangement
+rather than a uniform one.
+
+**Every new response is gated.** PM10 and NO2 get literature bounds on the same pattern
+as the existing five, with a **lower** bound as well as an upper one, so a coupling that
+silently did nothing would fail rather than pass. Ozone is gated on **direction** instead
+of magnitude, and that is the right test for it: the closure term's size is small by
+construction and any magnitude bound would be arbitrary, but its sign is not negotiable.
+Attenuated ultraviolet cannot produce more ozone. A positive value there means the
+pathway is wired backwards, and the gate says so.
+
+**A bug this uncovered.** `CouplingResult.summary()` called `pd.to_numeric(f.get(col))`
+on a possibly-absent column. `f.get(missing)` returns `None`, `pd.to_numeric(None)`
+returns a bare numpy scalar, and the scalar has no `.notna()`. So summarising any frame
+without a wind column raised `AttributeError` and took the whole summary down. It had
+never fired because the production frame always has wind and no test had called
+`summary()` on a synthetic one. Fixed by testing membership rather than relying on
+`.get`.

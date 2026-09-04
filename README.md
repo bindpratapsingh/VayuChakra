@@ -450,7 +450,24 @@ a grid coarse enough to be useless would not have fit, so coarsening the domain 
 have cost real resolution and bought nothing. Serving a full-resolution bundle keeps
 everything the model actually knows and gives up only the clock.
 
-To refresh what the hosted instance shows:
+**The bundle refreshes itself, so the deployment is no longer stale.** The constraint is
+that the *web service* has 512 MB. Nothing required the pipeline to run on the web
+service. [`.github/workflows/refresh-snapshot.yml`](.github/workflows/refresh-snapshot.yml)
+runs it on a GitHub-hosted runner instead, which has 16 GB against a measured 1.1 GB
+peak, writes the bundle, and commits it; Render auto-deploys on push. Public
+repositories get unlimited Actions minutes, so a six-hourly refresh costs nothing.
+
+That is not an approximation of real-time operation. No operational forecast system
+re-solves its physics when someone loads a page: NWP runs on a cycle and serves the most
+recent cycle, and a scheduled refresh is that same arrangement. What remains is that a
+free instance sleeps after 15 minutes idle, so the first request after a quiet period is
+slow. That is a cold start, not a stale forecast, and the two should not be confused.
+
+The workflow refuses to commit a bundle whose manifest contains a failed route, a
+suspiciously small payload, or a missing required one. Replacing a stale-but-correct
+forecast with a broken one is strictly worse than doing nothing.
+
+To refresh by hand instead:
 
 ```bash
 uvicorn api.main:app --port 8100                 # live, full resolution

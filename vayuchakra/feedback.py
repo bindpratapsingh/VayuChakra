@@ -360,6 +360,102 @@ def wind_response(wind_ms, pbl_base, pbl_new) -> np.ndarray:
 
 
 # ─── Step 5: boundary layer -> concentration ─────────────────────────────────
+def coarse_response(pm10_base, pm25_base, pm25_coupled, depth_base, depth_new,
+                    efficiency: float = C.COARSE_DILUTION_EFFICIENCY) -> np.ndarray:
+    """PM10 under the coupled mixing depth.
+
+    PM10 is not a separate species; it is PM2.5 plus a coarse excess, and splitting it
+    that way removes the need to invent a response for the fine half. The fine part
+    responds exactly as PM2.5 does, because it *is* the PM2.5 the solver has already
+    coupled, so its increment is carried over unchanged and no parameter touches it.
+
+    Only the coarse excess needs one. The box model assumes conserved mass, and coarse
+    dust is not conserved over the hours a nocturnal layer takes to collapse: deposition
+    velocities near 1-3 cm/s against 0.1-0.3 cm/s for the fine mode mean sedimentation
+    removes a real share of it. `efficiency` damps the coarse dilution accordingly.
+
+    Where PM10 is below PM2.5 - which happens in the observations, and is instrument
+    disagreement rather than physics - the excess is floored at zero, so such a row gets
+    the fine response alone rather than a negative coarse term.
+    """
+    pm10 = _as_array(pm10_base)
+    fine0 = _as_array(pm25_base)
+    fine1 = _as_array(pm25_coupled)
+    coarse0 = np.clip(pm10 - fine0, 0.0, None)
+
+    h0 = np.clip(_as_array(depth_base), C.MIN_PBL_M, None)
+    h1 = np.clip(_as_array(depth_new), C.MIN_PBL_M, None)
+    ratio = np.clip(h0 / h1, 1.0, 1.0 / (1.0 - C.MAX_PBL_SUPPRESSION))
+
+    return pm10 + (fine1 - fine0) + coarse0 * (ratio - 1.0) * efficiency
+
+
+def no2_response(no2_base, depth_base, depth_new, j_ratio,
+                 share: float = C.NO2_PHOTOLYSIS_LOSS_SHARE) -> np.ndarray:
+    """NO2 under the coupled mixing depth and the attenuated photolysis.
+
+    Two routes, and they point the same way under haze, which is worth stating because
+    it is a check on the implementation rather than a coincidence:
+
+    1. **Dilution.** NO2 is a surface-emitted primary pollutant, so a shallower mixing
+       depth concentrates it as it does particulate mass. At full efficiency: a gas does
+       not sediment.
+    2. **Suppressed photolytic loss.** J(NO2) is the rate at which NO2 is split. With
+       source S and loss ``(k_photo*J + k_other)*[NO2]``, steady state gives
+       ``[NO2] = S / (k_photo*J + k_other)``. Attenuate J to ``a*J`` and the ratio is
+       ``1 / (1 - phi*(1 - a))`` with ``phi`` the photolytic share of total loss.
+
+    ``j_ratio`` is that ``a``: surviving photolysis under the coupled aerosol against
+    the pristine control. At night both are zero, the ratio is undefined, and the factor
+    must be exactly 1 - there is no photolytic sink to suppress in the dark, so removing
+    ultraviolet cannot raise NO2. Non-finite ratios are therefore mapped to 1, not
+    dropped.
+    """
+    no2 = _as_array(no2_base)
+    h0 = np.clip(_as_array(depth_base), C.MIN_PBL_M, None)
+    h1 = np.clip(_as_array(depth_new), C.MIN_PBL_M, None)
+    dilution = np.clip(h0 / h1, 1.0, 1.0 / (1.0 - C.MAX_PBL_SUPPRESSION))
+
+    a = _as_array(j_ratio)
+    a = np.where(np.isfinite(a), np.clip(a, 0.05, 1.0), 1.0)
+    photo = 1.0 / np.clip(1.0 - share * (1.0 - a), 0.2, 1.0)
+
+    return no2 * dilution * photo
+
+
+def ozone_response(o3_base, j_ratio_coupled, j_ratio_baseline,
+                   sensitivity: float = C.O3_J_SENSITIVITY) -> np.ndarray:
+    """Ozone under the *converged* aerosol rather than the baseline the head saw.
+
+    This is deliberately only the closure term, and the reason matters. The ozone head
+    is already trained on ``j_no2``, ``j_no2_ratio`` and ``j_attenuation``, all computed
+    from the baseline AOD, so the bulk of the aerosol-to-ozone effect is already inside
+    its prediction. Multiplying that prediction by a full photolysis response would
+    count the same physics twice.
+
+    What the head cannot know is that the solver moved the aerosol. So the correction
+    applied here is the *ratio of ratios*: photolysis surviving the converged AOD over
+    photolysis surviving the AOD the features were built from. It is a small number by
+    construction, and it should be.
+
+    Sub-linear in J because the radical chain saturates: accumulated ozone responds more
+    weakly than instantaneous production. At night both ratios are zero, the correction
+    is exactly 1, and ozone is left alone - it is titration-controlled after dark and
+    photolysis is irrelevant to it.
+
+    Ozone is computed after convergence rather than inside the iteration, and that is not
+    a shortcut. There is no return path from ozone to aerosol optical depth at these
+    concentrations, so iterating it would change nothing except the runtime.
+    """
+    o3 = _as_array(o3_base)
+    a = _as_array(j_ratio_coupled)
+    b = _as_array(j_ratio_baseline)
+    usable = np.isfinite(a) & np.isfinite(b) & (b > 1e-6) & (a > 1e-6)
+    factor = np.where(usable, np.power(np.divide(a, b, out=np.ones_like(a), where=usable),
+                                       sensitivity), 1.0)
+    return o3 * np.clip(factor, 0.5, 2.0)
+
+
 def concentration_response(pm_base, depth_base, depth_new) -> np.ndarray:
     """Box model: the same emitted mass in a shallower layer is more concentrated.
 
@@ -388,7 +484,14 @@ class CouplingResult:
         if f.empty:
             return {"available": False}
         def _m(col):
-            s = pd.to_numeric(f.get(col), errors="coerce")
+            # `f.get(missing)` returns None, and pd.to_numeric(None) hands back a bare
+            # numpy scalar with no .notna(). Reaching the scalar branch used to raise
+            # AttributeError and take the whole summary down, which meant a frame with
+            # no wind column - every unit-test frame, as it turned out - could not be
+            # summarised at all.
+            if col not in f:
+                return float("nan")
+            s = pd.to_numeric(f[col], errors="coerce")
             return float(s.mean()) if s.notna().any() else float("nan")
         day = f[pd.to_numeric(f.get("shortwave_radiation"), errors="coerce") > 50]
         return {
@@ -405,6 +508,21 @@ class CouplingResult:
             "mean_pbl_suppression_pct": round(100 * _m("pbl_suppression_frac"), 2),
             "mean_pm_amplification_pct": round(100 * _m("pm_amplification_frac"), 2),
             "mean_wind_reduction_pct": round(100 * _m("wind_reduction_frac"), 2),
+            # The other three species the PS names. Absent rather than zero when the
+            # column was never supplied, so "not coupled" and "coupled to no effect"
+            # stay distinguishable in the output.
+            "mean_pm10_amplification_pct": (
+                round(100 * _m("pm10_amplification_frac"), 2)
+                if "pm10_amplification_frac" in f else None),
+            "mean_no2_amplification_pct": (
+                round(100 * _m("no2_amplification_frac"), 2)
+                if "no2_amplification_frac" in f else None),
+            "mean_o3_response_pct": (
+                round(100 * _m("o3_response_frac"), 2)
+                if "o3_response_frac" in f else None),
+            "species_coupled": [s for s, col in (
+                ("pm25", "pm25_coupled"), ("pm10", "pm10_coupled"),
+                ("no2", "no2_coupled"), ("o3", "o3_coupled")) if col in f],
             "aod_model": self.aod_model,
         }
 
@@ -511,6 +629,57 @@ def solve(
         # The ventilation coefficient is depth x wind, so both coupled terms feed it.
         out["ventilation_coeff_coupled"] = depth_actual * u_actual
 
+    # --- the other three species the PS names (D-060) -------------------------
+    # Imported here rather than at module scope because photolysis imports
+    # solar_zenith_deg and optical_airmass from THIS module, so a top-level import would
+    # be circular. The dependency genuinely runs that way round: photolysis is built on
+    # the geometry, and only the coupling needs the photolysis back.
+    from . import photolysis as _photo
+
+    # Two attenuation states. `att_coupled` is what the converged aerosol actually lets
+    # through; `att_baseline` is what the AOD the trained features were built from lets
+    # through. Ozone needs the ratio between them, because the head has already priced
+    # in the second one.
+    att_pristine = _photo.attenuation(np.full(len(out), _photo.AOD_BACKGROUND), zen)
+    att_coupled = _photo.attenuation(np.nan_to_num(aod_actual, nan=_photo.AOD_BACKGROUND), zen)
+    att_baseline = _photo.attenuation(np.nan_to_num(aod_cams, nan=_photo.AOD_BACKGROUND), zen)
+    j_clear = _photo.clear_sky_j(zen, "no2")
+
+    # Ratios against the pristine control, zeroed where there is no sunlight to attenuate.
+    day = j_clear > 1e-9
+    j_ratio_coupled = np.where(day, att_coupled / np.maximum(att_pristine, 1e-9), np.nan)
+    j_ratio_baseline = np.where(day, att_baseline / np.maximum(att_pristine, 1e-9), np.nan)
+    out["j_ratio_coupled"] = j_ratio_coupled
+
+    if "pm10_uncoupled" in out.columns:
+        pm10_0 = _as_array(out["pm10_uncoupled"])
+        pm10_c = coarse_response(pm10_0, pm0, pm, depth_pristine, depth_actual)
+        if diverged:
+            pm10_c = np.where(residual > tol, pm10_0, pm10_c)
+        out["pm10_coupled"] = pm10_c
+        out["pm10_amplification_frac"] = np.where(
+            pm10_0 > 0.1, (pm10_c - pm10_0) / np.maximum(pm10_0, 1e-6), np.nan)
+
+    if "no2_uncoupled" in out.columns:
+        no2_0 = _as_array(out["no2_uncoupled"])
+        no2_c = no2_response(no2_0, depth_pristine, depth_actual, j_ratio_coupled)
+        if diverged:
+            no2_c = np.where(residual > tol, no2_0, no2_c)
+        out["no2_coupled"] = no2_c
+        out["no2_amplification_frac"] = np.where(
+            no2_0 > 0.1, (no2_c - no2_0) / np.maximum(no2_0, 1e-6), np.nan)
+
+    if "o3_uncoupled" in out.columns:
+        o3_0 = _as_array(out["o3_uncoupled"])
+        o3_c = ozone_response(o3_0, j_ratio_coupled, j_ratio_baseline)
+        if diverged:
+            o3_c = np.where(residual > tol, o3_0, o3_c)
+        out["o3_coupled"] = o3_c
+        # Daylight only. After dark the correction is exactly 1 by construction, and
+        # averaging those zeros in would report a response half the size it is.
+        out["o3_response_frac"] = np.where(
+            (o3_0 > 0.1) & day, (o3_c - o3_0) / np.maximum(o3_0, 1e-6), np.nan)
+
     out["pm25_coupled"] = pm
     out["aod_coupled"] = aod_actual
     out["sw_coupled"] = sw_actual
@@ -575,7 +744,9 @@ def check_against_literature(result: CouplingResult) -> dict:
                 "regime": {"min_aod": GATE_MIN_AOD, "min_sw_wm2": GATE_MIN_SW}}
 
     def _mean(col):
-        v = pd.to_numeric(sub.get(col), errors="coerce")
+        if col not in sub:                      # see the note in CouplingResult.summary
+            return float("nan")
+        v = pd.to_numeric(sub[col], errors="coerce")
         return float(v.mean()) if v.notna().any() else float("nan")
 
     values = {
@@ -592,6 +763,15 @@ def check_against_literature(result: CouplingResult) -> dict:
         "pbl_suppression_pct": (C.EXPECT_PBL_SUPPRESSION, 100),
         "pm_amplification_pct": (C.EXPECT_PM_AMPLIFICATION, 100),
     }
+    # The other two particulate/gas responses are gated only when the species was
+    # actually coupled. A missing column is not a passing check.
+    if "pm10_amplification_frac" in sub.columns:
+        values["pm10_amplification_pct"] = 100 * _mean("pm10_amplification_frac")
+        bounds["pm10_amplification_pct"] = (C.EXPECT_PM10_AMPLIFICATION, 100)
+    if "no2_amplification_frac" in sub.columns:
+        values["no2_amplification_pct"] = 100 * _mean("no2_amplification_frac")
+        bounds["no2_amplification_pct"] = (C.EXPECT_NO2_AMPLIFICATION, 100)
+
     checks = {}
     for name, value in values.items():
         (lo_f, hi_f), scale = bounds[name]
@@ -599,6 +779,21 @@ def check_against_literature(result: CouplingResult) -> dict:
         ok = bool(value == value and lo <= abs(value) <= hi)
         checks[name] = {"value": round(value, 3) if value == value else None,
                         "expected": [round(lo, 3), round(hi, 3)], "ok": ok}
+
+    # Ozone is checked on DIRECTION, not magnitude, and it is the one check here that
+    # has to be. The solver applies only the closure term - the part of the aerosol
+    # effect the trained head could not see, because the head was fed baseline AOD - so
+    # its magnitude is small by construction and a magnitude bound would be arbitrary.
+    # What is not arbitrary is the sign: more aerosol removes ultraviolet, and less
+    # ultraviolet cannot produce more ozone. A positive value here means the pathway is
+    # wired backwards.
+    if "o3_response_frac" in sub.columns:
+        o3v = 100 * _mean("o3_response_frac")
+        ok = bool(o3v == o3v and o3v <= 1e-9)
+        checks["o3_response_pct"] = {
+            "value": round(o3v, 3) if o3v == o3v else None,
+            "expected": "negative under haze: attenuated ultraviolet cannot raise ozone",
+            "ok": ok}
 
     return {"ok": all(c["ok"] for c in checks.values()),
             "checks": checks,

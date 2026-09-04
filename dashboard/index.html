@@ -1777,9 +1777,19 @@ async function loadCoupling() {
     dT_daytime_k: ["Daytime cooling", "K"],
     pbl_suppression_pct: ["Boundary-layer suppression", "%"],
     pm_amplification_pct: ["PM2.5 amplification", "%"],
-    wind_reduction_pct: ["Surface wind slackening", "%"] };
-  // Published bounds are magnitudes, and so is the comparison the solver makes.
-  const magnitude = v => (v == null || !Number.isFinite(v)) ? v : Math.abs(v);
+    wind_reduction_pct: ["Surface wind slackening", "%"],
+    pm10_amplification_pct: ["PM10 amplification", "%"],
+    no2_amplification_pct: ["NO2 amplification", "%"],
+    o3_response_pct: ["Ozone response", "%"] };
+  // Published bounds are magnitudes, and so is the comparison the solver makes - with
+  // one exception. Ozone is gated on DIRECTION, because the solver applies only the
+  // closure term the trained head could not see and its magnitude is small by
+  // construction. That check carries a sentence where the others carry a pair, so both
+  // the bound cell and the sign have to be rendered differently: taking the magnitude
+  // of a signed value whose sign IS the test would hide exactly what is being tested.
+  const directional = v => !Array.isArray(v.expected);
+  const shown = v => (v.value == null || !Number.isFinite(v.value)) ? v.value
+                                       : (directional(v) ? v.value : Math.abs(v.value));
   const t = el("table", "kv"), head = el("tr");
   head.append(el("th", null, "Quantity"), el("th", "n", "Modelled"),
               el("th", "n", "Published"), el("th", null, ""));
@@ -1789,8 +1799,10 @@ async function loadCoupling() {
     const tr = el("tr");
     tr.append(el("th", null, lab[0]));
     tr.append(Object.assign(el("td", "n"), {
-      textContent: fmt(magnitude(v.value), 2) + " " + lab[1] }));
-    tr.append(Object.assign(el("td", "n"), { textContent: v.expected[0] + " to " + v.expected[1] }));
+      textContent: fmt(shown(v), 2) + " " + lab[1] }));
+    tr.append(Object.assign(el("td", directional(v) ? null : "n"), {
+      textContent: directional(v) ? "must be negative"
+                                  : v.expected[0] + " to " + v.expected[1] }));
     const st = el("td"), chip = el("span", "chip " + (v.ok ? "ok" : "bad"));
     chip.append(el("span", "dot"), document.createTextNode(v.ok ? "within" : "outside"));
     st.append(chip); tr.append(st); t.append(tr);

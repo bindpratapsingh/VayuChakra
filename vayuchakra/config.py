@@ -140,6 +140,39 @@ COUPLING_TOL = 0.5         # ug m-3; convergence when successive PM2.5 differ by
 WIND_RESPONSE_RATIO = 0.20      # fractional wind change per unit fractional PBL change
 MAX_WIND_SUPPRESSION = 0.15     # hard cap; the published range tops out near 4%
 
+#: --- The other three species the problem statement names (D-060) --------------
+#: The PS asks for two-way feedback across PM2.5, PM10, O3 and NOx. PM2.5 carries the
+#: return path to the atmosphere, because it is the species our AOD model is calibrated
+#: on and the one that actually drives the radiative feedback. The other three respond
+#: to the coupled meteorology without meaningfully driving it, which is physically
+#: correct rather than a shortcut: coarse dust, NO2 and ozone at these concentrations do
+#: not change the shortwave budget enough to close a loop through it.
+
+#: PM10 is PM2.5 plus a coarse excess. The fine part responds exactly as PM2.5 does,
+#: because it IS the PM2.5 the solver already coupled, and needs no parameter. Only the
+#: coarse excess needs one: coarse particles have deposition velocities around 1-3 cm/s
+#: against 0.1-0.3 cm/s for the fine mode, so over the hours a nocturnal layer takes to
+#: collapse, sedimentation removes a substantial share of the mass the box model assumes
+#: is conserved. Half the dilution response is the central estimate of that damping.
+COARSE_DILUTION_EFFICIENCY = 0.5
+
+#: NO2 has two routes under haze and they act in the same direction, which is itself a
+#: check on the implementation. (1) Dilution: it is a surface-emitted primary pollutant,
+#: so a shallower mixing depth concentrates it exactly as it does particulate mass, at
+#: full efficiency because a gas does not sediment. (2) Suppressed photolytic loss:
+#: J(NO2) governs the rate NO2 is split, so attenuating the ultraviolet slows the sink
+#: and NO2 accumulates. At steady state with source S and loss (k_photo*J + k_other),
+#: attenuating J to a*J multiplies NO2 by 1 / (1 - phi*(1 - a)), where phi is the share
+#: of NO2 loss that runs through photolysis. Urban daytime values put phi at 0.6-0.9.
+NO2_PHOTOLYSIS_LOSS_SHARE = 0.7
+
+#: Ozone production is sub-linear in photolysis: the radical chain saturates, so
+#: accumulated O3 responds more weakly than instantaneous production does. dlnO3/dlnJ in
+#: the range 0.5-0.7 is the reported behaviour for the radiation-limited regime the
+#: APHH-India campaign describes for Delhi winter. Set from photochemistry, then checked
+#: against the published -25% ozone per 50% AOD reduction, never fitted to it.
+O3_J_SENSITIVITY = 0.6
+
 #: --- Acceptance bounds from published Delhi studies ---------------------------
 #: The solver is considered WRONG, not merely surprising, if it lands outside these.
 #: Ranges span the values reported for Delhi winter aerosol radiative effects.
@@ -148,6 +181,11 @@ EXPECT_DT_COOLING = (0.1, 2.5)       # K daytime near-surface cooling
 EXPECT_PBL_SUPPRESSION = (0.05, 0.35)  # fractional reduction in mixing depth
 EXPECT_PM_AMPLIFICATION = (0.02, 0.30)  # fractional PM2.5 increase from the feedback
 EXPECT_WIND_REDUCTION = (0.005, 0.06)   # fractional surface wind slackening (1.6-4.3% reported)
+#: PM10 must respond, and must respond LESS than PM2.5. The lower bound is what makes
+#: this a real test: a coupling that silently did nothing to PM10 would fail it.
+EXPECT_PM10_AMPLIFICATION = (0.01, 0.25)
+#: NO2 gets dilution plus the photolysis term, so it can exceed PM2.5's response.
+EXPECT_NO2_AMPLIFICATION = (0.02, 0.35)
 
 
 # ─── Dispersion thresholds ───────────────────────────────────────────────────
