@@ -294,19 +294,55 @@ tests/           66 offline tests
 
 ---
 
-## Running it
+## Reproducing this
+
+Two free API keys are needed — OpenAQ and NASA FIRMS. Copy `.env.example` to `.env` and
+fill them in. Everything else (Open-Meteo forecast, ERA5 archive, CAMS chemistry) is
+keyless. Without the keys the system still runs and reports which stages could not.
 
 ```bash
 pip install -r requirements.txt
+python -m pytest tests/ -q                      # 74 offline tests, no network
 
-python scripts/build_dataset.py --start 2025-02-01 --end 2026-08-31 --stations 40
-python scripts/train.py --loso
-python -m pytest tests/ -q
+# Data. The recent panel is ~45 min; the multi-winter one ~75 min. Both cache to
+# parquet, so this is a one-time cost.
+python scripts/build_dataset.py --start 2025-02-01 --end 2026-08-31 --stations 40        --name train_panel
+python scripts/build_dataset.py --start 2018-10-01 --end 2022-03-31 --stations 40        --name winters_panel --no-chem
 
-uvicorn api.main:app --reload --port 8100     # localhost only
+# Everything else, in dependency order: combine, train, quantiles, LOSO, DSS.
+bash scripts/run_all.sh
+
+uvicorn api.main:app --port 8100                # then open dashboard/index.html
 ```
 
-**Nothing here is deployed.** No hosting, no public URL, no keep-alive.
+Individual experiments:
+
+| script | question it answers |
+|---|---|
+| `ozone_sensitivity.py` | what would ozone be if the aerosol halved? |
+| `plume_calibrate.py` | which vertical treatment matches the MoES DSS? |
+| `photolysis_ablation.py` | does explicit photolysis improve the forecast? |
+| `loso.py` | does it work where there is no instrument? |
+| `case_study.py` | replay a past burning episode |
+
+**Nothing here is deployed.** No hosting, no public URL, no keep-alive. The dashboard
+talks to `127.0.0.1:8100` and nothing else.
+
+---
+
+## Where this is still weak
+
+The gaps are listed because a reviewer will find them anyway, and finding them first is
+the only version of this that is worth anything.
+
+| gap | status |
+|---|---|
+| **We do not run a chemical transport model** | Structural. WRF-Chem needs an HPC cluster and a district emission inventory we do not have. We consume CAMS instead and call it a surrogate. |
+| **No VOC chemistry** | Delhi ozone is VOC-limited and we have no VOC measurements. TROPOMI HCHO/NO₂ could give a regime map (threshold FNR ≈ 3.1) but needs NetCDF orbit processing. |
+| **Single layer** | No vertical discretisation. The largest remaining simplification. |
+| **PM2.5 winter skill** | The weakest number in the project, and the one most improved by the multi-winter data. |
+| **Plume validated only at daily resolution** | The DSS attribution is daily, so it cannot discriminate the vertical treatments on their behaviour through the night. |
+| **No operational run cycle** | The API caches for an hour but nothing schedules a refresh. |
 
 ---
 

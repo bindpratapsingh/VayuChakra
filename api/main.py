@@ -14,6 +14,7 @@ cold or `refresh=true` is passed explicitly.
 """
 from __future__ import annotations
 
+import os
 import sys
 import threading
 import time
@@ -76,6 +77,41 @@ def get_forecast(refresh: bool = False, delhi_only: bool = True):
         return result
 
 
+# ─── Operational refresh ─────────────────────────────────────────────────────
+#: Off by default. A forecast run takes about two minutes and hits four external
+#: services, so a background loop is something an operator opts into rather than
+#: something that starts itself on import. Set VAYUCHAKRA_REFRESH=1 to enable.
+REFRESH_ENABLED = os.getenv("VAYUCHAKRA_REFRESH", "0") == "1"
+REFRESH_INTERVAL_S = float(os.getenv("VAYUCHAKRA_REFRESH_SECONDS", "3600"))
+_REFRESH: dict[str, Any] = {"runs": 0, "last_ok": None, "last_error": None,
+                            "enabled": REFRESH_ENABLED}
+
+
+def _refresh_loop() -> None:
+    """Keep the snapshot warm so a caller never waits for a cold pipeline.
+
+    Upstream models publish four times a day, so refreshing hourly is already more
+    often than the inputs change. Failures are recorded and the loop continues: a
+    transient upstream outage should leave the previous good forecast in place rather
+    than take the service down with it.
+    """
+    while True:
+        time.sleep(REFRESH_INTERVAL_S)
+        try:
+            get_forecast(refresh=True)
+            _REFRESH["runs"] += 1
+            _REFRESH["last_ok"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            _REFRESH["last_error"] = None
+        except Exception as exc:                      # noqa: BLE001 - loop must survive
+            _REFRESH["last_error"] = f"{type(exc).__name__}: {exc}"
+            print(f"[refresh] failed, keeping the previous snapshot: {exc}")
+
+
+if REFRESH_ENABLED:
+    threading.Thread(target=_refresh_loop, daemon=True, name="vayuchakra-refresh").start()
+    print(f"[refresh] hourly refresh enabled (every {REFRESH_INTERVAL_S:.0f}s)")
+
+
 @app.get("/health")
 def health():
     """Liveness plus an honest inventory of what this instance can actually do."""
@@ -89,6 +125,7 @@ def health():
         "keys": {"openaq": bool(C.OPENAQ_API_KEY), "firms": bool(C.FIRMS_MAP_KEY)},
         "dss_workbook": dss.available(),
         "cache_age_s": round(time.time() - _CACHE["at"], 1) if _CACHE["result"] else None,
+        "auto_refresh": _REFRESH,
     })
 
 

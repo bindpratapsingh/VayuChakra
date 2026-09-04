@@ -41,6 +41,11 @@ def main() -> int:
                     help="hold out this window instead of the most recent slice; the "
                          "recency split contains no winter")
     ap.add_argument("--holdout-end", default=None)
+    ap.add_argument("--model-dir", default=None,
+                    help="write boosters here instead of models/. Needed so a model "
+                         "trained for a specific hold-out does not overwrite the "
+                         "production one - and so the DSS comparison can use a model "
+                         "that never saw the DSS window.")
     args = ap.parse_args()
 
     path = C.DATA / f"{args.panel}.parquet"
@@ -95,7 +100,7 @@ def main() -> int:
                        if args.holdout_start and args.holdout_end else None)
             head = model.train_head(sup, feats, target, horizon, config_note=note,
                                     holdout=holdout)
-            head.save()
+            head.save(Path(args.model_dir) if args.model_dir else None)
             entry = dict(head.metrics)
             entry["n_features"] = len(head.features)
             entry["top_features"] = [f for f, _ in model.importance(head, top=12)]
@@ -105,7 +110,8 @@ def main() -> int:
                     sup, feats, target, horizon, max_stations=8, verbose=False)
             report["heads"][f"{target}_{horizon}h"] = entry
 
-    out = C.MODELS / args.out
+    out = (Path(args.model_dir) if args.model_dir else C.MODELS) / args.out
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\n[train] {len(report['heads'])} heads in {time.time() - t0:.0f}s -> {out}")
 
