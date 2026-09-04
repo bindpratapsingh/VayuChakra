@@ -634,7 +634,8 @@ function mixRamp(ramp, t) {
 }
 
 const S = { horizon: 24, view: "domain", forecast: null, summary: null,
-            feedback: true, scenKind: "delhi_sector", mapMode: "band" };
+            feedback: true, scenKind: "delhi_sector", mapMode: "band",
+            snapshot: null };
 
 const $ = s => document.querySelector(s);
 const el = (t, cls, txt) => { const n = document.createElement(t);
@@ -1124,6 +1125,18 @@ function drawChips(sum) {
   const wrap = $("#status-chips"); wrap.replaceChildren();
   const add = (cls, text) => { const c = el("span", "chip " + cls);
     c.append(el("span", "dot"), document.createTextNode(text)); wrap.append(c); };
+  // First, and unconditionally: how old this data is outranks everything else on the
+  // bar. drawChips owns the whole bar, so this has to live here rather than be
+  // prepended by whoever happens to resolve first.
+  const snap = S.snapshot;
+  if (snap && snap.mode === "snapshot") {
+    const when = snap.generated_at ? new Date(snap.generated_at) : null;
+    const ageH = when ? (Date.now() - when.getTime()) / 3.6e6 : null;
+    add("warn", "Snapshot, " + (ageH == null ? "unknown age"
+      : ageH < 48 ? Math.round(ageH) + " h old" : Math.round(ageH / 24) + " days old"));
+    if (when) wrap.lastChild.title = "Generated " + when.toLocaleString() + ". "
+      + (snap.note || "");
+  }
   if (!sum || sum.__error) { add("bad", "API unreachable"); return; }
   const deg = sum.degraded || [];
   const models = deg.filter(d => d.indexOf("model_") === 0).length;
@@ -1724,6 +1737,7 @@ if (_q.get("map") === "relative") {
 }
 
 drawLegend();
+api("/summary").then(sum => { S.summary = sum; drawChips(sum); });
 api("/health").then(h => {
   if (h.__error) { $("#foot-env").textContent = "API unreachable"; return; }
   const g = h.grid || {}, snap = h.snapshot || {};
@@ -1736,17 +1750,10 @@ api("/health").then(h => {
   // A forecast whose age is not visible is worse than no forecast. On a deployment
   // this is the difference between "the model says 76" and "the model said 76, some
   // number of days ago", and only one of those is a true statement.
+  S.snapshot = snap;
   if (snap.mode !== "snapshot") return;
+  if (S.summary) drawChips(S.summary);       // repaint only if there is a bar to redraw
   const when = snap.generated_at ? new Date(snap.generated_at) : null;
-  const bar = $("#status-chips");
-  const chip = el("span", "chip warn");
-  const ageH = when ? (Date.now() - when.getTime()) / 3.6e6 : null;
-  const age = ageH == null ? "unknown age"
-            : ageH < 48 ? Math.round(ageH) + " h old"
-            : Math.round(ageH / 24) + " days old";
-  chip.append(el("span", "dot"), document.createTextNode("Snapshot, " + age));
-  chip.title = (snap.note || "") + (when ? " Generated " + when.toLocaleString() + "." : "");
-  bar.prepend(chip);
 
   const note = el("div", "note");
   note.style.cssText = "grid-column:1/-1;background:var(--warn-wash,#fdf7ee);"
@@ -1764,7 +1771,6 @@ api("/health").then(h => {
     if (h) h.insertAdjacentElement("afterend", note.cloneNode(true));
   });
 });
-api("/summary").then(drawChips);
 go(location.hash.slice(1) || "domain", false);
 </script>
 </body>
