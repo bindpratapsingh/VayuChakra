@@ -213,6 +213,13 @@ def describe(df: pd.DataFrame, *, aod_col: str = "cams_aod",
     and this function simply states what reduction that yields so a reader can compare
     it to the 20-30% the literature spans.
     """
+    # Same fallback as add_features, so the reported reduction describes the AOD the
+    # features were actually built from. Without it this returned NaN on the
+    # multi-winter panel and printed "OUTSIDE the literature range" for a model whose
+    # features were fine, which is a worse failure than being silent: it reports a
+    # problem that does not exist and hides the one that does.
+    if aod_col not in df.columns and "aod_climatology" in df.columns:
+        aod_col = "aod_climatology"
     need = {"time", "lat", "lon", aod_col}
     if df.empty or not need.issubset(df.columns):
         return DEFAULT
@@ -317,6 +324,17 @@ def add_features(df: pd.DataFrame, model: PhotolysisModel | None = None,
     if not {"time", "lat", "lon"}.issubset(out.columns):
         return out
     m = model or DEFAULT
+
+    # CAMS begins in August 2022, so the multi-winter panel has no measured aerosol for
+    # more than half its rows. Without an AOD there is no attenuation, and the ozone
+    # heads lose the mechanism this module exists for. A monthly climatology is a poor
+    # substitute for a daily field, but it is a far better one than nothing: Delhi's AOD
+    # swings from 0.49 in winter to 0.83 in the pre-monsoon, and that seasonal cycle is
+    # most of the signal. It is applied to every row rather than only the older ones,
+    # deliberately, so that "this AOD is climatological" cannot itself become a marker
+    # for which era a row came from.
+    if aod_col not in out.columns and "aod_climatology" in out.columns:
+        aod_col = "aod_climatology"
 
     zen = solar_zenith_deg(out["time"], out["lat"], out["lon"])
     out["solar_zenith_deg"] = zen
