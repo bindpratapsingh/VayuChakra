@@ -1131,3 +1131,129 @@ levels that does not exist, and it would be harder to read a number off.
 
 **Predicting AQI directly.** Unchanged from D-018: PM2.5 and ozone are predicted
 separately and combined through the published CPCB breakpoint table.
+
+---
+
+## D-057
+
+**Four winters instead of one, at the cost of the chemistry prior.**
+
+The single-winter panel was the root cause of the project's two weakest numbers: PM2.5
+winter skill of +4.5% over persistence at 24 hours, and an 80% prediction interval that
+contained the truth only 66.7% of the time. Both have the same explanation. A model that
+has never seen a winter is confidently wrong about one.
+
+The combined panel now runs Oct 2020 to Aug 2026: **571,037 rows, 44 stations, four
+winters** (2020-21, 2021-22, 2024-25, 2025-26). Held out Nov 2025 to Feb 2026, against
+the identical persistence baseline:
+
+| head | one winter | four winters |
+|---|---|---|
+| PM2.5 +24 h | +4.5%, r² 0.30 | **+19.2%, r² 0.50** |
+| PM2.5 +48 h | +13.8%, r² 0.26 | **+26.0%, r² 0.45** |
+| PM2.5 +72 h | +18.8%, r² 0.30 | **+28.9%, r² 0.46** |
+| PM10 +24 h | +8.8% | **+17.2%** |
+| NO2 +24 h | +11.8% | **+15.0%** |
+| O3 +24 h | +23.9%, r² 0.76 | 19.3%, r² 0.73 |
+
+Interval coverage moves from 66.7% to **75.6%** against a nominal 80%, which the
+validator now calls well calibrated. GRAP exceedance skill against climatology improves
+at all three thresholds, from +0.30/+0.30/+0.21 to **+0.34/+0.39/+0.38**.
+
+### Ozone pays for it, and the reason is known
+
+CAMS begins in August 2022. Keeping it in a panel that starts in 2020 would let a tree
+use "the chemistry prior is not missing" as a proxy for "this row is recent", which is a
+leak that flatters a score before anyone notices it. So the combined panel drops the
+CAMS columns, and the ozone heads lose both the prior and their daily aerosol optical
+depth. Ozone was the head leaning on those hardest, and it gives up about four points.
+
+Four points of ozone for fourteen of PM2.5 is worth taking, but it is a trade and not a
+free win, so **both configurations are trained and reported side by side** rather than
+blended into one number.
+
+### The aerosol optical depth is recovered as a climatology
+
+Dropping CAMS also removed the input the photolysis attenuation needs, which would have
+left the ozone heads with clear-sky photolysis only. That is the mechanism the entire
+ozone argument rests on, so losing it silently would have been the worst outcome
+available.
+
+Combine now extracts a per-calendar-month AOD from the CAMS-era rows before dropping
+them, and applies it to **every** row. A monthly mean is a function of the season, not
+of the era, so unlike the raw column it cannot say which panel a row came from. Applying
+it uniformly matters: filling only the older rows would make "this AOD is climatological"
+itself an era marker.
+
+The recovered climatology is 0.43 to 0.66 through the winter against 0.94 in the
+pre-monsoon, which reproduces Delhi's reversed AOD seasonality (D-041) from data the fit
+did not get to choose. All twelve heads carry the full nine-feature photolysis set,
+`j_attenuation` and `j_no2_ratio` included.
+
+### What set the size, honestly
+
+Not judgement. The development machine has **3.8 GB of RAM with 150 MB available**. The
+five-winter, forty-station panel is 1.22 million rows by 130 columns, about 1.4 GB in
+float32 before pandas takes a working copy, and assembly failed on an allocation of
+3 MB. Two winters at twenty stations is what fits.
+
+Three things had to change before even that would run, and each was a real defect:
+
+1. `add_lags` reindexed the **whole** panel onto a continuous hourly axis and
+   concatenated it, needing a second full copy. It now does that on the pollutant
+   columns alone and joins the wide frame back. Verified bit-for-bit identical on
+   synthetic data with gaps.
+2. `combine_panels` held both sources and their concatenation in float64, then took
+   another copy to sort by (station_id, time). It casts on the way in and no longer
+   sorts, because `make_supervised` sorts within each station and `split_time_ordered`
+   sorts by time, on the data they are handed.
+3. **28.5% of the combined panel had no target at all.** The continuous hourly axis
+   materialises every hour a station was silent; those rows carry no label for any head
+   and `make_supervised` drops them regardless. Dropping them at combine time is free
+   and took 799,091 rows to 571,037.
+
+### Rejected
+
+**Keeping CAMS with a missing-value indicator.** The indicator is the leak.
+
+**Filling pre-CAMS AOD from a reanalysis such as MERRA-2.** Correct, and a real
+improvement over a climatology, but it is another archive to ingest and validate and the
+climatology already recovers the seasonal cycle that carries most of the signal.
+
+**Reporting only the multi-winter model.** It is worse at ozone. Reporting the better
+number from each configuration without saying which model produced it would be the exact
+kind of quiet flattery this file exists to prevent.
+
+---
+
+## D-058
+
+**The feature contract must hold on both paths, not just the one that was tested.**
+
+The multi-winter heads were trained with `aod_climatology` in their feature list, because
+the combined panel has no CAMS. The live forecast path *does* have CAMS, so
+`photolysis.add_features` took the `cams_aod` branch and never created the column at
+all. Three PM2.5 heads then ran at inference with a trained feature filled with NaN.
+
+This is the same shape of bug as D-049, where the heads were trained with fourteen
+photolysis features that inference never computed. It reappeared because the fix then
+was to add the missing call, not to make the contract symmetric.
+
+`add_features` now emits `aod_climatology` on every path, whether or not it is the AOD
+the attenuation uses, and `combine_panels` persists the monthly table to
+`models/aod_climatology.json` so the forecast reproduces exactly the values training
+saw. Recovered from 477,921 CAMS rows: 0.44 in December, 0.66 in January, 0.94 in
+May and June.
+
+**What is worth keeping is that nothing had to notice this.** The loud reporting added
+in D-049, which replaced a silent `block[col] = np.nan` with a named entry in
+`degraded`, put `features_pm25_24h` on the status bar and
+`pm25/24h: 1 trained features absent at inference, filled NaN (first: aod_climatology)`
+in the notes. The defect announced itself the first time the API served the new models.
+
+**One thing did fail quietly, and it was the dashboard.** `drawChips` recognised
+`model_*`, `chemistry_prior` and `observations`, and drew nothing for anything else. The
+status bar for a run with three heads on a NaN feature was indistinguishable from a
+clean one, apart from the absence of the green chip. Unrecognised entries now get a
+counted chip of their own. A status display whose failure mode is showing nothing is
+worse than no status display, because it is trusted.

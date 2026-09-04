@@ -119,6 +119,15 @@ def main() -> int:
                 for f in frames:
                     mo = pd.to_datetime(f["time"], utc=True).dt.month
                     f["aod_climatology"] = mo.map(clim).astype("float32")
+                # Persist it, so the forecast path builds the identical feature. The
+                # live path has real CAMS and would otherwise never construct this
+                # column at all, leaving heads trained on it to run with a NaN.
+                import json as _json
+                (C.MODELS / "aod_climatology.json").write_text(_json.dumps(
+                    {"by_month": {int(k): round(float(v), 4) for k, v in clim.items()},
+                     "source": "CAMS reanalysis AOD 550nm, calendar-month mean over the "
+                               "panels that carry it",
+                     "n_rows": int(len(a))}, indent=2), encoding="utf-8")
                 del a
             frames = [f.drop(columns=[c for c in chem if c in f.columns]) for f in frames]
 

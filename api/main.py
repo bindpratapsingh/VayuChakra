@@ -471,9 +471,56 @@ def domain(refresh: bool = False):
 
 @app.get("/validation")
 def validation():
-    """Stored training metrics. The expensive validations are run offline by scripts."""
-    path = C.MODELS / "metrics.json"
-    if not path.exists():
-        raise HTTPException(404, detail="no metrics yet - run scripts/train.py")
+    """Stored training metrics for the models this API is actually serving.
+
+    It used to read models/metrics.json unconditionally, and that went wrong the moment
+    a second configuration existed. The multi-winter run writes its scores to
+    metrics_multiwinter.json while its boosters land in models/ as the shipped ones, so
+    the endpoint reported the single-winter recency split beside predictions from a
+    four-winter model: PM2.5 +18.0% on screen for a head that scores +19.2% on a winter
+    it never saw, and a row count and split that described neither.
+
+    So the metrics file is chosen by matching the panel recorded in the shipped model's
+    own metadata, which is written at fit time and cannot drift from the booster it
+    describes.
+    """
     import json
-    return _clean(json.loads(path.read_text(encoding="utf-8")))
+    metrics = sorted(C.MODELS.glob("metrics*.json"))
+    if not metrics:
+        raise HTTPException(404, detail="no metrics yet - run scripts/train.py")
+
+    # The panel is recorded inside config_note, as "panel=X; chem=Y; inversion=Z".
+    shipped = None
+    for meta in sorted(C.MODELS.glob("*.meta.json")):
+        try:
+            note = json.loads(meta.read_text(encoding="utf-8")).get("config_note", "")
+        except Exception:
+            continue
+        for part in str(note).split(";"):
+            if part.strip().startswith("panel="):
+                shipped = part.strip()[len("panel="):].strip()
+                break
+        if shipped:
+            break
+
+    chosen, why = None, "only one metrics file"
+    if shipped:
+        for path in metrics:
+            try:
+                d = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if d.get("panel") == shipped:
+                chosen, why = path, f"matches the shipped models, which were fit on {shipped}"
+                break
+    if chosen is None:
+        chosen = C.MODELS / "metrics.json"
+        if not chosen.exists():
+            chosen = max(metrics, key=lambda q: q.stat().st_mtime)
+        why = ("no metrics file records the panel the shipped models were fit on; "
+               "showing the most recent, which may not describe them")
+
+    out = json.loads(chosen.read_text(encoding="utf-8"))
+    out["metrics_file"] = chosen.name
+    out["metrics_source"] = why
+    return _clean(out)

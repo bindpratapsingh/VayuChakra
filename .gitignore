@@ -21,9 +21,11 @@ data/*.log
 !data/.gitkeep
 
 # ── Trained boosters. Large binaries; retrainable in minutes. ────────────────
-models/*_*h.json
-models/*_*h.meta.json
-models/*_*h_q*.json
+# Boosters, at any depth. The single-star form missed models/dss_holdout/, which is
+# how 3.9 MB of them nearly reached a repository that excludes boosters on purpose.
+models/**/*_*h.json
+models/**/*_*h.meta.json
+models/**/*_*h_q*.json
 !models/.gitkeep
 
 # ── RESULTS ARE COMMITTED ON PURPOSE ────────────────────────────────────────

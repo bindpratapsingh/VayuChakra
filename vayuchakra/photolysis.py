@@ -40,6 +40,8 @@ The scattering bracket below is what keeps this honest, exactly as in `feedback.
 """
 from __future__ import annotations
 
+import json
+
 from dataclasses import dataclass, asdict
 
 import numpy as np
@@ -312,6 +314,30 @@ def cloud_attenuation_check(df: pd.DataFrame, *,
 
 
 # ─── Feature generation ──────────────────────────────────────────────────────
+#: Monthly AOD climatology, recovered from CAMS by scripts/combine_panels.py and stored
+#: so the forecast path can reproduce exactly the feature the heads were trained on.
+CLIMATOLOGY_FILE = "aod_climatology.json"
+
+
+def monthly_climatology() -> dict[int, float]:
+    """Calendar-month mean aerosol optical depth, 1-indexed.
+
+    Falls back to a flat background rather than raising: a missing file should degrade
+    the feature, not take the forecast down.
+    """
+    try:
+        from . import config as _C
+        path = _C.MODELS / CLIMATOLOGY_FILE
+        if path.exists():
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            out = {int(k): float(v) for k, v in raw.get("by_month", {}).items()}
+            if len(out) == 12:
+                return out
+    except Exception:
+        pass
+    return {m: AOD_BACKGROUND for m in range(1, 13)}
+
+
 def add_features(df: pd.DataFrame, model: PhotolysisModel | None = None,
                  *, aod_col: str = "cams_aod") -> pd.DataFrame:
     """Attach photolysis features for the ozone and NO2 heads.
@@ -324,6 +350,19 @@ def add_features(df: pd.DataFrame, model: PhotolysisModel | None = None,
     if not {"time", "lat", "lon"}.issubset(out.columns):
         return out
     m = model or DEFAULT
+
+    # Always emit the climatology column, whether or not it is the one being used.
+    #
+    # This closes a train/serve gap that the pipeline caught within a run of shipping
+    # it. The multi-winter panel has no CAMS, so the heads were trained with
+    # aod_climatology among their features. The live forecast DOES have CAMS, so
+    # add_features took the cams_aod branch and never created the column, and three
+    # PM2.5 heads then ran with a trained feature filled with NaN. Emitting it on both
+    # paths means the feature contract holds no matter which AOD the attenuation uses.
+    if "aod_climatology" not in out.columns:
+        clim = monthly_climatology()
+        month = pd.to_datetime(out["time"], utc=True).dt.month
+        out["aod_climatology"] = month.map(clim).astype("float64")
 
     # CAMS begins in August 2022, so the multi-winter panel has no measured aerosol for
     # more than half its rows. Without an AOD there is no attenuation, and the ozone

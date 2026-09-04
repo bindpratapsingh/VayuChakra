@@ -1,0 +1,85 @@
+{
+  "panel": "combined_panel",
+  "split": "holdout 2021-10-01..2022-03-31",
+  "rows": 571037,
+  "stations": 44,
+  "window": [
+    "2020-10-01 00:00:00+00:00",
+    "2026-08-31 18:00:00+00:00"
+  ],
+  "note": "panel=combined_panel; chem=no; inversion=surface",
+  "heads": {
+    "pm25_24h": {
+      "rmse": 104.6373,
+      "mae": 60.6833,
+      "bias": 3.1617,
+      "r2": 0.4327,
+      "n": 40863,
+      "persistence_rmse": 136.1793,
+      "improvement_pct": 23.1621,
+      "n_features": 142,
+      "top_features": [
+        "target_doy",
+        "target_is_monsoon",
+        "pm25_roll_72h",
+        "pm25_lag_1h",
+        "target_soil_temperature_0_to_7cm",
+        "target_doy_cos",
+        "target_ventilation_coeff",
+        "is_monsoon",
+        "is_diwali",
+        "pm25_lag_3h",
+        "target_boundary_layer_height",
+        "pm25_roll_24h"
+      ]
+    },
+    "pm25_48h": {
+      "rmse": 108.9641,
+      "mae": 65.758,
+      "bias": 4.071,
+      "r2": 0.3848,
+      "n": 40839,
+      "persistence_rmse": 156.9943,
+      "improvement_pct": 30.5936,
+      "n_features": 142,
+      "top_features": [
+        "target_doy",
+        "target_is_monsoon",
+        "target_soil_temperature_0_to_7cm",
+        "target_doy_cos",
+        "pm25_roll_72h",
+        "pm25_lag_1h",
+        "target_ventilation_coeff",
+        "target_boundary_layer_height",
+        "target_is_post_diwali",
+        "target_relative_humidity_2m",
+        "target_hour",
+        "pm25_roll_24h"
+      ]
+    },
+    "pm25_72h": {
+      "rmse": 112.8182,
+      "mae": 68.4272,
+      "bias": 3.4442,
+      "r2": 0.3404,
+      "n": 40815,
+      "persistence_rmse": 160.5855,
+      "improvement_pct": 29.7457,
+      "n_features": 142,
+      "top_features": [
+        "target_is_winter",
+        "target_doy",
+        "target_is_monsoon",
+        "target_doy_cos",
+        "target_soil_temperature_0_to_7cm",
+        "target_month",
+        "pm25_roll_72h",
+        "pm25_lag_1h",
+        "target_boundary_layer_height",
+        "target_relative_humidity_2m",
+        "target_ventilation_coeff",
+        "target_is_post_diwali"
+      ]
+    }
+  }
+}

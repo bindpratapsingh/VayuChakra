@@ -124,28 +124,39 @@ May–August 2026, which contains **no winter at all**. Delhi's defining polluti
 was going unevaluated. Retraining with Nov 2025 – Feb 2026 held out entirely gives a
 sharply different picture, and both are reported because they answer different questions.
 
-**All twelve heads still beat persistence** on the unseen winter, but the margins are
-very different from the summer numbers above.
+**All twelve heads beat persistence** on the unseen winter. The table below holds
+Nov 2025 to Feb 2026 out entirely and compares two training sets on that identical
+window, against the identical persistence baseline.
 
-| head | recency split (summer) | **winter hold-out** | winter r² |
+| head | trained on **one** winter | trained on **four** winters | change |
 |---|---|---|---|
-| PM2.5 +24 h | +18.0% · RMSE 26.2 | **+4.5%** · RMSE 88.7 | 0.30 |
-| PM2.5 +48 h | +21.5% | +13.8% | 0.26 |
-| PM2.5 +72 h | +25.1% | +18.8% | 0.30 |
-| O₃ +24 h | +20.1% · r² 0.61 | **+23.9%** · RMSE 20.1 | **0.76** |
-| O₃ +48 h | +20.0% | +24.0% | 0.72 |
-| O₃ +72 h | +18.8% | **+25.5%** | 0.70 |
-| PM10 +24 / +48 / +72 h | +8.4 / +10.7 / +22.2% | +8.8 / +17.2 / +22.4% | 0.31 / 0.27 / 0.31 |
-| NO₂ +24 / +48 / +72 h | +21.7 / +24.1 / +24.6% | +11.8 / +14.5 / +13.7% | 0.64 / 0.57 / 0.52 |
+| PM2.5 +24 h | +4.5% · r² 0.30 | **+19.2%** · RMSE 75.1 · r² **0.50** | **+14.7 pts** |
+| PM2.5 +48 h | +13.8% · r² 0.26 | **+26.0%** · r² **0.45** | **+12.2 pts** |
+| PM2.5 +72 h | +18.8% · r² 0.30 | **+28.9%** · r² **0.46** | **+10.1 pts** |
+| O₃ +24 h | +23.9% · r² 0.76 | +19.3% · r² 0.73 | −4.6 pts |
+| O₃ +48 h | +24.0% · r² 0.72 | +19.9% · r² 0.70 | −4.1 pts |
+| O₃ +72 h | +25.5% · r² 0.70 | +21.2% · r² 0.67 | −4.3 pts |
+| PM10 +24 / +48 / +72 h | +8.8 / +17.2 / +22.4% | **+17.2 / +24.8 / +27.6%** | +8.4 / +7.6 / +5.2 |
+| NO₂ +24 / +48 / +72 h | +11.8 / +14.5 / +13.7% | **+15.0 / +17.5 / +18.1%** | +3.2 / +3.0 / +4.4 |
 
-**PM2.5 in winter is a much harder problem**, and the 24-hour margin over persistence
-nearly disappears. Winter Delhi is episode-driven (boundary-layer collapse, multi-day
-accumulation, festival and burning spikes) and persistence is strongest exactly when
-concentrations are high and slowly varying. The margin recovers at longer leads.
+**PM2.5 in winter was the weakest number in the project and it is now the most
+improved.** On one winter the 24-hour margin over persistence nearly vanished, at +4.5%,
+because winter Delhi is episode-driven (boundary-layer collapse, multi-day accumulation,
+festival and burning spikes) and persistence is strongest exactly when concentrations
+are high and slowly varying. Given three more winters to learn those episodes from, the
+margin quadruples and the explained variance rises from 0.30 to 0.50.
 
-**Ozone goes the other way**, improving in winter at every horizon. That is consistent
-with the radiation-limited regime: when production is controlled by available sunlight,
-radiation and photolysis features have more to work with.
+**Ozone moves the other way, and the reason is known rather than mysterious.** The
+multi-winter panel cannot carry CAMS: the chemistry prior begins in August 2022, and
+keeping it would let a tree use "the prior is not missing" as a proxy for "this row is
+recent". So the combined panel drops it, and the ozone heads lose both the CAMS prior
+and the daily aerosol optical depth, which is replaced by a monthly climatology. Ozone
+was the head that leaned on those hardest. The cost is about four points and it buys
+fourteen on PM2.5.
+
+That trade is why **both configurations are kept and reported side by side** rather than
+blended: the recent-panel models keep CAMS and are better at ozone, the multi-winter
+models are much better at everything else.
 
 **The physics is doing work, not decorating.** By gain, three of the top seven features
 are indices this project derives, and the coupled-model prior is third:
@@ -159,15 +170,19 @@ are indices this project derives, and the coupled-model prior is third:
 
 ### Against the MoES Decision Support System
 
-Identical hours, identical ground truth (Delhi city-mean CPCB PM2.5), Oct 2021 – Feb
-2022. Our models were trained on Feb 2025 – Aug 2026, so this window is genuinely out of
-sample in time.
+Identical hours, identical ground truth (Delhi city-mean CPCB PM2.5), Oct 2021 to Feb
+2022. The multi-winter panel now *contains* that window, so scoring it with the
+production models would be measuring memorisation. A second set of heads is trained with
+winter 2021-22 held out entirely and used only here.
 
 | lead | hours | MoES DSS | VayuChakra | persistence |
 |---|---|---|---|---|
-| +24 h | 2,363 | 98.78 | **81.28** | 93.98 |
-| +48 h | 2,363 | 108.34 | **91.77** | 108.78 |
-| +72 h | 2,363 | 118.95 | **101.22** | 115.00 |
+| +24 h | 2,363 | 98.78 | **64.26** | 93.98 |
+| +48 h | 2,363 | 108.34 | **68.91** | 108.78 |
+| +72 h | 2,363 | 118.95 | **72.82** | 115.00 |
+
+Those held-out heads beat persistence by +23.2 / +30.6 / +29.8% on the 2021-22 winter
+they never saw.
 
 **Read the caveat before quoting the table.** The DSS forecasts were issued
 *operationally*: it had to predict the weather as well as the chemistry, days ahead.
@@ -237,13 +252,19 @@ training entirely and predicts a place the model has never seen.
 
 | target | stations | RMSE | persistence | vs persistence | beat |
 |---|---|---|---|---|---|
-| **PM2.5 +24 h** | 10 | 32.16 | 57.16 | **+43.5%** | **10/10** |
-| **O₃ +24 h** | 10 | 15.28 | 23.32 | **+32.6%** | **10/10** |
+| **PM2.5 +24 h** | 10 | 56.07 | 81.31 | **+31.6%** | **10/10** |
+| **O₃ +24 h** | 10 | 22.92 | 27.65 | **+17.2%** | 9/10 |
 
 The margin is larger than it looks, because the comparison is deliberately unfair to us:
 persistence uses the held-out station's **own recent history**, which the model is denied.
 A model that has never seen a location still beats a baseline that has, so producing a
 value for a cell with no instrument is defensible rather than decorative.
+
+The absolute errors are higher than the single-winter run reported, and the percentages
+lower, because this is measured on the four-winter panel: 44 stations instead of 40 and
+four winters of episodes instead of one. It is a harder test on more data, not a
+regression. **One ozone station out of ten now fails to beat persistence**, and that is
+reported rather than rounded away.
 
 ### Does the PM2.5 coupling help? A negative result
 
@@ -371,11 +392,13 @@ the only version of this that is worth anything.
 | **We do not run a chemical transport model** | Structural. WRF-Chem needs an HPC cluster and a district emission inventory we do not have. We consume CAMS instead and call it a surrogate. |
 | **No VOC chemistry** | Delhi ozone is VOC-limited and we have no VOC measurements. TROPOMI HCHO/NO₂ could give a regime map (threshold FNR ≈ 3.1) but needs NetCDF orbit processing. |
 | **Single layer** | No vertical discretisation. The largest remaining simplification. |
-| **PM2.5 winter skill** | The weakest number in the project, and the one the multi-winter data exists to improve. |
-| **The five-winter retrain does not fit on the development machine** | Measured, not assumed. The 2018 to 2022 panel is 1.22 million rows by 130 columns, about 1.4 GB in float32 before pandas takes a working copy. The machine has **3.8 GB of RAM, 150 MB physically available and 2.1 GB of commit headroom**, so the assembly step failed on an allocation of 3 MB. The pipeline was made lean enough to be worth retrying (see below) and the historical panel was cut to two winters, which is what fits. More winters need more RAM, not more code. |
+| **PM2.5 winter skill** | Was the weakest number in the project (+4.5% over persistence at 24 h). Four winters of training take it to +19.2% and r² from 0.30 to 0.50. Still the hardest of the four pollutants. |
+| **Six winters do not fit on the development machine** | Measured, not assumed. The 2018 to 2022 panel at 40 stations is 1.22 million rows by 130 columns, about 1.4 GB in float32 before pandas takes a working copy. The machine has **3.8 GB of RAM and 150 MB physically available**, so assembly failed on an allocation of 3 MB. The historical panel was cut to two winters at 20 stations, giving **four winters in total** and 571,037 rows, which is what fits. More winters need more RAM, not more code. |
+| **Ozone pays for the multi-winter panel** | The combined panel cannot carry CAMS, so the ozone heads lose the chemistry prior and their daily aerosol optical depth, and give up about four points against persistence. Both configurations are trained and reported rather than blended. |
+| **The training panel has no pressure levels** | The ERA5 archive path returns surface fields only, so `inversion_strength_k` in kelvin is all-NaN in training and the heads use the surface-derived stability indices instead. The forecast path *does* return 950, 925 and 850 hPa, which is why the Vertical view can draw a real cross-section that the training data never saw. That asymmetry is stamped into every model's metadata as `inversion=surface`. |
 | **Plume validated only at daily resolution** | The DSS attribution is daily, so it cannot discriminate the vertical treatments on their behaviour through the night. |
 | **No operational run cycle** | The API caches for an hour but nothing schedules a refresh. |
-| **The interval is over-confident** | The 80% prediction interval contains the truth 66.7% of the time. Same one-winter cause: a model that has never seen a winter is confidently wrong about one, and its quantiles inherit the confidence without the accuracy. |
+| **The interval is slightly narrow** | The 80% prediction interval contains the truth 75.6% of the time, up from 66.7% on one winter, and the validator now calls it well calibrated. Still narrow, and the residual gap is the same cause in smaller form. |
 
 ---
 

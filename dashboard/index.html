@@ -1124,6 +1124,13 @@ function drawChips(sum) {
   if (models) add("warn", models + " heads untrained");
   if (deg.indexOf("chemistry_prior") >= 0) add("warn", "No CAMS prior");
   if (deg.indexOf("observations") >= 0) add("warn", "No station feed");
+  // Anything degraded that no rule above recognises still has to appear. Without this
+  // an unfamiliar entry produced no chip at all, so the bar looked the same as a clean
+  // run while three heads were quietly running on a NaN feature.
+  const named = deg.filter(d => d.indexOf("model_") === 0
+    || d === "chemistry_prior" || d === "observations");
+  const other = deg.length - named.length;
+  if (other > 0) add("warn", other + (other === 1 ? " stage degraded" : " stages degraded"));
   const gate = sum.coupling && sum.coupling.literature_gate;
   if (gate && gate.ok === true) add("ok", "Coupling within published bounds");
   else if (gate && gate.ok === false) add("bad", "Coupling outside published bounds");
