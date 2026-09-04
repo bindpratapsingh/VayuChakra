@@ -319,7 +319,59 @@ sweep. No orchestrated page-load sequence, because the reader arrives to work, n
 Every animation has a `prefers-reduced-motion` alternative, and the skeleton sweep stops
 entirely under it.
 
-## 7. Charts
+## 7. The reading comes before the apparatus
+
+Every view opens with **one sentence stating what the instrument says right now**,
+derived from the data on screen, above the standing explanation of how it knows. It is
+typographic only: larger, darker, a hairline under it, numbers in brand weight. No box,
+no tinted panel, nothing that would read as a callout component.
+
+This exists because the surface previously opened with an explanation of the physics and
+left the reader to assemble the finding from the charts. That is the right order for a
+forecaster who already knows what an inversion is and the wrong order for everyone else,
+and the second group is larger.
+
+The sentence is never fixed copy. If the data cannot support it, it says so: "No
+inversion forms anywhere in this window" is as valid a lead as a lid at 246 m, and both
+are more useful than a paragraph that reads the same on every run.
+
+Navigation follows the same rule. The primary label is what the view answers ("The lid
+over the city"), the physics term is the sub-label ("Inversion and mixing depth"). The
+vocabulary is kept for the reader who has it, not required of the reader who does not.
+
+## 8. The cycle
+
+The product is named वायु चक्र, the air cycle, and the closure of that loop is its whole
+claim. It was drawn as six columns in a row with a footnote saying step 5 feeds step 1,
+which asked the reader to take the closure on trust.
+
+It is now a ring: six nodes, each carrying the live value for that link, arcs with
+arrowheads, and the last arc closing onto the first. A marker travels the ring once per
+solver iteration and then stops, because the solver converges and an animation that ran
+for ever would say something false about it. The hub carries the iteration count and the
+number of cells that fell back.
+
+Below 1000px there is no room for six labels outside a circumference, so the columns
+return: same values, same order, a shape that survives a narrow screen.
+
+## 9. Maps are maps
+
+The domain and the forecast grid render on a real basemap (Leaflet, Esri World Light
+Gray Canvas, keyless). Before this they were grids of abstract rectangles, and no reader
+could tell that Karnal is 120 km north or that the fires sit in Punjab.
+
+The basemap is near-achromatic on purpose. The only thing on these maps that must be
+read by colour is the CPCB scale, so the ground underneath cannot compete with it.
+
+CARTO's raster basemaps were tried first and stamp "API KEY REQUIRED" across every tile.
+The HTTP 200 and a plausible byte count hid it: a tile source has to be checked by what
+it looks like, not by whether it downloaded.
+
+If the CDN is blocked, `window.L` is undefined and the original SVG renderers draw
+instead. Degrading to the previous design is an acceptable failure; an empty panel is
+not.
+
+## 10. Charts
 
 - **Never a dual axis.** Inversion strength (K), mixing depth (m) and ventilation
   coefficient (m²·s⁻¹) are three panels sharing an x-axis, not three lines on two
@@ -327,6 +379,16 @@ entirely under it.
 - 2px lines, recessive grid, crosshair and tooltip on every plot.
 - A legend for two or more series, plus a direct label at the last point.
 - Loading is a skeleton, never a spinner in the middle of content.
+- Tables a reviewer interrogates are sortable, with `aria-sort` and keyboard support.
+  The caret sits at low opacity when unsorted, so the affordance is visible before the
+  hover rather than being a feature nobody finds. Twelve rows are fine to read top to
+  bottom, but the question a reviewer arrives with is "which is worst", and that is a
+  sort, not a scan.
+- Numeric columns take `width: 1px` and never `width: 1%`. Inside a max-content sizing
+  context a browser resolves the percentage literally, making the table 100 times the
+  cell: a 104px column produced a 10,647px table and pushed the whole page sideways.
+- Wide tables scroll inside their own container. The page body never scrolls
+  horizontally, at any width down to 390px.
 - Empty states say **why** a thing is empty. "No active fires in the stubble belt"
   reads as a broken feed unless it also says that outside October and November this is
   the correct reading.

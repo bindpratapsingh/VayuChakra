@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VayuChakra · Coupled Weather-Chemistry Forecast, Delhi NCR</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 /* ============================================================================
    VayuChakra
@@ -109,7 +111,8 @@ p { margin: 0; }
   transition: background 160ms var(--ease), color 160ms var(--ease);
 }
 .nav button .k { font-size: 0.6875rem; opacity: 0.5; font-variant-numeric: tabular-nums; }
-.nav button .sub { grid-column: 2; font-size: 0.6875rem; opacity: 0.5; line-height: 1.25; }
+.nav button .sub { grid-column: 2; font-size: 0.6875rem; opacity: 0.55; line-height: 1.3; margin-top: 1px; }
+.nav button > span:nth-child(2) { line-height: 1.25; }
 .nav button:hover { background: rgba(255,255,255,0.09); color: #fff; }
 .nav button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
 .nav button[aria-current="page"] { background: rgba(255,255,255,0.16); color: #fff; font-weight: 600; }
@@ -166,14 +169,44 @@ p { margin: 0; }
 
 .view { padding: 20px 22px 44px; display: none; }
 .view[data-active="true"] { display: block; }
-.view > header { margin-bottom: 16px; max-width: 76ch; }
-.view > header p { color: var(--ink-muted); margin-top: 5px; }
+.view > header { margin-bottom: 18px; max-width: 78ch; }
+.view > header p { color: var(--ink-muted); margin-top: 7px; }
+
+/* The reading, not the apparatus.
+   Every view previously opened with a paragraph explaining the physics and then made
+   the judge assemble the finding from the charts underneath. This states what the
+   instrument says RIGHT NOW, in a sentence, above the explanation of how it knows.
+   Typographic weight only: no box, no rule down one side, nothing that would make it
+   look like a callout component. It is the lead paragraph of the view. */
+.finding {
+  font-size: 1.125rem; line-height: 1.45; color: var(--ink);
+  margin-top: 12px; padding-bottom: 14px; max-width: 74ch;
+  border-bottom: 1px solid var(--line);
+  text-wrap: pretty;
+}
+.finding .n {
+  font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.finding .q { color: var(--bad); font-weight: 650; }
+.finding .g { color: var(--ok); font-weight: 650; }
+.finding.is-loading { color: var(--ink-muted); }
+
+/* Hero panels carry the view; support panels step back. Without this every panel had
+   the same border, the same padding and the same white, so nothing led. */
+.panel.hero { padding: 20px; box-shadow: 0 1px 2px rgba(16,24,32,0.04), 0 8px 24px -12px rgba(16,24,32,0.10); }
+.panel.hero > header { margin-bottom: 14px; }
+.panel.hero > header h3 { font-size: 0.9375rem; }
+.panel.sub { background: transparent; border-color: transparent; padding: 0 2px; }
+.panel.sub > header { margin-bottom: 8px; }
 
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; }
 .panel > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .panel > header .hint { color: var(--ink-muted); font-size: 0.8125rem; }
 
 .cols { display: grid; gap: 14px; }
+.cols > * { min-width: 0; }
+.panel { min-width: 0; }
 @media (min-width: 1180px) { .cols.two { grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); } }
 @media (min-width: 1180px) { .cols.portrait { grid-template-columns: minmax(0,520px) minmax(0,1fr); } }
 @media (min-width: 1300px) { .cols.three { grid-template-columns: repeat(3, minmax(0,1fr)); } }
@@ -188,13 +221,34 @@ p { margin: 0; }
 .kv th { font-weight: 600; color: var(--ink-muted); font-size: 0.75rem; }
 .kv td.n, .kv th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .kv tr:last-child th, .kv tr:last-child td { border-bottom: 0; }
-.kv td.n, .kv th.n { width: 1%; white-space: nowrap; padding-left: 18px; }
+.kv td.n, .kv th.n { width: 1px; white-space: nowrap; padding-left: 18px; }
+
+/* A six-column table with non-wrapping figures cannot fit a 430px screen, and the
+   numbers must not wrap: a column of RMSE values that breaks mid-number is unreadable.
+   So the table scrolls inside its own box and the page body never does. Any element
+   that directly holds one becomes the scroller, which keeps this working wherever a
+   table is added later without anyone having to remember a wrapper class. */
+.view :has(> table.kv) { overflow-x: auto; max-width: 100%; }
+
+/* Sortable headers. A twelve-row table of heads is fine to read top to bottom, but the
+   question a reviewer actually arrives with is "which is worst", and that is a sort,
+   not a scan. The caret is always present at low opacity so the affordance is visible
+   before the hover, rather than being a hidden feature nobody finds. */
+.kv th.srt { cursor: pointer; user-select: none; white-space: nowrap; }
+.kv th.srt:hover { color: var(--ink); }
+.kv th.srt:focus-visible { outline: 2px solid var(--brand-active); outline-offset: -2px; }
+.kv th.srt::after {
+  content: "↕"; margin-left: 5px; opacity: 0.28; font-size: 0.875em;
+}
+.kv th.srt[aria-sort="ascending"]::after { content: "↑"; opacity: 1; color: var(--brand); }
+.kv th.srt[aria-sort="descending"]::after { content: "↓"; opacity: 1; color: var(--brand); }
+.kv th.srt[aria-sort]:not([aria-sort="none"]) { color: var(--brand); }
 
 .legend { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .legend .b {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px; border-radius: var(--r-sm); font-size: 0.75rem; font-weight: 600;
-  border: 1px solid rgba(16,24,32,0.16);
+  border: 1px solid rgba(16,24,32,0.16); max-width: 100%;
 }
 .ramp { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--ink-muted); }
 .ramp .bar { height: 10px; width: 140px; border-radius: var(--r-bar); border: 1px solid var(--line-strong); }
@@ -220,6 +274,25 @@ figure.chart figcaption { font-size: 0.75rem; color: var(--ink-muted); margin-to
 svg.map rect.cell { stroke: rgba(16,24,32,0.20); stroke-width: 0.4; cursor: crosshair; }
 svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 
+/* ---------- geographic maps ---------- */
+.geo { border-radius: var(--r-sm); border: 1px solid var(--line); overflow: hidden;
+       background: var(--canvas, #f7f9fb); }
+#domain-map.geo { height: 620px; }
+#map-slot.geo { height: 480px; }
+.leaflet-container { font: inherit; background: #f7f9fb; }
+.leaflet-control-attribution { font-size: 9px; background: rgba(255,255,255,0.82); }
+.leaflet-bar a { color: var(--ink); }
+/* Leaflet's default marker shadow and focus ring fight a data overlay. */
+.leaflet-interactive:focus { outline: 2px solid var(--brand-active); outline-offset: 1px; }
+.geo-key {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  font-size: 0.75rem; color: var(--ink-muted); margin-bottom: 8px;
+}
+.geo-key b { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ink); }
+.geo-key i { width: 11px; height: 11px; border-radius: var(--r-xs); display: inline-block;
+             border: 1px solid rgba(16,24,32,0.16); }
+.geo-key i.dot { border-radius: 50%; }
+
 .tip {
   position: fixed; z-index: var(--z-tooltip); pointer-events: none;
   background: var(--ink); color: #fff; border-radius: var(--r-sm);
@@ -231,6 +304,41 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 .tip .t { font-weight: 700; margin-bottom: 3px; }
 .tip .r { display: flex; justify-content: space-between; gap: 14px; }
 .tip .r span:last-child { font-variant-numeric: tabular-nums; }
+/* A row whose key is empty carries a sentence, not a figure, so it wraps across the
+   full width instead of being squeezed into a right-aligned value column. */
+.tip .r.prose { display: block; font-variant-numeric: normal; color: rgba(255,255,255,0.84);
+  border-top: 1px solid rgba(255,255,255,0.18); margin-top: 5px; padding-top: 5px; }
+.tip .r.prose span:last-child { font-variant-numeric: normal; }
+
+/* The cycle is the product's whole claim and its name, so it is drawn as a cycle.
+   Six columns in a row with a footnote saying "step 5 feeds step 1" asked the reader to
+   take the closure on trust; a ring shows it. The ring needs room for six labels
+   outside its circumference, so below 1000px the columns take over: same values, same
+   order, a shape that survives a narrow screen. */
+#cycle-slot { display: none; }
+@media (min-width: 1000px) {
+  .panel #cycle-slot { display: block; }
+  .panel .loop { display: none; }
+}
+svg.cycle { display: block; width: 100%; height: auto; max-width: 780px; margin: 0 auto; }
+svg.cycle .hit { fill: transparent; cursor: help; }
+svg.cycle g.step:hover .node { stroke-width: 3; }
+svg.cycle g.step:hover .node-l { fill: var(--brand); }
+svg.cycle g.step .node, svg.cycle g.step .node-l { transition: stroke-width 160ms var(--ease), fill 160ms var(--ease); }
+svg.cycle .node { fill: var(--panel); stroke: var(--s1); stroke-width: 1.5; }
+svg.cycle .node-v { font-size: 15px; font-weight: 700; fill: var(--brand); font-variant-numeric: tabular-nums; }
+svg.cycle .node-u { font-size: 9px; font-weight: 600; fill: var(--ink-muted); }
+svg.cycle .node-l { font-size: 11.5px; font-weight: 650; fill: var(--ink); }
+svg.cycle .node-s { font-size: 10px; fill: var(--ink-muted); }
+svg.cycle .arc { fill: none; stroke: #93a9d6; stroke-width: 2.5; }
+svg.cycle .hub-t { font-size: 12px; font-weight: 650; fill: var(--ink); }
+svg.cycle .hub-s { font-size: 10px; fill: var(--ink-muted); }
+
+/* One lap per solver iteration. This is not decoration: the solver genuinely iterates
+   to convergence, the lap count is the iteration count, and the closure is the thing
+   the six-column layout could not show. */
+svg.cycle .pulse { fill: var(--s2); }
+@media (prefers-reduced-motion: reduce) { svg.cycle .pulse { display: none; } }
 
 .loop { display: grid; gap: 0; grid-template-columns: repeat(6, minmax(0,1fr)); align-items: stretch; }
 .step { position: relative; padding: 12px 12px 12px 16px; border-left: 1px solid var(--line); }
@@ -295,12 +403,12 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
       <div class="tag">Coupled weather and chemistry forecasting for Delhi NCR</div>
     </div>
     <nav class="nav" id="nav" aria-label="Views">
-      <button data-view="domain" aria-current="page"><span class="k">1</span><span>Domain</span><span class="sub">region and fire sources</span></button>
-      <button data-view="vertical"><span class="k">2</span><span>Vertical</span><span class="sub">inversion and mixing depth</span></button>
-      <button data-view="coupling"><span class="k">3</span><span>Coupling</span><span class="sub">the two-way loop</span></button>
-      <button data-view="transport"><span class="k">4</span><span>Transport</span><span class="sub">stubble plume arrival</span></button>
-      <button data-view="forecast"><span class="k">5</span><span>Forecast</span><span class="sub">AQI and GRAP risk</span></button>
-      <button data-view="evidence"><span class="k">6</span><span>Evidence</span><span class="sub">every validation number</span></button>
+      <button data-view="domain" aria-current="page"><span class="k">1</span><span>Where the air comes from</span><span class="sub">Domain and fire sources</span></button>
+      <button data-view="vertical"><span class="k">2</span><span>The lid over the city</span><span class="sub">Inversion and mixing depth</span></button>
+      <button data-view="coupling"><span class="k">3</span><span>The loop we close</span><span class="sub">Two-way aerosol coupling</span></button>
+      <button data-view="transport"><span class="k">4</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
+      <button data-view="forecast"><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
+      <button data-view="evidence"><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
     </nav>
     <div class="rail-foot">
       <span id="foot-env">starting</span><br>
@@ -328,6 +436,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="domain" data-active="true">
       <header>
         <h2>The modelled region, and where its air comes from</h2>
+        <div class="finding is-loading" id="f-domain">Reading the instrument.</div>
         <p>Delhi's worst air is not made in Delhi. Through October and November, smoke from
            paddy stubble burning in Punjab and Haryana travels 200 to 400 km on the
            north-westerly flow and arrives over a city that often cannot ventilate. A
@@ -366,6 +475,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="vertical">
       <header>
         <h2>Vertical structure over time</h2>
+        <div class="finding is-loading" id="f-vertical">Reading the instrument.</div>
         <p>This is the chart the problem statement is really about. A temperature inversion
            is air that gets warmer with height, and it puts a lid on the city: whatever is
            emitted underneath cannot escape upward, so concentration climbs even when
@@ -401,6 +511,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="coupling">
       <header>
         <h2>The two-way coupling</h2>
+        <div class="finding is-loading" id="f-coupling">Reading the instrument.</div>
         <p>Every conventional forecast treats weather as an input only. The real atmosphere
            runs a loop: aerosol blocks sunlight, the surface heats less, the mixed layer
            grows shallower, the wind slackens, and the same emissions end up more
@@ -419,12 +530,14 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
             <span class="track"></span><span class="lab">Feedback on</span>
           </label>
         </header>
+        <div id="cycle-slot"></div>
         <div class="loop" id="loop-slot"></div>
         <div class="loopback">
-          <b>&#8635;</b><span>Step 5 feeds step 1, so this is <b>solved</b> rather than
-          evaluated. Damped fixed-point iteration, with every response clipped and a
-          divergence flag that falls back to the uncoupled answer rather than shipping a
-          number it could not solve for.</span>
+          <b>&#8635;</b><span>Because the last step feeds the first, this is <b>solved</b>
+          rather than evaluated: damped fixed-point iteration, every response clipped to a
+          physical range. When a cell will not converge it falls back to the uncoupled
+          answer and is counted, rather than shipping a number the solver could not
+          reach.</span>
         </div>
       </div>
 
@@ -467,6 +580,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="transport">
       <header>
         <h2>Stubble plume transport</h2>
+        <div class="finding is-loading" id="f-transport">Reading the instrument.</div>
         <p>Each satellite fire detection is released as a parcel and carried forward on the
            forecast wind, spreading as it travels. It contributes to Delhi's air only when
            and where it actually arrives, and only if the inversion lid lets it reach the
@@ -496,6 +610,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="forecast">
       <header>
         <h2>Surface product: the 72-hour AQI outlook</h2>
+        <div class="finding is-loading" id="f-forecast">Reading the instrument.</div>
         <p>PM2.5 and ozone are predicted separately, then combined into the CPCB National
            AQI using the published breakpoint table rather than predicted directly.
            Severity is always stated three ways: colour, band name and number.</p>
@@ -539,6 +654,7 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
     <section class="view" data-view="evidence">
       <header>
         <h2>Evidence</h2>
+        <div class="finding is-loading" id="f-evidence">Reading the instrument.</div>
         <p>Persistence, meaning "tomorrow looks like today", is the baseline that matters
            and is embarrassingly hard to beat at 24 hours. Any head that fails to beat it is
            reported as failing to beat it, and negative results appear here too.</p>
@@ -675,7 +791,7 @@ function showTip(evt, title, rows) {
   tip.replaceChildren();
   tip.append(el("div", "t", title));
   rows.forEach(kv => {
-    const r = el("div", "r");
+    const r = el("div", "r" + (kv[0] ? "" : " prose"));
     r.append(el("span", null, kv[0]), el("span", null, kv[1]));
     tip.append(r);
   });
@@ -926,7 +1042,122 @@ function crossSection(slot, data) {
   slot.replaceChildren(fig);
 }
 
-/* ---------- domain map ----------
+/* ---------- geographic maps ----------
+   Leaflet over a CARTO Positron basemap: light, low-chroma, and it stays out of the
+   way of the AQI scale, which is the one thing on these maps that has to be read by
+   colour. Everything degrades: if the CDN is blocked, window.L is undefined and the
+   original SVG renderers draw instead, which is what shipped before this. */
+const HAS_MAP = () => typeof window.L !== "undefined";
+const _maps = {};
+
+function baseMap(id, centre, zoom) {
+  const slot = document.getElementById(id);
+  slot.classList.add("geo");
+  if (_maps[id]) { _maps[id].remove(); delete _maps[id]; }
+  slot.replaceChildren();
+  const m = L.map(id, { zoomControl: true, scrollWheelZoom: false,
+                        attributionControl: true }).setView(centre, zoom);
+  const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
+  L.tileLayer(esri + "World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 16, attribution: "Tiles &copy; Esri",
+  }).addTo(m);
+  // Labels ride above the data so a judge can still read "Panipat" through the overlay.
+  L.tileLayer(esri + "World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 16, pane: "shadowPane", opacity: 0.9,
+  }).addTo(m);
+  // Scroll belongs to the page; the map takes the wheel only once it is clicked, so a
+  // judge scrolling past does not get trapped zooming a map they did not mean to touch.
+  m.on("click", () => m.scrollWheelZoom.enable());
+  m.on("mouseout", () => m.scrollWheelZoom.disable());
+  _maps[id] = m;
+  setTimeout(() => m.invalidateSize(), 60);   // the view was display:none until now
+  return m;
+}
+
+function geoKey(items) {
+  const k = el("div", "geo-key");
+  items.forEach(it => {
+    const b = el("b"), i = el("i", it[2] ? "dot" : null);
+    i.style.background = it[1];
+    b.append(i, document.createTextNode(it[0]));
+    k.append(b);
+  });
+  return k;
+}
+
+function domainMapGeo(slot, d) {
+  const B = d.bounds, fires = d.fires || [], db = d.delhi_box;
+  const host = slot.id ? slot : slot.querySelector("div");
+  const wrap = slot.parentElement;
+  const existing = wrap.querySelector(".geo-key");
+  if (existing) existing.remove();
+  wrap.insertBefore(geoKey([
+    ["Forecast domain", "rgba(28,50,96,0.10)"],
+    ["Delhi, 2.8 km cells", "rgba(59,98,212,0.28)"],
+    ["Stubble belt", "rgba(194,112,28,0.16)"],
+    ["Active fire", "#b3261e", true],
+  ]), slot);
+
+  const m = baseMap(slot.id, [(B.lat[0] + B.lat[1]) / 2, (B.lon[0] + B.lon[1]) / 2], 7);
+
+  L.rectangle([[B.lat[0], B.lon[0]], [B.lat[1], B.lon[1]]],
+    { color: T.brand, weight: 1.5, fillColor: T.brand, fillOpacity: 0.04,
+      dashArray: "6 4", interactive: false }).addTo(m);
+
+  const sb = d.stubble_bbox;
+  if (sb) {
+    L.rectangle([[sb.lat[0], sb.lon[0]], [sb.lat[1], sb.lon[1]]],
+      { color: T.s2, weight: 1, fillColor: T.s2, fillOpacity: 0.07,
+        dashArray: "5 4", interactive: false })
+      .addTo(m).bindTooltip("Stubble belt: the paddy districts of Punjab and Haryana. "
+        + "Most of it lies north of the forecast domain, which is why the domain reaches "
+        + "as far as it does.", { sticky: true });
+  }
+
+  if (db) {
+    L.rectangle([[db.lat[0], db.lon[0]], [db.lat[1], db.lon[1]]],
+      { color: T.s1, weight: 2, fillColor: T.s1, fillOpacity: 0.10 })
+      .addTo(m).bindTooltip("Delhi NCT, modelled at 2.8 km. Everything outside runs at "
+        + "11 km, because out there the field only has to carry a plume toward the city.",
+        { sticky: true });
+  }
+
+  (d.districts || []).forEach(dd => {
+    L.circleMarker([dd.lat, dd.lon], { radius: 3, color: T.inkMuted, weight: 1,
+      fillColor: T.white, fillOpacity: 1 })
+      .addTo(m)
+      .bindTooltip(dd.name + ", " + dd.state, { direction: "top" });
+  });
+
+  fires.forEach(f => {
+    L.circleMarker([f.lat, f.lon], {
+      radius: Math.max(3, Math.min(11, Math.sqrt(f.frp_mw) * 1.5)),
+      color: "#7e0023", weight: 0.8, fillColor: T.bad, fillOpacity: 0.55,
+    }).addTo(m).bindTooltip(
+      "<b>Fire detection</b><br>" + fmt(f.frp_mw, 1) + " MW radiative power<br>"
+      + f.confidence + " confidence", { direction: "top" });
+  });
+
+  if (d.delhi) {
+    L.circleMarker([d.delhi.lat, d.delhi.lon], { radius: 7, color: T.white, weight: 2.5,
+      fillColor: T.brand, fillOpacity: 1 })
+      .addTo(m).bindTooltip("<b>Delhi</b>, where the forecast is consumed",
+                            { direction: "top" });
+    const fs = d.fire_summary || {};
+    if (fires.length) {
+      const cx = fires.reduce((a, f) => a + f.lon, 0) / fires.length;
+      const cy = fires.reduce((a, f) => a + f.lat, 0) / fires.length;
+      L.polyline([[cy, cx], [d.delhi.lat, d.delhi.lon]],
+        { color: T.s2Ink, weight: 2, dashArray: "8 5", opacity: 0.75 })
+        .addTo(m).bindTooltip("Today's fires sit a mean " + fmt(fs.mean_distance_km, 0)
+          + " km from Delhi, on this bearing. Whether the smoke arrives is the transport "
+          + "model's question, not this line's.", { sticky: true });
+    }
+  }
+  return m;
+}
+
+/* ---------- domain map (SVG fallback) ----------
    Three things this has to say, in order of importance:
      1. the air comes from outside the frame, hundreds of km upwind
      2. the domain is far bigger than the city
@@ -938,6 +1169,7 @@ function crossSection(slot, data) {
    box is a satellite search extent, not a landscape feature. It is now an outline that
    visibly runs off the top edge, which is the true statement. */
 function domainMap(slot, d) {
+  slot.classList.remove("geo");
   const cells = d.cells || [], fires = d.fires || [], B = d.bounds;
   const latSpan = B.lat[1] - B.lat[0], lonSpan = B.lon[1] - B.lon[0];
   // A degree of longitude is shorter than a degree of latitude, by cos(latitude). At
@@ -1062,8 +1294,44 @@ function domainMap(slot, d) {
   slot.replaceChildren(fig);
 }
 
+function drawMapGeo(cells) {
+  const slot = $("#map-slot");
+  const lats = cells.map(c => c.lat), lons = cells.map(c => c.lon);
+  const la0 = Math.min.apply(null, lats), la1 = Math.max.apply(null, lats);
+  const lo0 = Math.min.apply(null, lons), lo1 = Math.max.apply(null, lons);
+  const vals = cells.map(c => c.aqi).filter(v => v != null && Number.isFinite(v));
+  const vmin = vals.length ? Math.min.apply(null, vals) : 0;
+  const vmax = vals.length ? Math.max.apply(null, vals) : 1;
+  const span = Math.max(vmax - vmin, 1e-6);
+  const h = 0.0125;
+
+  const m = baseMap("map-slot", [(la0 + la1) / 2, (lo0 + lo1) / 2], 10);
+  cells.forEach(c => {
+    const b = bandOf(c.aqi);
+    const fill = (c.aqi == null || !Number.isFinite(c.aqi)) ? T.noData
+      : (S.mapMode === "relative" ? mixRamp(RAMP, (c.aqi - vmin) / span) : b.c);
+    L.rectangle([[c.lat - h, c.lon - h], [c.lat + h, c.lon + h]], {
+      color: "rgba(16,24,32,0.18)", weight: 0.4, fillColor: fill, fillOpacity: 0.62,
+    }).addTo(m).bindTooltip(
+      "<b>" + (b ? b.name + ", AQI " + fmt(c.aqi) : "No index available") + "</b><br>"
+      + "PM2.5 " + fmt(c.pm25, 1) + " µg/m³, ozone " + fmt(c.o3, 1) + " µg/m³<br>"
+      + "Driver: " + (c.aqi_driver || "n/a") + "<br>"
+      + "Mixing depth " + fmt(c.mixing_depth_m) + " m, ventilation "
+      + fmt(c.ventilation_coeff) + " m²/s<br>"
+      + "Plume share " + fmt(c.plume_pm25, 2) + " µg/m³", { sticky: true });
+  });
+  m.fitBounds([[la0 - h, lo0 - h], [la1 + h, lo1 + h]], { padding: [8, 8] });
+
+  $("#map-hint").textContent = S.mapMode === "relative"
+    ? "relative scale, AQI " + Math.round(vmin) + " to " + Math.round(vmax)
+      + ", not CPCB colours"
+    : "hover a cell for its full readout, scroll to zoom after clicking";
+  $("#aqi-legend").style.opacity = S.mapMode === "relative" ? "0.35" : "1";
+}
+
 function drawMap(cells) {
   const slot = $("#map-slot");
+  slot.classList.remove("geo");
   if (!cells || !cells.length) {
     slot.replaceChildren(Object.assign(el("div", "empty"),
       { textContent: "No cells returned for this horizon." }));
@@ -1160,15 +1428,97 @@ function drawChips(sum) {
   }
 }
 
+/* ---------- sortable tables ----------
+   Sorts on the rendered cell text, parsing a leading number where there is one, so a
+   column of "+18.0%" orders numerically rather than as strings, and a column of names
+   orders alphabetically. Rows carry their own DOM, so sorting reorders elements rather
+   than rebuilding them and nothing bound to a row is lost. */
+function sortValue(cell) {
+  const t = (cell.textContent || "").replace(/,/g, "").trim();
+  const m = t.match(/^[+-]?\d*\.?\d+/);
+  if (m && m[0] !== "" && m[0] !== "+" && m[0] !== "-") return parseFloat(m[0]);
+  const frac = t.match(/^(\d+)\s*\/\s*(\d+)$/);      // "10/10"
+  if (frac) return parseInt(frac[1], 10) / parseInt(frac[2], 10);
+  if (t === "n/a" || t === "") return -Infinity;
+  return t.toLowerCase();
+}
+
+function makeSortable(table, opts) {
+  const o = opts || {};
+  const head = table.rows[0];
+  if (!head) return table;
+  const body = () => Array.prototype.slice.call(table.rows, 1);
+  const state = { col: o.col == null ? -1 : o.col, dir: o.dir || "desc" };
+
+  function apply(col, dir) {
+    const rows = body();
+    rows.sort((a, b) => {
+      const x = sortValue(a.cells[col]), y = sortValue(b.cells[col]);
+      if (typeof x === "number" && typeof y === "number") {
+        return dir === "asc" ? x - y : y - x;
+      }
+      return dir === "asc" ? String(x).localeCompare(String(y))
+                           : String(y).localeCompare(String(x));
+    });
+    rows.forEach(r => table.appendChild(r));
+    Array.prototype.forEach.call(head.cells, (c, i) => {
+      if (!c.classList.contains("srt")) return;
+      c.setAttribute("aria-sort", i === col ? (dir === "asc" ? "ascending" : "descending")
+                                            : "none");
+    });
+    state.col = col; state.dir = dir;
+  }
+
+  Array.prototype.forEach.call(head.cells, (c, i) => {
+    if (o.skip && o.skip.indexOf(i) >= 0) return;
+    c.classList.add("srt");
+    c.setAttribute("aria-sort", "none");
+    c.tabIndex = 0;
+    c.title = "Sort by " + (c.textContent || "this column").trim();
+    const go = () => apply(i, state.col === i && state.dir === "desc" ? "asc" : "desc");
+    c.addEventListener("click", go);
+    c.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); }
+    });
+  });
+  if (state.col >= 0) apply(state.col, state.dir);
+  return table;
+}
+
+/* ---------- the lead finding ----------
+   One sentence per view, derived from the data actually on screen, stating what the
+   instrument reads right now. Written so a reader who knows no boundary-layer physics
+   still learns something true from it, and a reader who does can check it against the
+   charts underneath. Never a fixed string: if the data cannot support the sentence,
+   the sentence says so rather than being quietly dropped. */
+function setFinding(view, html) {
+  const slot = $("#f-" + view);
+  if (!slot) return;
+  slot.classList.remove("is-loading");
+  slot.innerHTML = html;
+}
+const num = (v, d, unit) => '<b class="n">' + fmt(v, d) + (unit ? " " + unit : "") + "</b>";
+
 /* ---------- loaders ---------- */
 async function loadDomain() {
   const d = await api("/domain");
   if (d.__error) { offline($("#domain-map"), d); offline($("#domain-fires"), d); return; }
-  domainMap($("#domain-map"), d);
+  if (HAS_MAP()) domainMapGeo($("#domain-map"), d); else domainMap($("#domain-map"), d);
   $("#domain-hint").textContent = (d.cells || []).length.toLocaleString()
     + " cells, two resolutions";
 
   const f = d.fire_summary || {}, slot = $("#domain-fires");
+  const nCells = (d.cells || []).length;
+  setFinding("domain", f.n_fires
+    ? num(f.n_fires, 0) + " fires are burning upwind right now, averaging "
+      + num(f.mean_distance_km, 0, "km") + " from Delhi, the nearest "
+      + num(f.nearest_km, 0, "km") + " away. Whether any of that smoke reaches the "
+      + "city depends on the wind and on whether the lid lets it down, which is what "
+      + "the next three views work out."
+    : "Nothing is burning upwind today, so today the city's air is its own. "
+      + "Through October and November this map fills with fire and the answer changes. "
+      + "The domain covers " + num(nCells, 0) + " cells from Alwar to Karnal so that "
+      + "when it does, the source is on screen and not off it.");
   if (!f.n_fires) {
     slot.replaceChildren(Object.assign(el("div", "empty"), {
       innerHTML: "<b>Nothing burning upwind</b>Outside the October and November paddy "
@@ -1193,6 +1543,18 @@ async function loadVertical() {
   if (prof.__error) { offline($("#xsec"), prof); } else {
     crossSection($("#xsec"), prof);
     $("#xsec-hint").textContent = prof.scope || "domain mean";
+    const rows = prof.series || [];
+    const lids = rows.map(r => r.inversion_lid_m).filter(v => Number.isFinite(v));
+    const deep = rows.map(r => r.mixing_depth_m).filter(v => Number.isFinite(v));
+    setFinding("vertical", lids.length
+      ? "A lid closes over Delhi in " + num(lids.length, 0) + " of the next "
+        + num(rows.length, 0) + " hours. At its lowest it sits "
+        + num(Math.min.apply(null, lids), 0, "m") + " above the ground, with the mixed "
+        + "layer shrinking to " + num(Math.min.apply(null, deep), 0, "m") + " beneath "
+        + "it. That is the whole volume a night's emissions get to dilute into."
+      : "No inversion forms anywhere in this window: the air stays unstable and the "
+        + "city ventilates freely. That is the summer answer, and it is why the same "
+        + "emissions produce a different December.");
   }
   const host = $("#inv-charts");
   if (inv.__error) { host.replaceChildren(el("div", "panel")); offline(host.firstChild, inv); return; }
@@ -1228,21 +1590,35 @@ async function loadCoupling() {
     if (abs && v != null) v = Math.abs(v);
     return v == null ? "n/a" : fmt(v, dp) + "<small> " + unit + "</small>";
   };
+  // [ordinal, label, valueHTML, why, rawValue, decimals, unit, shortLabel]
+  // The raw value and unit are carried separately so the ring can typeset them inside
+  // a node, where the column layout's inline <small> markup would not fit.
+  const raw = (k, abs) => {
+    const v = checks[k] && checks[k].value;
+    return (v == null) ? null : (abs ? Math.abs(v) : v);
+  };
   const steps = [
     ["1", "PM2.5 to optical depth",
      d.aod_model && d.aod_model.b != null ? fmt(d.aod_model.b, 2) + "<small> elasticity</small>" : "n/a",
-     "Aerosol mass becomes an optical depth, using an elasticity fitted on paired CAMS output."],
+     "Aerosol mass becomes an optical depth, using an elasticity fitted on paired CAMS output.",
+     d.aod_model ? d.aod_model.b : null, 2, "elasticity", "haze thickens"],
     ["2", "Optical depth to sunlight", pick("sw_reduction_pct", 1, "% lost"),
-     "Beer and Lambert extinction, minus the forward-scattered light that still reaches the ground."],
+     "Beer and Lambert extinction, minus the forward-scattered light that still reaches the ground.",
+     raw("sw_reduction_pct"), 1, "% sunlight lost", "less light lands"],
     ["3", "Sunlight to temperature", pick("dT_daytime_k", 2, "K cooler", true),
-     "Surface energy balance: less absorbed shortwave means less sensible heat."],
+     "Surface energy balance: less absorbed shortwave means less sensible heat.",
+     raw("dT_daytime_k", true), 2, "K cooler", "ground warms less"],
     ["4", "Temperature to mixed layer", pick("pbl_suppression_pct", 1, "% shallower"),
-     "Encroachment: the layer deepens with the square root of accumulated heat."],
+     "Encroachment: the layer deepens with the square root of accumulated heat.",
+     raw("pbl_suppression_pct"), 1, "% shallower", "the lid drops"],
     ["4b", "Mixed layer to wind", pick("wind_reduction_pct", 2, "% slower"),
-     "Less mixing carries less momentum down from aloft, so the surface wind slackens."],
+     "Less mixing carries less momentum down from aloft, so the surface wind slackens.",
+     raw("wind_reduction_pct"), 2, "% slower", "the wind slackens"],
     ["5", "Mixed layer to PM2.5", pick("pm_amplification_pct", 1, "% higher"),
-     "Box model: the same emitted mass in a shallower layer is more concentrated."],
+     "Box model: the same emitted mass in a shallower layer is more concentrated.",
+     raw("pm_amplification_pct"), 1, "% more PM2.5", "and the haze thickens"],
   ];
+  drawCycle($("#cycle-slot"), steps, d);
   loop.replaceChildren();
   steps.forEach(st => {
     const s = el("div", "step");
@@ -1251,6 +1627,22 @@ async function loadCoupling() {
     s.append(el("div", "why", st[3]));
     loop.append(s);
   });
+
+  const passed = Object.keys(checks).filter(k => checks[k].ok).length;
+  const total = Object.keys(checks).length;
+  const amp = checks.pm_amplification_pct && checks.pm_amplification_pct.value;
+  const sw = checks.sw_reduction_pct && checks.sw_reduction_pct.value;
+  setFinding("coupling", total
+    ? "In high-aerosol daylight the haze removes " + num(sw, 1, "%") + " of the sunlight "
+      + "reaching the ground, and the loop that follows adds " + num(amp, 1, "%")
+      + " to PM2.5 that a one-way forecast never sees. "
+      + (passed === total
+          ? "All " + total + " magnitudes land <span class=\"g\">inside published "
+            + "Delhi values</span>, none of which the model was fitted to."
+          : "<span class=\"q\">" + (total - passed) + " of " + total + " magnitudes "
+            + "fall outside published Delhi values</span>, and are reported as failing.")
+    : "Not enough high-aerosol daylight in this window to judge the loop against "
+      + "published values. The solver ran; there was simply no haze for it to act on.");
 
   const rows = c.series || [];
   const pts = k => rows.map(r => [new Date(r.time).getTime(), r[k]])
@@ -1304,6 +1696,102 @@ async function loadCoupling() {
     + " iterations, " + (d.diverged_rows == null ? 0 : d.diverged_rows) + " rows fell back.";
   g.append(meta);
 }
+
+/* ---------- the cycle ----------
+   Six nodes on a ring, each carrying the live value for that link, with the arc from
+   the last back to the first closing the loop. A marker travels the ring once per
+   solver iteration, so a reader can see both that it is closed and how many passes it
+   took to settle. */
+function drawCycle(slot, steps, diag) {
+  const W = 660, H = 520, cx = W / 2, cy = H / 2 - 6, R = 152;
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "cycle", role: "img",
+    "aria-label": "The aerosol feedback cycle: " + steps.map(x => x[1]).join(", then ")
+      + ", closing back on the first." });
+
+  const defs = mk("defs", {});
+  const mk_arrow = (id, colour) => {
+    const m = mk("marker", { id: id, viewBox: "0 0 10 10", refX: 8, refY: 5,
+      markerWidth: 5.5, markerHeight: 5.5, orient: "auto-start-reverse" });
+    m.append(mk("path", { d: "M0,1 L9,5 L0,9 z", fill: colour }));
+    return m;
+  };
+  defs.append(mk_arrow("ar", "#93a9d6"));
+  svg.append(defs);
+
+  const pos = i => {
+    const a = (-90 + i * 60) * Math.PI / 180;
+    return [cx + R * Math.cos(a), cy + R * Math.sin(a), a];
+  };
+
+  // Arcs first, so the nodes sit on top of their endpoints.
+  const ringPath = [];
+  for (let i = 0; i < steps.length; i++) {
+    const [x1, y1] = pos(i), [x2, y2] = pos((i + 1) % steps.length);
+    const a1 = (-90 + i * 60 + 15) * Math.PI / 180;
+    const a2 = (-90 + (i + 1) * 60 - 15) * Math.PI / 180;
+    const sx = cx + R * Math.cos(a1), sy = cy + R * Math.sin(a1);
+    const ex = cx + R * Math.cos(a2), ey = cy + R * Math.sin(a2);
+    const d = "M" + sx.toFixed(1) + "," + sy.toFixed(1)
+            + " A" + R + "," + R + " 0 0 1 " + ex.toFixed(1) + "," + ey.toFixed(1);
+    const arc = mk("path", { d: d, class: "arc", "marker-end": "url(#ar)" });
+    svg.append(arc);
+    ringPath.push(d);
+  }
+
+  steps.forEach((st, i) => {
+    const [x, y, a] = pos(i);
+    const g = mk("g", {});
+    g.append(mk("circle", { cx: x, cy: y, r: 34, class: "node" }));
+    const v = mk("text", { x: x, y: y + 1, class: "node-v", "text-anchor": "middle" });
+    v.textContent = st[4] == null ? "n/a" : fmt(st[4], st[5]);
+    g.append(v);
+    const u = mk("text", { x: x, y: y + 14, class: "node-u", "text-anchor": "middle" });
+    u.textContent = st[6] || "";
+    g.append(u);
+
+    // Labels sit outside the ring, anchored by which side of the circle they are on.
+    const lr = R + 52, lx = cx + lr * Math.cos(a), ly = cy + lr * Math.sin(a);
+    const right = Math.cos(a) > 0.2, left = Math.cos(a) < -0.2;
+    const anchor = right ? "start" : left ? "end" : "middle";
+    const l1 = mk("text", { x: lx, y: ly - 4, class: "node-l", "text-anchor": anchor });
+    l1.textContent = st[1];
+    const l2 = mk("text", { x: lx, y: ly + 10, class: "node-s", "text-anchor": anchor });
+    l2.textContent = st[7] || "";
+    g.append(l1, l2);
+    const hit = mk("circle", { cx: x, cy: y, r: 40, class: "hit" });
+    hit.addEventListener("pointermove", ev => showTip(ev, "Step " + st[0] + ", " + st[1], [
+      [st[6] || "value", st[4] == null ? "n/a" : fmt(st[4], st[5])],
+      ["", st[3]],
+    ]));
+    hit.addEventListener("pointerleave", hideTip);
+    g.append(hit);
+    g.setAttribute("class", "step");
+    svg.append(g);
+  });
+
+  const hub = mk("text", { x: cx, y: cy - 6, class: "hub-t", "text-anchor": "middle" });
+  hub.textContent = diag.converged ? "Closed, and solved" : "Closed, did NOT converge";
+  const hub2 = mk("text", { x: cx, y: cy + 11, class: "hub-s", "text-anchor": "middle" });
+  hub2.textContent = (diag.iterations || 0) + " iterations to settle";
+  const hub3 = mk("text", { x: cx, y: cy + 26, class: "hub-s", "text-anchor": "middle" });
+  hub3.textContent = (diag.diverged_rows || 0) + " rows fell back";
+  svg.append(hub, hub2, hub3);
+
+  // One lap per iteration, then it rests: the loop has converged and stops moving,
+  // which is the honest end state rather than an animation that runs for ever.
+  const laps = Math.max(1, Math.min(6, diag.iterations || 1));
+  const dot = mk("circle", { r: 4.5, class: "pulse" });
+  const motion = mk("animateMotion", {
+    dur: (2.6 * laps).toFixed(1) + "s", repeatCount: "1", fill: "freeze",
+    path: "M" + (cx) + "," + (cy - R) + " A" + R + "," + R + " 0 1 1 " + (cx - 0.01)
+          + "," + (cy - R) + " A" + R + "," + R + " 0 1 1 " + cx + "," + (cy - R),
+    keyPoints: "0;1", keyTimes: "0;1", calcMode: "linear",
+  });
+  dot.append(motion);
+  svg.append(dot);
+  slot.replaceChildren(svg);
+}
+
 
 async function loadPhotolysis() {
   const d = await api("/photolysis");
@@ -1388,6 +1876,19 @@ async function loadTransport() {
   const rows = d.contribution || [];
   const pts = rows.map(r => [new Date(r.time).getTime(), r.plume_pm25])
                   .filter(p => Number.isFinite(p[0]));
+  const peak = pts.length ? Math.max.apply(null, pts.map(x => x[1] || 0)) : 0;
+  setFinding("transport", !f.n_fires
+    ? "There are no fires in the stubble belt to transport. The model is running and "
+      + "has nothing to carry, which is the correct reading outside the paddy season."
+    : peak > 0
+      ? num(f.n_fires, 0) + " fires, " + num(f.total_frp_mw, 0, "MW") + " of radiative "
+        + "power, a mean " + num(f.mean_distance_km, 0, "km") + " upwind. Enough of it "
+        + "arrives to add " + num(peak, 1, "µg/m³") + " to Delhi's surface PM2.5 at peak."
+      : num(f.n_fires, 0) + " fires are burning, a mean " + num(f.mean_distance_km, 0, "km")
+        + " away, and <span class=\"g\">none of it reaches Delhi</span>. The wind is "
+        + "carrying the smoke somewhere else today. A thousand fires with the wrong wind "
+        + "are somebody else's problem, and saying so is the point of modelling transport "
+        + "rather than counting fires.");
   if (!pts.length || pts.every(p => !p[1])) {
     $("#plume-chart").replaceChildren(Object.assign(el("div", "empty"), {
       innerHTML: "<b>No modelled arrival</b>Either nothing is burning, or the wind is "
@@ -1443,6 +1944,7 @@ async function renderPlumeCalibration() {
       }
       tr.append(badge); t.append(tr);
     });
+  makeSortable(t, { skip: [5] });
   wrap.append(t);
   const cap = el("p", "note caveat");
   cap.innerHTML = "The DSS attribution is <b>daily</b>, so it settles day-to-day timing "
@@ -1458,7 +1960,9 @@ async function loadForecast() {
   const fc = res[0], sum = res[1];
   S.forecast = fc; S.summary = sum;
   drawChips(sum);
-  if (fc.__error) offline($("#map-slot"), fc); else drawMap(fc.cells);
+  if (fc.__error) offline($("#map-slot"), fc);
+  else if (HAS_MAP() && fc.cells && fc.cells.length) drawMapGeo(fc.cells);
+  else drawMap(fc.cells);
 
   const slot = $("#summary-slot");
   if (sum.__error) { offline(slot, sum); } else {
@@ -1483,6 +1987,16 @@ async function loadForecast() {
       row("Feedback adds", fmt(sum.coupling.mean_pm_amplification_pct, 1) + " %");
     g.append(t);
     slot.replaceChildren(g);
+    setFinding("forecast", b
+      ? "Across Delhi the mean AQI " + S.horizon + " hours out is " + num(mean, 0)
+        + ", which is <b class=\"n\">" + b.name + "</b>. The worst cell reaches "
+        + num(worst ? worst.aqi : null, 0) + ". "
+        + (sum.coupling && sum.coupling.mean_pm_amplification_pct != null
+            ? "Of that, " + num(sum.coupling.mean_pm_amplification_pct, 1, "%")
+              + " is the feedback loop, which a conventional forecast would have missed."
+            : "")
+      : "No index could be formed for this horizon. CPCB requires at least three "
+        + "pollutants including a particulate, and this run does not have them.");
   }
 
   const notes = $("#notes-slot");
@@ -1581,6 +2095,22 @@ async function loadEvidence() {
       tr.append(Object.assign(el("td", "n"), { textContent: String(m.n == null ? "n/a" : m.n) }));
       t.append(tr);
     });
+    const imps = Object.keys(heads).map(k => heads[k].improvement_pct)
+                        .filter(v => Number.isFinite(v));
+    const beat = imps.filter(v => v > 0).length;
+    setFinding("evidence", imps.length
+      ? (beat === imps.length
+          ? "<span class=\"g\">All " + num(imps.length, 0) + " forecast heads beat "
+            + "persistence</span>, by " + num(Math.min.apply(null, imps), 1, "%")
+            + " to " + num(Math.max.apply(null, imps), 1, "%")
+            + ". Persistence is the baseline that matters and it is embarrassingly hard "
+            + "to beat at 24 hours, which is exactly why it is the one reported."
+          : num(beat, 0) + " of " + num(imps.length, 0) + " heads beat persistence. "
+            + "<span class=\"q\">" + (imps.length - beat) + " do not</span>, and are "
+            + "listed below as failing rather than quietly dropped.")
+      : "No trained heads to score. Run scripts/train.py to populate this.");
+
+    makeSortable(t);
     const wrap = el("div"); wrap.append(t);
     const cap = el("p", "note caveat");
     cap.textContent = "Panel: " + (val.rows || 0).toLocaleString() + " rows from "
@@ -1622,6 +2152,7 @@ async function loadEvidence() {
         textContent: r.stations_beating_persistence + "/" + r.stations_evaluated }));
       t.append(tr);
     });
+    makeSortable(t);
     wrap.append(t);
     ls.replaceChildren(wrap);
   }
@@ -1658,6 +2189,7 @@ async function loadScenario() {
       + "%;background:var(--s1);border-radius:4px";
     track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
   });
+  makeSortable(t, { col: 2, dir: "desc", skip: [3] });
   const wrap = el("div"); wrap.append(t);
   const cap = el("p", "note caveat");
   cap.textContent = "Mean PM2.5 reduction in µg/m³. " + d.caveat + " Source: " + d.source + ".";
@@ -1668,8 +2200,9 @@ async function loadScenario() {
 /* ---------- routing ---------- */
 const LOADERS = { domain: loadDomain, vertical: loadVertical, coupling: loadCoupling,
                   transport: loadTransport, forecast: loadForecast, evidence: loadEvidence };
-const TITLES = { domain: "Domain", vertical: "Vertical structure", coupling: "Coupling",
-                 transport: "Transport", forecast: "Forecast", evidence: "Evidence" };
+const TITLES = { domain: "Where the air comes from", vertical: "The lid over the city",
+                 coupling: "The loop we close", transport: "Smoke from the fields",
+                 forecast: "The 72-hour outlook", evidence: "Does it actually work" };
 
 function go(view, push) {
   if (push === undefined) push = true;
@@ -1700,7 +2233,9 @@ $("#map-mode").addEventListener("click", e => {
   S.mapMode = b.dataset.mode;
   document.querySelectorAll("#map-mode button").forEach(x =>
     x.setAttribute("aria-pressed", String(x === b)));
-  if (S.forecast && S.forecast.cells) drawMap(S.forecast.cells);
+  if (S.forecast && S.forecast.cells) {
+    if (HAS_MAP()) drawMapGeo(S.forecast.cells); else drawMap(S.forecast.cells);
+  }
 });
 $("#scen-kind").addEventListener("click", e => {
   const b = e.target.closest("button[data-kind]"); if (!b) return;
