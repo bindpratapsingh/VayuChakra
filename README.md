@@ -1,9 +1,23 @@
 # VayuChakra · वायु चक्र
 
-**Coupled weather–chemistry forecasting for Delhi NCR**
+**Coupled weather and chemistry forecasting for Delhi NCR**
 
 > Built for: Ministry of Earth Sciences / NCMRWF,
-> *Air Pollution–Weather Coupled Forecasting System (Delhi NCR Focus)*
+> *Air Pollution and Weather Coupled Forecasting System (Delhi NCR Focus)*
+
+### ▶ [vayuchakra.onrender.com](https://vayuchakra.onrender.com)
+
+**Give it about 50 seconds on the first click.** It runs on a free instance with no
+keep-alive, so it sleeps after 15 minutes idle and cold-starts on the next request.
+That is deliberate: a keep-alive would burn the free allowance and get the account
+suspended, which is how the sibling project's deployment ended.
+
+The hosted instance serves a **precomputed forecast**, and says so on every view. The
+live pipeline peaks at about 1.1 GB and a free instance has 512 MB, so it replays a
+bundle captured from the same API at full resolution: 420 cells at 2.8 km, all four
+pollutants, the coupled solver, photolysis, the plume and every validation number. A
+deployment gives up freshness, not resolution or physics. Run it locally for a live
+forecast; it is two commands and they are below.
 
 ---
 
@@ -354,17 +368,18 @@ keyless. Without the keys the system still runs and reports which stages could n
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests/ -q                      # 74 offline tests, no network
+python -m pytest tests/ -q                      # 76 offline tests, no network
 
-# Data. The recent panel is ~45 min; the multi-winter one ~75 min. Both cache to
-# parquet, so this is a one-time cost.
-python scripts/build_dataset.py --start 2025-02-01 --end 2026-08-31 --stations 40        --name train_panel
-python scripts/build_dataset.py --start 2018-10-01 --end 2022-03-31 --stations 40        --name winters_panel --no-chem
+# Data. The recent panel takes about 45 minutes, the historical one about 20. Both
+# cache to parquet, and the raw observation archive caches separately, so a failed
+# assembly no longer costs another download.
+python scripts/build_dataset.py --start 2025-02-01 --end 2026-08-31     --stations 40 --name train_panel
+python scripts/build_dataset.py --start 2020-10-01 --end 2022-03-31     --stations 20 --name winters_panel --no-chem
 
 # Everything else, in dependency order: combine, train, quantiles, LOSO, DSS.
 bash scripts/run_all.sh
 
-uvicorn api.main:app --port 8100                # then open dashboard/index.html
+uvicorn api.main:app --port 8100                # then open http://127.0.0.1:8100
 ```
 
 Individual experiments:
@@ -377,8 +392,71 @@ Individual experiments:
 | `loso.py` | does it work where there is no instrument? |
 | `case_study.py` | replay a past burning episode |
 
-**Nothing here is deployed.** No hosting, no public URL, no keep-alive. The dashboard
-talks to `127.0.0.1:8100` and nothing else.
+The dashboard is served by the API itself at `/`, so one process gives you both:
+open <http://127.0.0.1:8100> once uvicorn is up.
+
+### Running it live, without building anything
+
+The trained boosters are not in this repository (they are 43 MB of XGBoost JSON and
+they are reproducible), so a fresh clone has no models. To see the interface against
+real data immediately, serve the committed snapshot instead:
+
+```bash
+pip install -r requirements.txt
+VAYUCHAKRA_SNAPSHOT=1 uvicorn api.main:app --port 8100    # then open localhost:8100
+```
+
+That is exactly what the hosted instance does.
+
+---
+
+## Deployment
+
+One service on Render's free tier, serving both the API and the dashboard it drives.
+
+| | |
+|---|---|
+| URL | <https://vayuchakra.onrender.com> |
+| Config | [`render.yaml`](render.yaml) |
+| Mode | `VAYUCHAKRA_SNAPSHOT=1`, replaying [`data/snapshot/`](data/snapshot/) |
+| Memory | about 130 MB resident against a 512 MB limit |
+| Cold start | roughly 50 seconds after 15 minutes idle, by choice |
+| Secrets | `OPENAQ_API_KEY` and `FIRMS_MAP_KEY` are set in Render, never in git |
+
+Three decisions are worth stating, because each of them was learned by getting it
+wrong first.
+
+**No `healthCheckPath`.** With one configured on a free service, Render's edge
+intermittently dropped the instance from routing: 20 to 37 percent of requests returned
+404 with `x-render-routing: no-server`, and those never reached uvicorn, so the
+application log showed only the successes and looked perfectly healthy. Clearing it
+took the failure rate to zero.
+
+**One service, not two.** Two free services cost roughly 1,440 instance-hours a month
+against a 750-hour allowance. Mounting the dashboard on the API process halves that and
+removes the cross-origin hop.
+
+**Snapshot rather than a coarser grid.** The obvious way to fit a 512 MB tier is to
+shrink the domain. Measured, that does not work:
+
+| Delhi cells | rows | peak RSS |
+|---|---|---|
+| 420 (2.8 km) | 211,680 | 1,083 MB |
+| 182 (4.4 km) | 91,728 | 701 MB |
+
+A line through those two points gives a fixed cost of about 283 MB before a single cell
+is forecast, on top of a 126 MB floor for Python, pandas, XGBoost and the boosters. Even
+a grid coarse enough to be useless would not have fit, so coarsening the domain would
+have cost real resolution and bought nothing. Serving a full-resolution bundle keeps
+everything the model actually knows and gives up only the clock.
+
+To refresh what the hosted instance shows:
+
+```bash
+uvicorn api.main:app --port 8100                 # live, full resolution
+python scripts/export_snapshot.py                # 20 routes -> data/snapshot/
+git commit -am "Refresh snapshot" && git push    # autoDeploy picks it up
+```
 
 ---
 

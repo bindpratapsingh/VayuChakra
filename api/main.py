@@ -182,6 +182,19 @@ if REFRESH_ENABLED:
 def health():
     """Liveness plus an honest inventory of what this instance can actually do."""
     models = sorted(p.stem for p in C.MODELS.glob("*.meta.json"))
+    if not models and SNAPSHOT_MODE:
+        # A snapshot instance carries no boosters, so this list is empty and reads like
+        # a broken deployment. It is not: the heads exist, they produced the bundle, and
+        # they are named in the bundle's own health payload. Report those, labelled as
+        # what they are, rather than a zero that invites the wrong conclusion.
+        cached = _SNAPSHOT_FILES.get("health.json")
+        if cached is not None:
+            try:
+                models = [f"{m}.meta" for m in
+                          json.loads(cached.read_text(encoding="utf-8")).get(
+                              "trained_heads", [])]
+            except Exception:
+                models = []
     return _clean({
         "status": "ok",
         "domain": {"lat": [C.LAT_MIN, C.LAT_MAX], "lon": [C.LON_MIN, C.LON_MAX]},
@@ -195,6 +208,9 @@ def health():
         "grid_cells": len(grid.build_grid()),
         "horizons_h": list(C.HORIZONS_H),
         "trained_heads": [m.replace(".meta", "") for m in models],
+        "trained_heads_are": ("loaded in this process" if not SNAPSHOT_MODE
+                              else "the heads that produced the bundle; this instance "
+                                   "serves their output and does not load them"),
         "keys": {"openaq": bool(C.OPENAQ_API_KEY), "firms": bool(C.FIRMS_MAP_KEY)},
         "dss_workbook": dss.available(),
         "cache_age_s": round(time.time() - _CACHE["at"], 1) if _CACHE["result"] else None,

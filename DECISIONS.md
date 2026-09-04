@@ -1257,3 +1257,81 @@ status bar for a run with three heads on a NaN feature was indistinguishable fro
 clean one, apart from the absence of the green chip. Unrecognised entries now get a
 counted chip of their own. A status display whose failure mode is showing nothing is
 worse than no status display, because it is trusted.
+
+---
+
+## D-059
+
+**Hosted as a precomputed bundle, because the live pipeline does not fit in 512 MB.**
+
+The instinct on a small tier is to shrink the domain. Measured on this pipeline, with
+the forecast frame already cast to float32, that does not work:
+
+| Delhi cells | rows | peak RSS |
+|---|---|---|
+| 420 (2.8 km) | 211,680 | 1,083 MB |
+| 182 (4.4 km) | 91,728 | 701 MB |
+
+A line through those gives **283 MB of fixed cost before a single cell is forecast**, on
+top of a 126 MB floor for Python, pandas, XGBoost and the twelve boosters. So even a
+grid coarse enough to be scientifically useless would still not have fit: the constraint
+is not the number of cells. Coarsening would have cost real resolution and bought
+nothing measurable.
+
+`VAYUCHAKRA_SNAPSHOT=1` therefore serves a bundle captured by
+`scripts/export_snapshot.py` from this same API at full resolution: 20 routes, 805 KB,
+about 15 ms per request at 130 MB resident. **A deployment gives up freshness, not
+resolution or physics**, which is the right one of the two to give up for a system whose
+claim is about coupling rather than about latency.
+
+The bundle is captured from the running API rather than rebuilt from the modules. A
+reimplementation would have been a second copy of the serialisation logic and a second
+place for it to drift from what the endpoints actually return.
+
+### Saying so, everywhere
+
+A stale forecast presented as live is the worst outcome available here, worse than no
+deployment, because it is the one a reader would quote. So the age is unavoidable: a
+banner on every view naming the capture time and what was given up, an age chip in the
+status bar, the mode and live grid in the footer, and `/health` reporting both while
+staying live itself.
+
+`/health` also had to be taught that a snapshot instance carries no boosters. It listed
+`trained_heads: 0`, which is literally true of the process and reads exactly like a
+broken deployment. It now reports the heads that produced the bundle, labelled as that.
+
+Refresh is handled rather than left to fail. The middleware strips `refresh` before
+matching a route, so the button returns the bundle instead of falling through to a
+handler that would try to build a 1.1 GB frame on a 512 MB instance and take the service
+down.
+
+### Render specifics, each learned by getting it wrong
+
+**No `healthCheckPath`.** With one set on a free service, Render's edge intermittently
+dropped the instance from routing: 20 to 37% of requests returned 404 with
+`x-render-routing: no-server`, never reaching uvicorn, so the application log showed
+only successes and looked healthy throughout. Clearing it took the failure rate to zero.
+Verified again here: 20 of 20 requests clean, no such header.
+
+**One service, not two.** Two free services cost roughly 1,440 instance-hours a month
+against a 750-hour allowance, which is what suspended the previous account. The
+dashboard is mounted at `/` on the API process.
+
+**No keepalive, by request.** The service sleeps after 15 minutes and wakes in about
+50 seconds. That is the price of staying inside the allowance rather than burning it.
+
+**The name cooldown is real but only bites reused names.** `vayuchakra` had never been
+used and got the clean `vayuchakra.onrender.com`, where recreated services previously
+got suffixed subdomains.
+
+### Rejected
+
+**Committing the boosters so the instance could predict.** 43 MB of XGBoost JSON in a
+repository whose `.gitignore` excludes them on purpose, to serve a pipeline that would
+still not fit in the memory.
+
+**A paid instance.** Not authorised, and the snapshot makes it unnecessary for what a
+reviewer needs to see.
+
+**Chunking the pipeline over cell batches.** It would cap the per-row cost but not the
+283 MB fixed cost, which is the part that does not fit.
