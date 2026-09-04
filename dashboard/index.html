@@ -118,8 +118,45 @@ p { margin: 0; }
 .nav button[aria-current="page"] { background: rgba(255,255,255,0.16); color: #fff; font-weight: 600; }
 .nav button[aria-current="page"] .sub { opacity: 0.7; }
 
+/* The docs card.
+   It sits in the rail rather than on a view because it answers a question that is not
+   about any one view: "what is this, and how does it meet the brief". margin-top:auto
+   pushes it and the foot to the bottom together, so it never floats mid-rail when the
+   nav is short. */
+.docs {
+  margin: auto 10px 0; padding: 13px 13px 12px; border-radius: var(--r-sm);
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+}
+.docs .dt {
+  font-size: 0.75rem; font-weight: 650; letter-spacing: -0.005em; margin-bottom: 3px;
+}
+.docs .dd {
+  font-size: 0.6875rem; line-height: 1.42; opacity: 0.68; margin-bottom: 10px;
+}
+.docs a {
+  display: flex; align-items: center; gap: 8px; text-decoration: none; color: #fff;
+  font-size: 0.75rem; font-weight: 600; padding: 8px 10px; border-radius: var(--r-bar);
+  transition: background 140ms ease-out, border-color 140ms ease-out;
+}
+.docs a svg { flex: 0 0 auto; opacity: 0.85 }
+.docs .pdf {
+  background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.2);
+}
+.docs .pdf:hover { background: rgba(255,255,255,0.22) }
+.docs .pdf small {
+  margin-left: auto; font-size: 0.625rem; font-weight: 500; opacity: 0.62;
+  font-variant-numeric: tabular-nums;
+}
+.docs .repo {
+  margin-top: 4px; padding-top: 9px; padding-bottom: 2px; font-weight: 500;
+  opacity: 0.74; border-top: 1px solid rgba(255,255,255,0.12); border-radius: 0;
+}
+.docs .repo:hover { opacity: 1; background: transparent; text-decoration: underline;
+  text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .docs a { transition: none } }
+
 .rail-foot {
-  margin-top: auto; padding: 14px 18px; font-size: 0.6875rem;
+  padding: 14px 18px; font-size: 0.6875rem; margin-top: 12px;
   opacity: 0.6; line-height: 1.45; border-top: 1px solid rgba(255,255,255,0.14);
 }
 .main { min-width: 0; display: flex; flex-direction: column; }
@@ -453,6 +490,32 @@ svg.cycle .pulse { fill: var(--s2); }
       <button data-view="forecast"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 16.5v-13" opacity=".55"/><path d="M2.5 16.5h15" opacity=".55"/><path d="M5 13l3.5-4.5 3 2.5L17 5"/></svg><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
       <button data-view="evidence"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V9m4.5 7.5V4m4.5 12.5v-5" opacity=".55"/><path d="M13.5 13.8 15.6 16 18.5 11.6"/></svg><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
     </nav>
+    <div class="docs">
+      <div class="dt">How this works</div>
+      <div class="dd">The full write-up: the problem statement, what it requires, and
+        every result measured against it.</div>
+      <a class="pdf" id="doc-pdf" href="/docs/VayuChakra-Report.pdf" download>
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 3v9"/><path d="M6.5 8.8 10 12.3 13.5 8.8"/><path d="M3.5 15.5h13"/>
+        </svg>
+        <span>Project report</span><small>PDF</small>
+      </a>
+      <a class="repo" href="https://github.com/bindpratapsingh/VayuChakra"
+         target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                   0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                   -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                   .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                   -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09
+                   2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82
+                   2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01
+                   2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        <span>Source on GitHub</span>
+      </a>
+    </div>
     <div class="rail-foot">
       <span id="foot-env">starting</span><br>
       <span id="foot-api">connecting</span>
@@ -707,6 +770,11 @@ svg.cycle .pulse { fill: var(--s2); }
         <header><h3>Forecast heads</h3><span class="hint">held-out evaluation</span></header>
         <div id="val-slot"><div class="skeleton sk-block" style="height:200px"></div></div>
       </div>
+      <div class="panel" style="margin-bottom:14px">
+        <header><h3>Against the operational MoES DSS</h3>
+          <span class="hint">not like for like</span></header>
+        <div id="dss-slot"><div class="skeleton sk-line" style="width:60%"></div></div>
+      </div>
       <div class="cols two">
         <div class="panel">
           <header><h3>Does it work where there is no monitor</h3>
@@ -741,6 +809,11 @@ const LOCAL = ["127.0.0.1", "localhost", ""].indexOf(location.hostname) >= 0;
 const API = (LOCAL && location.port !== "8100") ? "http://127.0.0.1:8100" : "";
 document.getElementById("foot-api").textContent =
   API ? API.replace("http://", "") : location.host;
+
+/* The report is served by the API process, not by whatever static server happens to be
+   holding this page, so the link needs the same base every fetch uses. Hosted these are
+   the same origin and API is empty, which leaves the href exactly as authored. */
+if (API) document.getElementById("doc-pdf").href = API + "/docs/VayuChakra-Report.pdf";
 
 /* Colours that have to be literals.
    SVG presentation attributes cannot read a CSS custom property, so every colour drawn
@@ -1869,7 +1942,7 @@ async function loadPhotolysis() {
     const fill = el("div");
     fill.style.cssText = "height:100%;width:"
       + Math.min(100, Math.abs(r.o3_change_daytime_pct) * 3.5).toFixed(0)
-      + "%;background:var(--s1);border-radius:4px";
+      + "%;background:var(--s1);border-radius:var(--r-bar)";
     track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
   });
   wrap.append(t);
@@ -2067,7 +2140,7 @@ async function loadGrapRisk() {
       const fill = el("div");
       const colour = peak > 0.66 ? "var(--bad)" : peak > 0.33 ? "var(--warn)" : "var(--ok)";
       fill.style.cssText = "height:100%;width:" + (100 * peak).toFixed(0)
-        + "%;background:" + colour + ";border-radius:4px";
+        + "%;background:" + colour + ";border-radius:var(--r-bar)";
       track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
     });
     wrap.append(t);
@@ -2140,6 +2213,8 @@ async function loadEvidence() {
     vs.replaceChildren(wrap);
   }
 
+  renderDss(val.dss_head_to_head);
+
   const ls = $("#loso-slot");
   if (loso.__error) {
     ls.replaceChildren(Object.assign(el("div", "empty"), {
@@ -2177,6 +2252,69 @@ async function loadEvidence() {
   loadScenario();
 }
 
+/* The head-to-head against the operational MoES DSS.
+   This is the one table on the site that flatters us for the wrong reason, so the
+   caveat is rendered ABOVE it and never behind a disclosure. Our hindcast is driven by
+   ERA5 reanalysis, meaning the weather as it actually turned out; the DSS had to
+   forecast that weather too, days ahead. A reader who sees the numbers before the
+   reason will take away something false. */
+function renderDss(d) {
+  const slot = $("#dss-slot");
+  if (!slot) return;
+  if (!d || !d.available || !Array.isArray(d.by_lead)) {
+    slot.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>Not run</b>Run <code>python scripts/validate.py</code> over an "
+        + "archived DSS window." }));
+    return;
+  }
+  const rows = d.by_lead.filter(r => r.vayuchakra && r.dss_on_common_hours);
+  if (!rows.length) {
+    slot.replaceChildren(Object.assign(el("div", "empty"), {
+      innerHTML: "<b>No overlapping hours</b>The two series share no lead time." }));
+    return;
+  }
+
+  const wrap = el("div"), lead = el("p", "note caveat");
+  lead.innerHTML = "<b>This is not a fair comparison, and the lower number is not a "
+    + "win.</b> The DSS was issued <b>operationally</b>: it had to predict the weather "
+    + "as well as the chemistry, days ahead. This hindcast is driven by ERA5 "
+    + "<b>reanalysis</b>, the weather as it actually turned out. What the table supports "
+    + "is that the statistical layer maps meteorology to PM2.5 competitively, nothing "
+    + "more.";
+  wrap.append(lead);
+
+  const t = el("table", "kv"), head = el("tr");
+  head.append(el("th", null, "Lead"));
+  ["MoES DSS", "VayuChakra", "Persistence", "DSS corr", "Our corr"].forEach(
+    h => head.append(el("th", "n", h)));
+  t.append(head);
+  rows.forEach(r => {
+    const tr = el("tr");
+    tr.append(el("th", null, "+" + r.lead_hours + " h"));
+    tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.dss_on_common_hours.rmse, 2) }));
+    tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.vayuchakra.rmse, 2) }));
+    tr.append(Object.assign(el("td", "n"), {
+      textContent: r.persistence ? fmt(r.persistence.rmse, 2) : "n/a" }));
+    tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.dss.corr, 3) }));
+    tr.append(Object.assign(el("td", "n"), { textContent: fmt(r.vayuchakra.corr, 3) }));
+    t.append(tr);
+  });
+  makeSortable(t);
+  wrap.append(t);
+
+  const why = el("details", "why"), body = el("div");
+  body.innerHTML = "<p>Window " + (d.window ? d.window.from + " to " + d.window.to : "archived")
+    + ", scored on Delhi city-mean hourly PM2.5 from CPCB stations, RMSE in µg/m³. "
+    + "Our models were trained on a later period, so this window is genuinely out of "
+    + "sample in time.</p>"
+    + (d.configuration ? "<p>Configuration: " + d.configuration + ".</p>" : "")
+    + "<p>Source: " + (d.citation || "MoES and IITM WRF-Chem Decision Support System")
+    + "</p>";
+  why.append(el("summary", null, "Window, configuration and source"), body);
+  wrap.append(why);
+  slot.replaceChildren(wrap);
+}
+
 async function loadScenario() {
   const d = await api("/scenario?kind=" + S.scenKind);
   const slot = $("#scen-slot");
@@ -2204,7 +2342,7 @@ async function loadScenario() {
     track.style.cssText = "height:7px;border-radius:4px;background:var(--panel-2);min-width:80px;overflow:hidden";
     const fill = el("div");
     fill.style.cssText = "height:100%;width:" + (r.mean_ugm3 / max * 100).toFixed(1)
-      + "%;background:var(--s1);border-radius:4px";
+      + "%;background:var(--s1);border-radius:var(--r-bar)";
     track.append(fill); bar.append(track); tr.append(bar); t.append(tr);
   });
   makeSortable(t, { col: 2, dir: "desc", skip: [3] });

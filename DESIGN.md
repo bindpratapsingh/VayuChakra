@@ -393,30 +393,38 @@ not.
   reads as a broken feed unless it also says that outside October and November this is
   the correct reading.
 
-## 11. The report is a different surface, and it is typeset
+## 11. The report is a print document, and it has its own type system
 
-`docs/REPORT.html` deliberately departs from the one rule this document is most
-committed to: **the product UI uses `system-ui` and nothing else.** That rule was
-written about the dashboard, and it holds there. A dashboard is scanned and operated,
-so a display pairing buys nothing and costs a font request on a cold instance.
+`docs/report/report.html` is not a web page. It exists only to be rendered to
+`docs/VayuChakra-Report.pdf` by `docs/report/build.py`, and it departs from this
+document in three ways, each deliberate.
 
-The report is read, not operated. It is the artefact a judge or a reviewer sits with,
-and typography is what carries a document. So it pairs on a real contrast axis:
+**Typography.** The product UI uses `system-ui` and nothing else, and that rule holds
+on the dashboard: a dashboard is scanned and operated, so a display pairing buys
+nothing and costs a font request on a cold instance. A report is read, on paper as
+often as on screen, and typography is what carries a document. The faces were
+specified by the user:
 
 | role | face | why |
 |---|---|---|
-| headings | **Newsreader** | an editorial serif with enough weight to give a technical report gravity, italic used only for the one phrase in the title that is the thesis |
-| body | **IBM Plex Sans** | humanist, institutional, reads at length; a genuine contrast against the serif rather than a second sans that is nearly the same |
-| figures, labels, file paths | **IBM Plex Mono** | tabular by construction, and it marks every path and identifier as a literal thing on disk |
+| body prose | **Times New Roman** | the serif a technical report is expected to be set in, and it holds up at 10.8 pt on paper where a screen sans does not |
+| headings, tables, figures, labels | **Calibri** | a real contrast axis against the serif, and it keeps every table and diagram label legible at 8.6 pt |
+| file paths and identifiers | **Consolas** | marks a literal thing on disk as literal; the one face not in the user's brief, and used nowhere but inside `.mono` |
 
-The palette does **not** depart. It is the same atmospheric indigo, the same cool
-neutral ground biased toward that indigo rather than toward warmth, and the same
-semantic green and ochre for pass and gap. The report should look like it came from
-the same place as the product, and it does, because colour is what carries that and
-colour is unchanged.
+**Units.** The stylesheet is in points and millimetres, not pixels, because the output
+is A4. The `rounded` scale in this document is a pixel scale for the web UI and does
+not apply; the report uses a single 2 pt radius on status pills and 3 pt on diagram
+nodes, which is the print equivalent of `rounded.xs`.
 
-Three tokens exist only in the report and are listed here so they are not mistaken for
-drift: `--dot-hollow` and `--dot-stroke` (the persistence marker in the dumbbell chart,
-which must read as an outline against the filled model marker in both themes), and
-`--connector` (the segment between the pair, which must sit visually behind both dots
-without disappearing on the dark ground).
+**Section numbering.** Numbered section markers are normally an AI-editorial tell and
+are called out as such. Here they are load-bearing: the document cross-references
+itself throughout (`see §11.2`, `Table 4.1`, `§12.1 closes C6`), and the eleven
+problem-statement clauses are numbered C1 to C11 so the compliance matrix, the gap
+list and the roadmap can all point at the same clause. Strip the numbers and every
+cross-reference in the report breaks. That is the test: numbering that carries
+information the reader needs, rather than numbering as decoration.
+
+**What does not change** is the palette. Same atmospheric indigo, same ochre for the
+second series and for gaps, same green for a passing check, same cool neutral ground
+biased toward the indigo rather than toward warmth. The report should look like it
+came from the same place as the product, and colour is what carries that.

@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VayuChakra Project Report</title>
+<style>
+/* ═══ Print geometry ══════════════════════════════════════════════════════
+   A4 with a 16mm gutter. Chromium's print-to-PDF honours @page size and
+   margin; the running footer comes from footerTemplate in build.py, because
+   @page margin-boxes are not implemented in Blink.                         */
+@page { size: A4; margin: 17mm 16mm 20mm; }
+
+:root {
+  --ink:      #16202b;
+  --ink-2:    #46545f;
+  --ink-3:    #6f7d89;
+  --brand:    #1c3260;
+  --brand-2:  #34527f;
+  --wash:     #eef2f7;
+  --wash-2:   #f6f8fb;
+  --rule:     #c8d3de;
+  --rule-2:   #dfe6ed;
+  --ok:       #16693f;
+  --ok-bg:    #dcecdf;
+  --part:     #8a5a10;
+  --part-bg:  #f7e9d0;
+  --serif:    "Times New Roman", Times, serif;
+  --sans:     Calibri, "Segoe UI", Candara, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #fff;
+  font: 10.8pt/1.52 var(--serif);
+}
+p { margin: 0 0 7pt; text-align: justify; hyphens: auto; }
+p.lead { font-size: 11.6pt; line-height: 1.5; color: var(--ink-2); }
+
+/* ═══ Headings: Calibri throughout, so the sans marks structure and the
+       serif marks prose. ═══════════════════════════════════════════════ */
+h1, h2, h3, h4, .sans { font-family: var(--sans); }
+h1 { font-size: 26pt; font-weight: 700; letter-spacing: -0.4pt; margin: 0 0 4pt; line-height: 1.1; }
+h2 {
+  font-size: 15pt; font-weight: 700; color: var(--brand); margin: 0 0 9pt;
+  padding-bottom: 4pt; border-bottom: 1.6pt solid var(--brand); letter-spacing: -0.2pt;
+}
+h2 .n { color: var(--ink-3); font-weight: 600; margin-right: 7pt; }
+h3 { font-size: 11.6pt; font-weight: 700; margin: 13pt 0 5pt; color: var(--brand-2); }
+h4 { font-size: 10.4pt; font-weight: 700; margin: 10pt 0 4pt; color: var(--ink); }
+
+section { page-break-before: always; }
+section.first { page-break-before: avoid; }
+h2, h3, h4 { page-break-after: avoid; }
+table, figure, .box { page-break-inside: avoid; }
+
+/* ═══ Cover ═════════════════════════════════════════════════════════════ */
+.cover { height: 247mm; display: flex; flex-direction: column; }
+.cover .rule-top { height: 5pt; background: var(--brand); margin-bottom: 14pt; }
+.cover .kicker {
+  font-family: var(--sans); font-size: 9.4pt; font-weight: 600; letter-spacing: 1.1pt;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 22pt;
+}
+.cover .sub {
+  font-family: var(--sans); font-size: 13pt; color: var(--brand-2);
+  font-weight: 600; margin: 2pt 0 16pt;
+}
+.cover .blurb { font-size: 11.4pt; line-height: 1.55; max-width: 132mm; color: var(--ink-2); }
+.cover .spacer { flex: 1 1 auto; }
+.cover .mark { margin: 26pt 0 0; }
+.meta {
+  border-top: 1pt solid var(--rule); padding-top: 10pt; font-family: var(--sans);
+  font-size: 9.6pt; display: grid; grid-template-columns: repeat(2, 1fr); gap: 7pt 22pt;
+}
+.meta div span { display: block; color: var(--ink-3); font-size: 8.4pt;
+  text-transform: uppercase; letter-spacing: 0.7pt; margin-bottom: 1pt; }
+.meta div b { font-weight: 600; }
+
+/* ═══ Contents ══════════════════════════════════════════════════════════ */
+.toc { font-family: var(--sans); font-size: 10.4pt; }
+.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+.toc li {
+  display: flex; align-items: baseline; gap: 6pt; padding: 4.4pt 0;
+  border-bottom: 0.5pt dotted var(--rule);
+}
+.toc li b { font-weight: 600; color: var(--ink-3); min-width: 15pt; }
+.toc li span { flex: 1 1 auto; }
+.toc li em { font-style: normal; color: var(--ink-3); font-size: 9.4pt; }
+
+/* ═══ Tables ════════════════════════════════════════════════════════════ */
+table { border-collapse: collapse; width: 100%; font-family: var(--sans);
+  font-size: 9.4pt; margin: 0 0 4pt; }
+caption { caption-side: bottom; text-align: left; font-family: var(--sans);
+  font-size: 8.6pt; color: var(--ink-3); padding-top: 4pt; line-height: 1.42; }
+th, td { text-align: left; padding: 4.4pt 6pt; border-bottom: 0.5pt solid var(--rule-2);
+  vertical-align: top; }
+thead th {
+  background: var(--wash); color: var(--brand); font-weight: 700; font-size: 8.6pt;
+  text-transform: uppercase; letter-spacing: 0.4pt; border-bottom: 1pt solid var(--rule);
+}
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 1pt solid var(--rule); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody th { font-weight: 600; }
+.zebra tbody tr:nth-child(even) { background: var(--wash-2); }
+
+.pill {
+  display: inline-block; font-family: var(--sans); font-size: 8pt; font-weight: 700;
+  letter-spacing: 0.3pt; padding: 1.6pt 5pt; border-radius: 2pt; white-space: nowrap;
+}
+.pill.met  { background: var(--ok-bg);   color: var(--ok); }
+.pill.part { background: var(--part-bg); color: var(--part); }
+.good { color: var(--ok); font-weight: 600; }
+
+/* ═══ Boxes ═════════════════════════════════════════════════════════════ */
+.box {
+  border: 0.75pt solid var(--rule); border-top: 2.2pt solid var(--brand);
+  background: var(--wash-2); padding: 8pt 10pt; margin: 9pt 0;
+}
+.box.warn { border-top-color: var(--part); }
+.box h4 { margin: 0 0 4pt; color: var(--brand); font-size: 10pt; }
+.box.warn h4 { color: var(--part); }
+.box p { margin: 0 0 5pt; font-size: 10.2pt; }
+.box p:last-child { margin-bottom: 0; }
+
+blockquote {
+  margin: 0 0 9pt; padding: 8pt 12pt; background: var(--wash);
+  border-left: 3pt solid var(--brand); font-size: 10.6pt; line-height: 1.55;
+  font-style: italic; color: var(--ink);
+}
+
+figure { margin: 10pt 0 12pt; }
+figure svg { display: block; width: 100%; height: auto; }
+figcaption { font-family: var(--sans); font-size: 8.6pt; color: var(--ink-3);
+  margin-top: 5pt; line-height: 1.45; }
+
+ul, ol { margin: 0 0 8pt; padding-left: 15pt; }
+li { margin-bottom: 3.4pt; }
+ul.compact li { margin-bottom: 2pt; }
+code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
+  background: var(--wash); padding: 0.4pt 2.6pt; }
+.two { column-count: 2; column-gap: 12pt; }
+.two > * { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER ═══════════════ -->
+<section class="first">
+<div class="cover">
+  <div class="rule-top"></div>
+  <div class="kicker">Ministry of Earth Sciences &nbsp;·&nbsp; NCMRWF &nbsp;·&nbsp; Problem Statement Response</div>
+
+  <h1>VayuChakra</h1>
+  <div class="sub">An air pollution and weather coupled forecasting system for Delhi NCR</div>
+
+  <p class="blurb">
+    A 72 hour, high resolution air quality forecast in which meteorology and chemistry are
+    solved together rather than in one direction. Aerosol dims the sun, the boundary layer
+    shallows, the wind slackens, and the same emissions concentrate further; the same
+    aerosol removes the ultraviolet that drives ozone production. This report sets out the
+    problem statement clause by clause, what each clause requires, exactly what has been
+    built to meet it, the evidence for each claim, and the work that remains.
+  </p>
+
+  <div class="mark">
+    <svg width="150" height="150" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="47" fill="none" stroke="#eef2f7" stroke-width="13"/>
+      <path d="M96 46A38 38 0 1 1 80 24" fill="none" stroke="#1c3260"
+            stroke-width="7" stroke-linecap="round"/>
+      <path d="M77 10 L100 26 L76 39" fill="none" stroke="#1c3260" stroke-width="7"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M31 70 H89" stroke="#c2701c" stroke-width="7" stroke-linecap="round"/>
+      <text x="60" y="106" text-anchor="middle" font-family="Calibri, sans-serif"
+            font-size="11" fill="#6f7d89" letter-spacing="1.4">वायु चक्र</text>
+    </svg>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="meta">
+    <div><span>Live system</span><b>vayuchakra.onrender.com</b></div>
+    <div><span>Source</span><b>github.com/bindpratapsingh/VayuChakra</b></div>
+    <div><span>Domain</span><b>Delhi NCR, 1,120 cells, 2.8 km over Delhi</b></div>
+    <div><span>Report date</span><b>5 September 2026</b></div>
+    <div><span>Test suite</span><b>76 tests passing</b></div>
+    <div><span>Design decisions recorded</span><b>59, negative results included</b></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ CONTENTS ═══════════════ -->
+<section>
+<h2><span class="n">&nbsp;</span>Contents</h2>
+<div class="toc">
+  <ol>
+    <li><b>1</b><span>The problem statement, and how we read it</span><em>p. 3</em></li>
+    <li><b>2</b><span>Compliance matrix: eleven clauses, clause by clause</span><em>p. 5</em></li>
+    <li><b>3</b><span>System architecture and data flow</span><em>p. 8</em></li>
+    <li><b>4</b><span>The two way coupling, which is the core of the brief</span><em>p. 10</em></li>
+    <li><b>5</b><span>Atmospheric inversion: tracking the lid over the city</span><em>p. 12</em></li>
+    <li><b>6</b><span>Stubble burning plumes and their dispersion</span><em>p. 13</em></li>
+    <li><b>7</b><span>Forecast models, and the skill they achieve</span><em>p. 14</em></li>
+    <li><b>8</b><span>Validation, including the results that failed</span><em>p. 16</em></li>
+    <li><b>9</b><span>The dashboard</span><em>p. 18</em></li>
+    <li><b>10</b><span>Deployment, and the free tier constraint</span><em>p. 19</em></li>
+    <li><b>11</b><span>Gaps: what is not built, and why</span><em>p. 20</em></li>
+    <li><b>12</b><span>Roadmap to full compliance</span><em>p. 22</em></li>
+    <li><b>A</b><span>Appendix: where every number in this report lives</span><em>p. 25</em></li>
+  </ol>
+</div>
+
+<h3>How to read this report</h3>
+<p>
+  Every quantitative claim carries the file it was read from. Nothing in this document is
+  an estimate, a projection, or a number typed by hand into a slide. Section 11 lists what
+  is missing with the same care as the earlier sections list what works, and section 8
+  includes a validation that was planned, attempted, and abandoned because measurement
+  showed it could not work. A system that only reports its successes has not been
+  validated; it has been advertised.
+</p>
+<p>
+  Three clauses of the problem statement are met only in part. They are marked
+  <span class="pill part">PARTIAL</span> in section 2, explained in section 11, and given
+  dated, costed remediation in section 12. They are not hidden in a footnote.
+</p>
+</section>
+
+<!-- ═══════════════ 1. PROBLEM STATEMENT ═══════════════ -->
+<section>
+<h2><span class="n">1</span>The problem statement, and how we read it</h2>
+
+<blockquote>
+  The solution must leverage advanced weather-chemistry models (such as WRF-Chem or
+  similar open-source coupled frameworks) to dynamically interlink meteorology with
+  pollution dispersion (specifically PM2.5 and Ground-level Ozone). A core focus should be
+  accurately modeling the impact of atmospheric inversion on external pollution spikes,
+  such as regional stubble burning, and how those trapped pollutants subsequently alter
+  local weather conditions. Implement a workflow that handles two-way feedback between
+  meteorology (temperature, wind, PBL height) and chemistry (PM2.5, PM10, O3, NOx). A
+  user-friendly, real-time dashboard displaying high-resolution AQI forecasts for Delhi NCR
+  with a 72-hour outlook. Features that explicitly track atmospheric inversion strength and
+  predict how stubble-burning plumes will disperse under prevailing weather conditions.
+</blockquote>
+
+<h3>1.1 The physical problem underneath it</h3>
+<p class="lead">
+  Delhi's air quality is not a chemistry problem sitting on top of a weather problem. The
+  two are one problem, and the coupling runs in both directions.
+</p>
+<p>
+  <b>Weather sets the volume that pollution occupies.</b> On a winter night the ground
+  radiates heat away faster than the air above it, the surface cools below the air aloft,
+  and the normal decrease of temperature with height reverses. That is a temperature
+  inversion, and it acts as a physical lid. The mixed layer beneath it can collapse from
+  two kilometres in the afternoon to under two hundred metres before dawn. The city's
+  emissions do not change; the air they are diluted into shrinks by a factor of ten, and
+  the concentration rises accordingly. This direction of the coupling is well understood
+  and most operational systems represent it.
+</p>
+<p>
+  <b>The return path is the harder one, and it is what the problem statement is really
+  asking for.</b> Aerosol is not a passive tracer being pushed around by the weather. It
+  absorbs and scatters incoming solar radiation, so less energy reaches the surface, so the
+  surface warms less, so the convection that grows the daytime boundary layer is weaker, so
+  the layer stays shallow, so the turbulent momentum transport that drives surface wind is
+  reduced, so ventilation falls, so the same emissions end up more concentrated, which puts
+  more aerosol in the column and blocks more sunlight still. The loop closes on itself.
+  A forecast that treats meteorology purely as an input cannot represent this at all, and
+  will systematically under predict the severity and duration of exactly the episodes that
+  matter most.
+</p>
+<p>
+  <b>There is a second, stronger aerosol pathway, and it acts on ozone.</b> The same
+  aerosol layer attenuates ultraviolet radiation. Ultraviolet is what photolyses nitrogen
+  dioxide and starts the reaction chain that produces ground level ozone. Published
+  experiments that separate the two mechanisms find the radiation and boundary layer route
+  changes ozone by 1 to 3 percent, while the photolysis route changes it by 10 to 12
+  percent. The problem statement names ground level ozone explicitly, and the photolysis
+  pathway is the one that governs it.
+</p>
+<p>
+  <b>And Delhi's worst air is frequently not made in Delhi.</b> Through October and
+  November, smoke from paddy stubble burning across Punjab and Haryana travels 200 to 400
+  kilometres on the north westerly flow and arrives over a city that often cannot ventilate
+  it away. The problem statement calls these external pollution spikes, and it is precise
+  about what must be modelled: not the fires, but the interaction between the arriving
+  plume and the inversion that decides whether that plume reaches breathing height or
+  passes overhead.
+</p>
+
+<h3>1.2 The eleven things the statement actually asks for</h3>
+<p>
+  The paragraph above is a single block of prose, so the first engineering task was to
+  decompose it into testable clauses. We read eleven. They are used as the spine of this
+  report and as the acceptance criteria for the build. The numbering is ours; the wording
+  in the second column is the statement's.
+</p>
+<table class="zebra">
+  <thead><tr><th style="width:8%">#</th><th style="width:52%">Clause, as written</th><th>What it demands of the build</th></tr></thead>
+  <tbody>
+    <tr><th>C1</th><td>"leverage advanced weather-chemistry models (such as WRF-Chem or similar open-source coupled frameworks)"</td><td>A genuine coupled meteorology and chemistry framework must be in the pipeline, not a statistical model alone</td></tr>
+    <tr><th>C2</th><td>"dynamically interlink meteorology with pollution dispersion (specifically PM2.5 and Ground-level Ozone)"</td><td>Meteorological state must drive dispersion for both species, hour by hour</td></tr>
+    <tr><th>C3</th><td>"accurately modeling the impact of atmospheric inversion on external pollution spikes, such as regional stubble burning"</td><td>The inversion must gate whether an arriving plume reaches the surface</td></tr>
+    <tr><th>C4</th><td>"and how those trapped pollutants subsequently alter local weather conditions"</td><td>The chemistry to meteorology return path must be explicit</td></tr>
+    <tr><th>C5</th><td>"two-way feedback between meteorology (temperature, wind, PBL height)"</td><td>All three meteorological variables must respond, not just temperature</td></tr>
+    <tr><th>C6</th><td>"and chemistry (PM2.5, PM10, O3, NOx)"</td><td>All four chemical species must participate in that feedback</td></tr>
+    <tr><th>C7</th><td>"A user-friendly, real-time dashboard"</td><td>Operable by a non specialist, on current data</td></tr>
+    <tr><th>C8</th><td>"high-resolution AQI forecasts for Delhi NCR"</td><td>Intra city gradients must survive; a single city number is not enough</td></tr>
+    <tr><th>C9</th><td>"with a 72-hour outlook"</td><td>Three day lead time</td></tr>
+    <tr><th>C10</th><td>"Features that explicitly track atmospheric inversion strength"</td><td>Inversion strength as a first class, displayed quantity</td></tr>
+    <tr><th>C11</th><td>"predict how stubble-burning plumes will disperse under prevailing weather conditions"</td><td>Forward transport and dispersion on forecast wind, not a fire count</td></tr>
+  </tbody>
+  <caption>Table 1.1 The problem statement decomposed into eleven testable clauses. Section 2 reports the status of each.</caption>
+</table>
+</section>
+
+<!-- ═══════════════ 2. COMPLIANCE MATRIX ═══════════════ -->
+<section>
+<h2><span class="n">2</span>Compliance matrix</h2>
+<p class="lead">
+  Eight clauses are met in full. Three are met in part. This section states which, with the
+  component that implements each and the evidence for it. The three partials are the
+  subject of sections 11 and 12.
+</p>
+
+<table>
+  <thead><tr><th style="width:6%">#</th><th style="width:23%">Clause</th><th style="width:13%">Status</th><th>What implements it, and the evidence</th></tr></thead>
+  <tbody>
+    <tr><th>C1</th><td>Coupled weather-chemistry framework</td><td><span class="pill part">PARTIAL</span></td>
+      <td><b>CAMS</b> (Copernicus Atmosphere Monitoring Service, ECMWF's IFS-COMPO) is a global online coupled meteorology and chemistry model run four times daily with interactive aerosol. We consume it as the chemistry prior: PM2.5, PM10, O3, NO2, and aerosol optical depth. The <b>MoES and IITM WRF-Chem Decision Support System</b> is used as the calibration reference for plume transport. <i>We do not run a chemical transport model ourselves.</i> See §11.1.</td></tr>
+
+    <tr><th>C2</th><td>Interlink meteorology with dispersion, PM2.5 and O3</td><td><span class="pill met">MET</span></td>
+      <td>Forecast meteorology at 11 km drives 142 features per cell hour, including boundary layer height, ventilation coefficient, inversion lid height and mixing depth. Both species are predicted from that state at three horizons. <span class="mono">forecast.py</span>, <span class="mono">dataset.py</span></td></tr>
+
+    <tr><th>C3</th><td>Inversion impact on external spikes</td><td><span class="pill met">MET</span></td>
+      <td>The Lagrangian plume delivers mass to the surface only where the modelled inversion lid permits it. A plume above the lid is carried without contributing. Calibrated against the MoES DSS at r = +0.596 over 54 days. <span class="mono">plume.py</span>, §6</td></tr>
+
+    <tr><th>C4</th><td>Trapped pollutants alter local weather</td><td><span class="pill met">MET</span></td>
+      <td>An explicit, iterated aerosol radiative feedback solver. All five modelled responses land inside published Delhi ranges the model was never fitted to. <span class="mono">feedback.py</span>, §4</td></tr>
+
+    <tr><th>C5</th><td>Feedback on temperature, wind, PBL height</td><td><span class="pill met">MET</span></td>
+      <td>All three. Temperature &minus;0.59 K, boundary layer &minus;5.70 %, wind &minus;1.19 % under haze, each within published bounds. §4.3</td></tr>
+
+    <tr><th>C6</th><td>Feedback across PM2.5, PM10, O3, NOx</td><td><span class="pill part">PARTIAL</span></td>
+      <td><b>PM2.5</b> is fully inside the iterated solver. <b>O3</b> is coupled to aerosol one way, through photolysis attenuation, but from baseline rather than converged aerosol, so it sits outside the iteration. <b>PM10 and NOx receive no coupled adjustment at all.</b> This is the sharpest gap in the build. See §11.2 and §12.1.</td></tr>
+
+    <tr><th>C7</th><td>User friendly, real-time dashboard</td><td><span class="pill part">PARTIAL</span></td>
+      <td>Six view dashboard, keyboard navigable, every panel leading with a plain language finding. Run locally it is live on current data. <i>The hosted instance serves a precomputed bundle</i> because the free tier allows 512 MB and the pipeline peaks near 1.1 GB. See §10 and §12.2.</td></tr>
+
+    <tr><th>C8</th><td>High resolution AQI for Delhi NCR</td><td><span class="pill met">MET</span></td>
+      <td>1,120 cells in two tiers: Delhi at 0.025° (2.8 km), wider NCR at 0.10° (11 km), Alwar to Karnal. CPCB National AQI by the published breakpoint table. §3.3</td></tr>
+
+    <tr><th>C9</th><td>72 hour outlook</td><td><span class="pill met">MET</span></td>
+      <td>Twelve trained heads at 24, 48 and 72 hours. All twelve beat persistence on a held out winter. §7</td></tr>
+
+    <tr><th>C10</th><td>Explicitly track inversion strength</td><td><span class="pill met">MET</span></td>
+      <td>Inversion strength in kelvin, lid height in metres, mixing depth and ventilation coefficient, all as forecast time series with a dedicated view and a time-height cross section. §5</td></tr>
+
+    <tr><th>C11</th><td>Predict plume dispersion under prevailing weather</td><td><span class="pill met">MET</span></td>
+      <td>Every satellite fire detection released as a puff, advected on forecast wind, dispersed with travel time, gated by the lid. Reports arrival, not ignition. §6</td></tr>
+  </tbody>
+  <caption>Table 2.1 Compliance against the eleven clauses of Table 1.1. Eight met, three partial, none unaddressed.</caption>
+</table>
+
+<div class="box warn">
+  <h4>The honest summary in three sentences</h4>
+  <p>
+    We have built a coupled forecasting system that closes the aerosol to meteorology loop
+    explicitly, iterates it to convergence, and validates every one of its magnitudes
+    against published values it was never fitted to. We do not run WRF-Chem; we consume an
+    operational coupled model and add our own feedback layer on top, which is a defensible
+    reading of "or similar open-source coupled frameworks" but is not the same thing as
+    executing a chemical transport model in house.
+  </p>
+  <p>
+    Of the four species the statement names for the feedback loop, one is fully inside it,
+    one is coupled one way, and two are not coupled at all. Closing that is roughly one
+    day of work and it is the first item on the roadmap in section 12.
+  </p>
+</div>
+</section>
+
+<!-- ═══════════════ 3. ARCHITECTURE ═══════════════ -->
+<section>
+<h2><span class="n">3</span>System architecture and data flow</h2>
+
+<h3>3.1 The pipeline end to end</h3>
+<figure>
+  <svg viewBox="0 0 720 466" font-family="Calibri, sans-serif">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+              markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#7d8b99"/>
+      </marker>
+      <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+              markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#1c3260"/>
+      </marker>
+    </defs>
+
+    <!-- lane 1: sources -->
+    <text x="8" y="16" font-size="10.5" font-weight="700" fill="#6f7d89" letter-spacing="0.9">EXTERNAL SOURCES</text>
+    <g font-size="11">
+      <rect x="8" y="26" width="126" height="46" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="20" y="45" font-weight="700" fill="#16202b">CPCB via OpenAQ</text>
+      <text x="20" y="61" fill="#46545f">44 stations, hourly</text>
+
+      <rect x="150" y="26" width="126" height="46" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="162" y="45" font-weight="700" fill="#16202b">Open-Meteo NWP</text>
+      <text x="162" y="61" fill="#46545f">met + PBL, 11 km</text>
+
+      <rect x="292" y="26" width="136" height="46" rx="3" fill="#dfe6f3" stroke="#1c3260"/>
+      <text x="304" y="45" font-weight="700" fill="#1c3260">CAMS / IFS-COMPO</text>
+      <text x="304" y="61" fill="#34527f">coupled model, AOD</text>
+
+      <rect x="444" y="26" width="126" height="46" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="456" y="45" font-weight="700" fill="#16202b">NASA FIRMS</text>
+      <text x="456" y="61" fill="#46545f">fire detections</text>
+
+      <rect x="586" y="26" width="126" height="46" rx="3" fill="#dfe6f3" stroke="#1c3260"/>
+      <text x="598" y="45" font-weight="700" fill="#1c3260">MoES DSS</text>
+      <text x="598" y="61" fill="#34527f">WRF-Chem, reference</text>
+    </g>
+    <g stroke="#7d8b99" stroke-width="1.2" marker-end="url(#ar)" fill="none">
+      <path d="M71 72 V102"/><path d="M213 72 V102"/><path d="M360 72 V102"/>
+      <path d="M507 72 V102"/><path d="M649 72 V102"/>
+    </g>
+
+    <!-- lane 2: panel -->
+    <rect x="8" y="104" width="704" height="40" rx="3" fill="#1c3260"/>
+    <text x="22" y="123" font-size="11.5" font-weight="700" fill="#fff">Feature panel</text>
+    <text x="22" y="138" font-size="10" fill="#c8d3ea">571,037 station hours · 44 stations · 142 features per row · lags, rolls, calendar, wind components</text>
+
+    <!-- lane 3: physics -->
+    <text x="8" y="170" font-size="10.5" font-weight="700" fill="#6f7d89" letter-spacing="0.9">PHYSICS MODULES</text>
+    <g stroke="#7d8b99" stroke-width="1.2" marker-end="url(#ar)" fill="none">
+      <path d="M124 144 V178"/><path d="M360 144 V178"/><path d="M596 144 V178"/>
+    </g>
+    <g font-size="11">
+      <rect x="8" y="180" width="222" height="52" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="20" y="199" font-weight="700" fill="#16202b">Inversion tracker</text>
+      <text x="20" y="214" fill="#46545f">lid height, strength (K),</text>
+      <text x="20" y="227" fill="#46545f">mixing depth, ventilation</text>
+
+      <rect x="248" y="180" width="222" height="52" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="260" y="199" font-weight="700" fill="#16202b">Lagrangian plume</text>
+      <text x="260" y="214" fill="#46545f">puff release, advection,</text>
+      <text x="260" y="227" fill="#46545f">dispersion, lid gating</text>
+
+      <rect x="488" y="180" width="224" height="52" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="500" y="199" font-weight="700" fill="#16202b">Photolysis (MCM v3.3.1)</text>
+      <text x="500" y="214" fill="#46545f">clear-sky J(NO₂), J(O¹D),</text>
+      <text x="500" y="227" fill="#46545f">attenuated by AOD</text>
+    </g>
+
+    <!-- lane 4: ML -->
+    <g stroke="#7d8b99" stroke-width="1.2" marker-end="url(#ar)" fill="none">
+      <path d="M119 232 V262"/><path d="M359 232 V262"/><path d="M600 232 V262"/>
+    </g>
+    <rect x="8" y="264" width="704" height="46" rx="3" fill="#eef2f7" stroke="#1c3260" stroke-width="1.3"/>
+    <text x="22" y="283" font-size="11.5" font-weight="700" fill="#1c3260">Gradient-boosted forecast heads &nbsp;·&nbsp; 12 models</text>
+    <text x="22" y="299" font-size="10" fill="#34527f">PM2.5 · PM10 · NO₂ · O₃ &nbsp;×&nbsp; 24 h · 48 h · 72 h &nbsp;+&nbsp; 5 quantile heads for PM2.5</text>
+
+    <!-- lane 5: coupling -->
+    <path d="M360 310 V340" stroke="#1c3260" stroke-width="1.6" marker-end="url(#arB)" fill="none"/>
+    <rect x="128" y="342" width="464" height="46" rx="3" fill="#1c3260"/>
+    <text x="142" y="361" font-size="11.5" font-weight="700" fill="#fff">Coupled feedback solver &nbsp;·&nbsp; damped fixed point</text>
+    <text x="142" y="377" font-size="10" fill="#c8d3ea">ω = 0.5, converged in 4 iterations, every response clipped, non-convergence falls back and is counted</text>
+
+    <!-- lane 6: output -->
+    <path d="M360 388 V416" stroke="#1c3260" stroke-width="1.6" marker-end="url(#arB)" fill="none"/>
+    <g font-size="11">
+      <rect x="8" y="418" width="222" height="40" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="20" y="435" font-weight="700" fill="#16202b">CPCB National AQI</text>
+      <text x="20" y="450" fill="#46545f">max of sub-indices, published table</text>
+
+      <rect x="248" y="418" width="222" height="40" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="260" y="435" font-weight="700" fill="#16202b">FastAPI · 15 routes</text>
+      <text x="260" y="450" fill="#46545f">/forecast /coupling /inversion /plume</text>
+
+      <rect x="488" y="418" width="224" height="40" rx="3" fill="#f6f8fb" stroke="#c8d3de"/>
+      <text x="500" y="435" font-weight="700" fill="#16202b">Dashboard · 6 views</text>
+      <text x="500" y="450" fill="#46545f">no build step, no framework</text>
+    </g>
+  </svg>
+  <figcaption>
+    Figure 3.1 End to end data flow. The two shaded source boxes are third party coupled
+    models: CAMS supplies the chemistry prior and the aerosol optical depth the feedback
+    solver runs on, and the MoES DSS is the reference the plume is calibrated against. It
+    is cited, never redistributed.
+  </figcaption>
+</figure>
+
+<h3>3.2 Why a statistical layer sits between the physics and the output</h3>
+<p>
+  CAMS is a global model at roughly 40 km. Over Delhi it is biased low and poorly
+  correlated with station observations. That is not a reason to discard it, and it is
+  precisely the reason the machine learning layer exists: CAMS supplies the physics and the
+  regional gradient, the CPCB stations supply local truth, and the boosted trees learn the
+  mapping between them. Used as one feature among 142, a biased but physically consistent
+  prior is worth a great deal. Used raw, it would be worse than nothing.
+</p>
+<p>
+  The same argument applies to the feedback solver. It does not attempt to predict
+  concentration from first principles. It takes the statistical forecast as the uncoupled
+  baseline and asks a narrower, answerable question: given this much aerosol, how much less
+  sunlight reaches the ground, how much shallower does the layer become, and what does that
+  do to the concentration that produced it. That question has published answers to check
+  against, which is what makes the result auditable.
+</p>
+
+<h3>3.3 The grid</h3>
+<table>
+  <thead><tr><th>Tier</th><th class="n">Step</th><th class="n">Approx.</th><th class="n">Cells</th><th>Extent and rationale</th></tr></thead>
+  <tbody>
+    <tr><th>Delhi</th><td class="n">0.025°</td><td class="n">2.8 km</td><td class="n">420</td><td>28.40 to 28.88 N, 76.84 to 77.35 E. The forecast is consumed here, so intra city gradients must survive.</td></tr>
+    <tr><th>Wider NCR</th><td class="n">0.10°</td><td class="n">11 km</td><td class="n">700</td><td>27.0 to 29.9 N, 75.8 to 78.1 E, Alwar to Karnal. Only has to carry a plume toward the city.</td></tr>
+    <tr><th>Total</th><td class="n">two tier</td><td class="n">&nbsp;</td><td class="n">1,120</td><td>A uniform fine grid over the same box would be roughly 11,000 cells, most of them farmland.</td></tr>
+  </tbody>
+  <caption>Table 3.1 Grid construction. A regression test walks a mesh over the whole domain and asserts that the two tiers leave no gap; it was written after a real 4.2 km coverage hole was found at the Delhi box boundary.</caption>
+</table>
+
+<div class="box">
+  <h4>The honest resolution is coarser than the display grid</h4>
+  <p>
+    Meteorology arrives at about 11 km and the chemistry prior at about 40 km, so predicted
+    fields are smoothed to 6 km before display. That removes structure the model cannot
+    justify rather than inventing structure it does not have. A 2.8 km grid drawn from an
+    11 km driver would look more precise and be less true.
+  </p>
+</div>
+</section>
+
+<!-- ═══════════════ 4. COUPLING ═══════════════ -->
+<section>
+<h2><span class="n">4</span>The two way coupling</h2>
+<p class="lead">
+  This is the core of the brief, and it is what the project is named after. Vayu Chakra is
+  the air cycle. Because the last step of the chain feeds the first, it cannot be evaluated
+  once; it has to be solved.
+</p>
+
+<h3>4.1 The loop, step by step</h3>
+<figure>
+  <svg viewBox="0 0 720 340" font-family="Calibri, sans-serif">
+    <defs>
+      <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#1c3260"/></marker>
+      <marker id="c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#c2701c"/></marker>
+    </defs>
+
+    <!-- main ring -->
+    <g font-size="11">
+      <rect x="14"  y="16" width="120" height="44" rx="3" fill="#1c3260"/>
+      <text x="74" y="34" text-anchor="middle" font-weight="700" fill="#fff">PM2.5</text>
+      <text x="74" y="50" text-anchor="middle" font-size="9.5" fill="#c8d3ea">uncoupled forecast</text>
+
+      <rect x="164" y="16" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="224" y="34" text-anchor="middle" font-weight="700" fill="#1c3260">Aerosol depth</text>
+      <text x="224" y="50" text-anchor="middle" font-size="9.5" fill="#34527f">AOD rises</text>
+
+      <rect x="314" y="16" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="374" y="34" text-anchor="middle" font-weight="700" fill="#1c3260">Shortwave</text>
+      <text x="374" y="50" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;11.05 %</text>
+
+      <rect x="464" y="16" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="524" y="34" text-anchor="middle" font-weight="700" fill="#1c3260">Temperature</text>
+      <text x="524" y="50" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;0.59 K</text>
+
+      <rect x="464" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="524" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">PBL height</text>
+      <text x="524" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;5.70 %</text>
+
+      <rect x="314" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="374" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">Surface wind</text>
+      <text x="374" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;1.19 %</text>
+
+      <rect x="164" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
+      <text x="224" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">Ventilation</text>
+      <text x="224" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">volume falls</text>
+
+      <rect x="14" y="118" width="120" height="44" rx="3" fill="#1c3260"/>
+      <text x="74" y="136" text-anchor="middle" font-weight="700" fill="#fff">PM2.5 rises</text>
+      <text x="74" y="152" text-anchor="middle" font-size="9.5" fill="#c8d3ea">+5.68 %</text>
+    </g>
+
+    <g stroke="#1c3260" stroke-width="1.5" fill="none" marker-end="url(#c1)">
+      <path d="M134 38 H160"/><path d="M284 38 H310"/><path d="M434 38 H460"/>
+      <path d="M524 60 V114"/>
+      <path d="M464 140 H438"/><path d="M314 140 H288"/><path d="M164 140 H138"/>
+    </g>
+    <!-- closure -->
+    <path d="M14 140 H-0" stroke="none"/>
+    <path d="M14 152 H6 V26 H10" stroke="#1c3260" stroke-width="1.5" fill="none"
+          stroke-dasharray="4 3" marker-end="url(#c1)"/>
+    <text x="16" y="90" font-size="9.5" font-style="italic" fill="#1c3260">the loop closes,</text>
+    <text x="16" y="102" font-size="9.5" font-style="italic" fill="#1c3260">so it is solved</text>
+
+    <!-- ozone branch -->
+    <path d="M224 60 V196" stroke="#c2701c" stroke-width="1.5" fill="none"
+          marker-end="url(#c2)" stroke-dasharray="5 3"/>
+    <g font-size="11">
+      <rect x="164" y="198" width="120" height="44" rx="3" fill="#f7e9d0" stroke="#c2701c"/>
+      <text x="224" y="216" text-anchor="middle" font-weight="700" fill="#8a5a10">Ultraviolet</text>
+      <text x="224" y="232" text-anchor="middle" font-size="9.5" fill="#8a5a10">attenuated</text>
+
+      <rect x="314" y="198" width="120" height="44" rx="3" fill="#f7e9d0" stroke="#c2701c"/>
+      <text x="374" y="216" text-anchor="middle" font-weight="700" fill="#8a5a10">J(NO₂)</text>
+      <text x="374" y="232" text-anchor="middle" font-size="9.5" fill="#8a5a10">&minus;19.8 % winter</text>
+
+      <rect x="464" y="198" width="120" height="44" rx="3" fill="#f7e9d0" stroke="#c2701c"/>
+      <text x="524" y="216" text-anchor="middle" font-weight="700" fill="#8a5a10">Ozone falls</text>
+      <text x="524" y="232" text-anchor="middle" font-size="9.5" fill="#8a5a10">the stronger path</text>
+    </g>
+    <g stroke="#c2701c" stroke-width="1.5" fill="none" marker-end="url(#c2)">
+      <path d="M284 220 H310"/><path d="M434 220 H460"/>
+    </g>
+
+    <!-- not in the loop -->
+    <rect x="14" y="272" width="690" height="52" rx="3" fill="#fff" stroke="#c8d3de" stroke-dasharray="4 3"/>
+    <text x="28" y="292" font-size="11" font-weight="700" fill="#8a5a10">Not yet in the loop</text>
+    <text x="28" y="309" font-size="10" fill="#46545f">PM10 and NOx receive no coupled adjustment. Ozone is coupled one way, from baseline aerosol rather than the converged value. See §11.2 and §12.1.</text>
+  </svg>
+  <figcaption>
+    Figure 4.1 The coupled system. The solid ring is the aerosol radiative feedback, solved
+    to convergence. The dashed amber branch is the aerosol photolysis pathway, which is
+    three to ten times stronger for ozone but is currently evaluated once rather than
+    iterated. Percentages are measured values from the shipped run, under haze.
+  </figcaption>
+</figure>
+
+<h3>4.2 Why it is solved rather than evaluated</h3>
+<p>
+  Step six feeds step one. Evaluating the chain once gives an answer that is inconsistent
+  with itself: the concentration used to compute the dimming is not the concentration the
+  dimming produces. The solver therefore runs a damped fixed point iteration with a
+  relaxation factor of 0.5, and treats a cell as converged when the change in PM2.5 between
+  iterations falls under tolerance.
+</p>
+<p>
+  Every individual response is clipped to a physically defensible range before it is
+  applied, so a runaway cannot occur even in principle. A cell that fails to converge
+  within the iteration budget falls back to the uncoupled answer and is counted in the
+  diagnostics rather than shipping a number the solver could not actually reach. On the
+  shipped run: <b>4 iterations, converged, 0 cells fell back, maximum residual 0.46
+  µg/m³</b> across 211,680 cell hours.
+</p>
+
+<h3>4.3 Validating the magnitudes against values we never fitted to</h3>
+<p>
+  A feedback model that produces a number is worthless unless that number can be checked.
+  Each response is compared against published Delhi and North India measurements, in the
+  regime those measurements were made in: high aerosol daylight hours, which is 75,383 cell
+  hours of this run. The gate is a hard test in the suite, not a report.
+</p>
+<table class="zebra">
+  <thead><tr><th>Response under haze</th><th class="n">Modelled</th><th class="n">Published range</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><th>Shortwave reaching the surface</th><td class="n">&minus;11.05 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Daytime surface temperature</th><td class="n">&minus;0.59 K</td><td class="n">0.1 to 2.5 K</td><td class="good">inside</td></tr>
+    <tr><th>Boundary layer height</th><td class="n">&minus;5.70 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Surface wind speed</th><td class="n">&minus;1.19 %</td><td class="n">0.5 to 6 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting PM2.5 amplification</th><td class="n">+5.68 %</td><td class="n">2 to 30 %</td><td class="good">inside</td></tr>
+  </tbody>
+  <caption>Table 4.1 Five of five inside published ranges. Source: <span class="mono">data/snapshot/coupling.json</span>, key <span class="mono">literature_gate</span>. Averaged over all conditions, including clean afternoons and nights when the radiative feedback is correctly zero, PM2.5 amplification is 2.64 %; that is a different quantity and is reported separately rather than judged against these bounds.</caption>
+</table>
+
+<h3>4.4 The ozone pathway, and why it is the one that matters</h3>
+<p>
+  The two aerosol mechanisms are not equal. Published WRF-Chem experiments that isolate
+  each find the radiation and boundary layer route moves surface ozone by 1 to 3 percent,
+  while the photolysis route moves it by 10 to 12 percent. For Delhi specifically, the
+  APHH-India campaign reports that wintertime ozone production is not only VOC limited but
+  strongly radiation limited, with a 50 percent reduction in aerosol optical depth raising
+  ozone by about 25 percent.
+</p>
+<p>
+  We implement the photolysis pathway using the MCM v3.3.1 clear sky parameterisation,
+  <span class="mono">J = l·cos(SZA)^m·exp(&minus;n·sec(SZA))</span>, attenuated as a
+  function of aerosol optical depth and solar zenith angle.
+</p>
+<table>
+  <thead><tr><th>Check</th><th class="n">Modelled</th><th class="n">Published</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><th>Summer J(NO₂) reduction</th><td class="n">22.0 %</td><td class="n">~24 %</td><td class="good">close, unfitted</td></tr>
+    <tr><th>Winter J(NO₂) reduction</th><td class="n">19.8 %</td><td class="n">~30 %</td><td>low, same order</td></tr>
+    <tr><th>O₃ response, 25 % AOD cut</th><td class="n">+6.23 %</td><td class="n">&nbsp;</td><td>monotone</td></tr>
+    <tr><th>O₃ response, 50 % AOD cut</th><td class="n">+12.79 %</td><td class="n">+25 %</td><td class="good">same sign, within 2×</td></tr>
+    <tr><th>O₃ response, 75 % AOD cut</th><td class="n">+24.29 %</td><td class="n">&nbsp;</td><td>monotone</td></tr>
+  </tbody>
+  <caption>Table 4.2 The photolysis coefficients are derived from first principles; none was fitted to the reference values in this table. The remaining gap at 50 % is in the expected direction: the published figure comes from a box model with full VOC chemistry, and we model only the direct photolysis pathway. Source: <span class="mono">models/ozone_sensitivity.json</span>.</caption>
+</table>
+<p>
+  This is a counterfactual, not a forecast. It answers a question no purely statistical
+  model can answer, because the atmosphere it describes is not in the training data: what
+  would ozone be if the aerosol halved. A mechanism can answer it; a fit cannot.
+</p>
+</section>
+
+<!-- ═══════════════ 5. INVERSION ═══════════════ -->
+<section>
+<h2><span class="n">5</span>Atmospheric inversion</h2>
+<p class="lead">
+  Clause C10 asks for inversion strength to be tracked explicitly. It is the one quantity
+  in the system that is drawn rather than only reported, because a lid is a thing that
+  exists at a height, and a surface number cannot express it.
+</p>
+
+<h3>5.1 What is computed</h3>
+<table class="zebra">
+  <thead><tr><th style="width:26%">Quantity</th><th style="width:14%">Unit</th><th>Definition, and why it is the one used</th></tr></thead>
+  <tbody>
+    <tr><th>Inversion strength</th><td>K</td><td>Temperature of the air aloft minus the 2 m reading. Above zero means a lid: air gets warmer with height, and nothing released underneath can rise through it.</td></tr>
+    <tr><th>Inversion lid height</th><td>m</td><td>The height at which the reversal is found. Marked per hour and never joined across hours where no lid exists, because "no lid" and "lid at ground level" are opposite statements and a connecting line would assert the second.</td></tr>
+    <tr><th>Mixing depth</th><td>m</td><td>The shallower of the modelled boundary layer and the inversion lid. This is the depth the day's emissions actually dilute into. Halve it and the concentration doubles.</td></tr>
+    <tr><th>Ventilation coefficient</th><td>m²·s⁻¹</td><td>Mixing depth times the wind through that depth: the volume flux available to carry pollution away. Below 6,000 is poor, below 3,000 is severe stagnation.</td></tr>
+    <tr><th>Static stability</th><td>K·km⁻¹</td><td>Computed between pressure levels and rendered as a time-height cross section, so the vertical structure is visible rather than summarised.</td></tr>
+  </tbody>
+  <caption>Table 5.1 The inversion quantities, all produced as 72 hour forecast series per cell. Ventilation coefficient is among the top ranked features for every PM2.5 head.</caption>
+</table>
+
+<h3>5.2 How it enters the forecast</h3>
+<p>
+  Three ways, and it matters that they are distinct. First, as <b>features</b>: mixing
+  depth, lid height, inversion strength and ventilation coefficient are inputs to every
+  forecast head, and the trained models rank ventilation coefficient in the top seven
+  features for all three PM2.5 horizons. Second, as the <b>denominator in the coupling box
+  model</b>: the concentration response is the ratio of mixing depths, so a shallower layer
+  produced by the aerosol feedback raises concentration directly. Third, as the <b>gate on
+  plume delivery</b>: transported smoke contributes to surface air only where the lid
+  allows it down, which is the mechanism clause C3 asks for.
+</p>
+
+<div class="box">
+  <h4>Why three separate charts rather than one</h4>
+  <p>
+    Inversion strength is in kelvin, mixing depth in metres, ventilation coefficient in
+    m²·s⁻¹. Plotting them on one pair of axes requires two or three y scales, which lets
+    whoever draws the chart choose the story by choosing the scaling. Three panels sharing
+    one x axis compare honestly.
+  </p>
+</div>
+</section>
+
+<!-- ═══════════════ 6. PLUME ═══════════════ -->
+<section>
+<h2><span class="n">6</span>Stubble burning plumes</h2>
+<p class="lead">
+  Clause C11 asks for prediction of how plumes will disperse under prevailing weather. The
+  distinction that matters is between counting fires and modelling arrival. A thousand
+  fires under an easterly wind are somebody else's problem that day, and the system says so.
+</p>
+
+<h3>6.1 The transport chain</h3>
+<figure>
+  <svg viewBox="0 0 720 172" font-family="Calibri, sans-serif">
+    <defs>
+      <marker id="p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#1c3260"/></marker>
+    </defs>
+    <g font-size="10.5">
+      <rect x="4" y="34" width="106" height="60" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="57" y="54" text-anchor="middle" font-weight="700" fill="#16202b">Detection</text>
+      <text x="57" y="69" text-anchor="middle" fill="#46545f">VIIRS / MODIS</text>
+      <text x="57" y="82" text-anchor="middle" fill="#46545f">lat, lon, FRP</text>
+
+      <rect x="140" y="34" width="106" height="60" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="193" y="54" text-anchor="middle" font-weight="700" fill="#16202b">Puff release</text>
+      <text x="193" y="69" text-anchor="middle" fill="#46545f">emitted mass from</text>
+      <text x="193" y="82" text-anchor="middle" fill="#46545f">radiative power</text>
+
+      <rect x="276" y="34" width="106" height="60" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="329" y="54" text-anchor="middle" font-weight="700" fill="#16202b">Advection</text>
+      <text x="329" y="69" text-anchor="middle" fill="#46545f">forecast wind,</text>
+      <text x="329" y="82" text-anchor="middle" fill="#46545f">hour by hour</text>
+
+      <rect x="412" y="34" width="106" height="60" rx="3" fill="#eef2f7" stroke="#c8d3de"/>
+      <text x="465" y="54" text-anchor="middle" font-weight="700" fill="#16202b">Dispersion</text>
+      <text x="465" y="69" text-anchor="middle" fill="#46545f">spreads with</text>
+      <text x="465" y="82" text-anchor="middle" fill="#46545f">travel time</text>
+
+      <rect x="548" y="34" width="106" height="60" rx="3" fill="#1c3260"/>
+      <text x="601" y="54" text-anchor="middle" font-weight="700" fill="#fff">Lid gate</text>
+      <text x="601" y="69" text-anchor="middle" fill="#c8d3ea">does it reach</text>
+      <text x="601" y="82" text-anchor="middle" fill="#c8d3ea">the surface?</text>
+    </g>
+    <g stroke="#1c3260" stroke-width="1.4" fill="none" marker-end="url(#p1)">
+      <path d="M110 64 H136"/><path d="M246 64 H272"/><path d="M382 64 H408"/><path d="M518 64 H544"/>
+    </g>
+    <path d="M601 94 V122" stroke="#1c3260" stroke-width="1.4" fill="none" marker-end="url(#p1)"/>
+    <rect x="464" y="124" width="252" height="34" rx="3" fill="#f7e9d0" stroke="#c2701c"/>
+    <text x="590" y="145" text-anchor="middle" font-size="10.5" font-weight="700" fill="#8a5a10">Surface PM2.5 contribution, µg/m³</text>
+    <text x="10" y="128" font-size="10" font-style="italic" fill="#46545f">Smoke can sit overhead while monitors read clean, then land</text>
+    <text x="10" y="143" font-size="10" font-style="italic" fill="#46545f">abruptly mid-morning when convection reconnects it to the ground.</text>
+  </svg>
+  <figcaption>Figure 6.1 Each satellite detection becomes a puff carried on the forecast wind. The lid gate is where clause C3 and clause C11 meet: the inversion decides whether an arriving plume is breathed or passes over.</figcaption>
+</figure>
+
+<h3>6.2 Calibration against an operational reference</h3>
+<p>
+  The MoES and IITM WRF-Chem Decision Support System publishes a daily stubble burning
+  attribution for Delhi in µg/m³. That gives the plume model something almost no hackathon
+  transport model has: an authoritative target. Three physics variants were scored over 54
+  days of October and November 2021.
+</p>
+<table class="zebra">
+  <thead><tr><th>Variant</th><th class="n">Correlation</th><th class="n">RMSE after scaling</th><th class="n">Modelled peak</th><th class="n">DSS peak</th><th>Decision</th></tr></thead>
+  <tbody>
+    <tr><th>A</th><td class="n">+0.596</td><td class="n">8.28</td><td class="n">27.67</td><td class="n">38.02</td><td class="good">shipped</td></tr>
+    <tr><th>C</th><td class="n">+0.525</td><td class="n">8.90</td><td class="n">24.52</td><td class="n">38.02</td><td>rejected</td></tr>
+    <tr><th>B</th><td class="n">+0.369</td><td class="n">9.95</td><td class="n">22.44</td><td class="n">38.02</td><td>rejected</td></tr>
+  </tbody>
+  <caption>Table 6.1 Correlation is the column that decides. Only a single multiplicative scale factor is fitted, and scaling cannot improve a correlation, so this ranks the physics rather than the magnitude. Values in µg/m³. Source: <span class="mono">models/plume_calibration_octnov.json</span>.</caption>
+</table>
+<div class="box warn">
+  <h4>What the scale factor absorbs, stated plainly</h4>
+  <p>
+    The fitted scale absorbs emission factor uncertainty (5 to 8 g/kg for cereal straw),
+    satellite detection limits, and burn duration assumptions. The physics parameters are
+    not fitted. This makes the plume's <i>correlation</i> an honest result and its
+    <i>absolute magnitude</i> a calibration against the DSS, and the two are reported as
+    different things throughout. The DSS attribution is daily, so it can settle day to day
+    timing and nothing finer; it cannot separate these variants on their behaviour through
+    the night, which is where the shipped one is most questionable.
+  </p>
+</div>
+</section>
+
+<!-- ═══════════════ 7. FORECAST SKILL ═══════════════ -->
+<section>
+<h2><span class="n">7</span>Forecast models and skill</h2>
+
+<h3>7.1 Configuration</h3>
+<table>
+  <thead><tr><th style="width:30%">Property</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><th>Targets</th><td>PM2.5, PM10, NO₂, O₃</td></tr>
+    <tr><th>Horizons</th><td>24 h, 48 h, 72 h</td></tr>
+    <tr><th>Heads</th><td>12 point heads, plus 5 quantile heads for PM2.5 at 24 h</td></tr>
+    <tr><th>Training panel</th><td>571,037 station hours, 44 CPCB stations, Oct 2020 to Aug 2026</td></tr>
+    <tr><th>Features</th><td>142 per row: meteorology, boundary layer, inversion, CAMS prior, photolysis, plume, lags, rolling windows, wind components, calendar including Diwali</td></tr>
+    <tr><th>Hold out</th><td>1 Nov 2025 to 28 Feb 2026, removed from training entirely</td></tr>
+    <tr><th>Baseline</th><td>Persistence, meaning tomorrow looks like today</td></tr>
+  </tbody>
+  <caption>Table 7.1 Source: <span class="mono">models/metrics_multiwinter.json</span>. The hold out is a whole winter, not a random split, because a random split over an autocorrelated time series leaks the answer into the training set.</caption>
+</table>
+
+<h3>7.2 Results: all twelve heads beat persistence</h3>
+<table class="zebra">
+  <thead><tr><th>Head</th><th class="n">RMSE</th><th class="n">Persistence</th><th class="n">Improvement</th><th class="n">r²</th><th class="n">Hours scored</th></tr></thead>
+  <tbody>
+    <tr><th>PM2.5 24 h</th><td class="n">75.07</td><td class="n">92.92</td><td class="n good">+19.2 %</td><td class="n">0.497</td><td class="n">96,312</td></tr>
+    <tr><th>PM2.5 48 h</th><td class="n">78.34</td><td class="n">105.90</td><td class="n good">+26.0 %</td><td class="n">0.454</td><td class="n">96,293</td></tr>
+    <tr><th>PM2.5 72 h</th><td class="n">78.08</td><td class="n">109.73</td><td class="n good">+28.8 %</td><td class="n">0.458</td><td class="n">96,541</td></tr>
+    <tr><th>O₃ 24 h</th><td class="n">21.18</td><td class="n">26.25</td><td class="n good">+19.3 %</td><td class="n">0.733</td><td class="n">90,734</td></tr>
+    <tr><th>O₃ 48 h</th><td class="n">22.66</td><td class="n">28.28</td><td class="n good">+19.9 %</td><td class="n">0.695</td><td class="n">90,723</td></tr>
+    <tr><th>O₃ 72 h</th><td class="n">23.70</td><td class="n">30.07</td><td class="n good">+21.2 %</td><td class="n">0.667</td><td class="n">90,984</td></tr>
+    <tr><th>PM10 24 h</th><td class="n">119.15</td><td class="n">143.81</td><td class="n good">+17.1 %</td><td class="n">0.428</td><td class="n">91,004</td></tr>
+    <tr><th>PM10 48 h</th><td class="n">122.87</td><td class="n">163.38</td><td class="n good">+24.8 %</td><td class="n">0.399</td><td class="n">90,989</td></tr>
+    <tr><th>PM10 72 h</th><td class="n">122.79</td><td class="n">169.53</td><td class="n good">+27.6 %</td><td class="n">0.397</td><td class="n">91,242</td></tr>
+    <tr><th>NO₂ 24 h</th><td class="n">23.46</td><td class="n">27.61</td><td class="n good">+15.0 %</td><td class="n">0.664</td><td class="n">90,880</td></tr>
+    <tr><th>NO₂ 48 h</th><td class="n">25.56</td><td class="n">30.97</td><td class="n good">+17.5 %</td><td class="n">0.601</td><td class="n">90,867</td></tr>
+    <tr><th>NO₂ 72 h</th><td class="n">26.50</td><td class="n">32.35</td><td class="n good">+18.1 %</td><td class="n">0.569</td><td class="n">91,121</td></tr>
+  </tbody>
+  <caption>Table 7.2 All units µg/m³. Twelve of twelve beat persistence, by 15.0 % to 28.8 %. The improvement grows with horizon because persistence degrades faster than the model does, which is the expected and desirable signature.</caption>
+</table>
+
+<h3>7.3 Why persistence is the baseline reported</h3>
+<p>
+  Persistence is unglamorous and it is genuinely hard to beat at 24 hours in a
+  strongly autocorrelated field. Reporting improvement against a weak baseline, or against
+  no baseline at all, is the most common way an air quality model is made to look better
+  than it is. Any head that failed to beat persistence would appear in this table marked as
+  failing rather than be quietly dropped; the dashboard applies the same rule at runtime.
+</p>
+</section>
+
+<!-- ═══════════════ 8. VALIDATION ═══════════════ -->
+<section>
+<h2><span class="n">8</span>Validation, including what failed</h2>
+
+<h3>8.1 Does it work where there is no monitor</h3>
+<p>
+  The forecast serves 1,120 cells and about forty of them contain an instrument. So the
+  question that decides whether a gridded product is justified at all is whether it works
+  in a cell it has never seen. Leave one station out removes a station from training
+  entirely and then predicts it, while persistence is still allowed that station's own
+  history. The model is denied what the baseline is given.
+</p>
+<table>
+  <thead><tr><th>Target, 24 h</th><th class="n">Stations improved</th><th class="n">Mean RMSE</th><th class="n">Persistence</th><th class="n">Mean improvement</th></tr></thead>
+  <tbody>
+    <tr><th>PM2.5</th><td class="n">10 of 10</td><td class="n">56.07</td><td class="n">81.31</td><td class="n good">+31.6 %</td></tr>
+    <tr><th>O₃</th><td class="n">9 of 10</td><td class="n">22.92</td><td class="n">27.65</td><td class="n good">+17.1 %</td></tr>
+  </tbody>
+  <caption>Table 8.1 Source: <span class="mono">models/loso.json</span>. One ozone station out of ten fails to beat persistence and is reported as failing. The PM2.5 improvement is larger here than in the in-sample test, which is a spatial-smoothing effect rather than a better model.</caption>
+</table>
+
+<h3>8.2 Uncertainty a GRAP decision can be made on</h3>
+<p>
+  A point forecast of 88 µg/m³ against a threshold of 90 says almost nothing useful to
+  someone deciding whether to invoke a GRAP stage. Quantile heads at the 10th, 25th, 50th,
+  75th and 90th percentiles give the probability of crossing each trigger instead.
+</p>
+<table class="zebra">
+  <thead><tr><th>Measure</th><th class="n">Value</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><th>Nominal 80 % interval, measured coverage</th><td class="n">75.6 %</td><td class="good">well calibrated</td></tr>
+    <tr><th>Quantile crossing rate</th><td class="n">0.67 %</td><td>distribution almost always correctly ordered</td></tr>
+    <tr><th>Brier skill vs climatology, GRAP II</th><td class="n">+0.343</td><td class="good">materially better than climatology</td></tr>
+    <tr><th>GRAP II trigger (AQI 200)</th><td class="n">90 µg/m³</td><td>mapped from the CPCB breakpoint table</td></tr>
+    <tr><th>GRAP III trigger (AQI 300)</th><td class="n">120 µg/m³</td><td>&nbsp;</td></tr>
+    <tr><th>GRAP IV trigger (AQI 400)</th><td class="n">250 µg/m³</td><td>&nbsp;</td></tr>
+  </tbody>
+  <caption>Table 8.2 Source: <span class="mono">models/uncertainty_pm25_24h.json</span>, held out winter.</caption>
+</table>
+
+<h3>8.3 Against the operational MoES DSS</h3>
+<table>
+  <thead><tr><th>Lead</th><th class="n">MoES DSS</th><th class="n">VayuChakra</th><th class="n">Persistence</th><th class="n">DSS corr</th><th class="n">Our corr</th></tr></thead>
+  <tbody>
+    <tr><th>+24 h</th><td class="n">98.78</td><td class="n">64.26</td><td class="n">93.98</td><td class="n">0.433</td><td class="n">0.799</td></tr>
+    <tr><th>+48 h</th><td class="n">108.34</td><td class="n">68.91</td><td class="n">108.78</td><td class="n">0.311</td><td class="n">0.762</td></tr>
+    <tr><th>+72 h</th><td class="n">118.95</td><td class="n">72.82</td><td class="n">115.00</td><td class="n">0.206</td><td class="n">0.716</td></tr>
+  </tbody>
+  <caption>Table 8.3 RMSE in µg/m³ on Delhi city-mean hourly PM2.5, Oct 2021 to Feb 2022, 2,363 common hours. Source: <span class="mono">models/validation.json</span>.</caption>
+</table>
+<div class="box warn">
+  <h4>This is not a fair comparison and the lower number is not a win</h4>
+  <p>
+    The DSS forecasts were issued <b>operationally</b>: the system had to predict the
+    weather as well as the chemistry, days ahead, with no knowledge of what would actually
+    happen. Our hindcast is driven by ERA5 <b>reanalysis</b>, which is the weather as it
+    actually turned out. That is a material advantage and it disqualifies the table as a
+    measure of forecast skill.
+  </p>
+  <p>
+    What Table 8.3 does support is that the statistical layer maps meteorology to PM2.5
+    competitively. It does <b>not</b> show that we forecast better than the MoES DSS, and
+    it is labelled that way on the dashboard as well as here. A genuine comparison requires
+    re-running our system on archived forecast meteorology, which is listed in §12.4.
+  </p>
+</div>
+
+<h3>8.4 A validation we planned, attempted, and abandoned</h3>
+<p>
+  The intended independent check on the photolysis module was to compare modelled
+  ultraviolet attenuation against a measured one, using the ratio of observed UV index to
+  clear sky UV index. Three measurements killed it, and they are recorded in the source
+  rather than deleted:
+</p>
+<ol>
+  <li><b>Clear sky there means cloud free, not aerosol free.</b> Below 5 percent cloud
+    cover the ratio is 0.998, meaning no attenuation at all, while mean aerosol optical
+    depth over those same hours is 0.41. The aerosol is already inside both numerator and
+    denominator.</li>
+  <li><b>The ratio tracks cloud, not aerosol.</b> It falls 0.998, 0.963, 0.925, 0.903,
+    0.841 across rising cloud bands, while within clear skies a threefold rise in aerosol
+    optical depth moves it only from 0.998 to 0.955.</li>
+  <li><b>The broadband radiation has the same defect.</b> At fixed solar zenith angle in
+    clear skies, surface shortwave reads 750, 761 and 762 W/m² across aerosol bands 0 to
+    0.4, 0.4 to 0.7 and 0.7 to 1.5. Flat. The radiation scheme carries a climatological
+    aerosol, not the day's actual load.</li>
+</ol>
+<p>
+  No product in that feed can validate aerosol optics, because there is no daily aerosol
+  signal in any of them to compare against. The check was replaced by the ozone response
+  against station observations, which is validation against measurements rather than
+  against an intermediate quantity, and is the stronger test. The negative result also
+  confirmed an assumption the feedback module was built on: the driving shortwave contains
+  a climatological aerosol that must be divided out before a real load is applied.
+</p>
+</section>
+
+<!-- ═══════════════ 9. DASHBOARD ═══════════════ -->
+<section>
+<h2><span class="n">9</span>The dashboard</h2>
+<p class="lead">
+  Clause C7 asks for user friendly. The design principle throughout is that a reader should
+  never have to look at a grid and work out what it is. Every view opens with a sentence in
+  plain language stating what the data says, with the number in it, and the apparatus comes
+  after.
+</p>
+
+<table class="zebra">
+  <thead><tr><th style="width:6%">#</th><th style="width:26%">View</th><th>The question it answers, and what it draws</th></tr></thead>
+  <tbody>
+    <tr><th>1</th><td><b>Where the air comes from</b></td><td>Why the domain is 1,120 cells and not a city box. Real basemap, fire detections drawn where they are, the stubble belt and the Delhi fine-grid box outlined.</td></tr>
+    <tr><th>2</th><td><b>The lid over the city</b></td><td>Inversion strength, lid height, mixing depth and ventilation as forecast series, plus a time-height cross section shading static stability so the lid is visible as a structure rather than a number.</td></tr>
+    <tr><th>3</th><td><b>The loop we close</b></td><td>The coupled and uncoupled forecasts on one axis so the gap is the feedback, the ring diagram animating one lap per solver iteration, the literature gate table, and the photolysis panel.</td></tr>
+    <tr><th>4</th><td><b>Smoke from the fields</b></td><td>Fire detections, modelled arrival at the surface hour by hour, and the DSS calibration ranking. States plainly when nothing is burning or when the wind carries the smoke elsewhere.</td></tr>
+    <tr><th>5</th><td><b>The 72 hour outlook</b></td><td>Gridded AQI on a real map at the chosen horizon, band name and number alongside colour, and GRAP crossing probabilities.</td></tr>
+    <tr><th>6</th><td><b>Does it actually work</b></td><td>All twelve heads against persistence, leave one station out, the DSS head to head with its caveat above the table, and the MoES emission reduction scenarios.</td></tr>
+  </tbody>
+  <caption>Table 9.1 The six views. Keyboard shortcuts 1 to 6, hash routing, no build step and no framework: one HTML file with Leaflet for the maps.</caption>
+</table>
+
+<h3>9.1 Interface decisions worth stating</h3>
+<ul>
+  <li><b>Severity is always three things at once.</b> Colour, band name and number, so the
+    display does not depend on colour vision.</li>
+  <li><b>Empty states say why they are empty.</b> "No active fires in the stubble belt"
+    reads as a broken feed unless it also says that outside October and November this is
+    the correct reading.</li>
+  <li><b>Failures are shown, not hidden.</b> A head that did not beat persistence, a
+    station that did not improve under leave one station out, and a degraded pipeline stage
+    all render as such.</li>
+  <li><b>Long justification sits behind disclosures.</b> The lead finding is one sentence;
+    the argument is one click away for whoever wants it.</li>
+  <li><b>Tables sort.</b> Anything with more than a few rows sorts on click and by
+    keyboard, with the sort state announced.</li>
+  <li><b>The report is reachable from every view.</b> This document downloads from the rail,
+    beside the repository link.</li>
+</ul>
+</section>
+
+<!-- ═══════════════ 10. DEPLOYMENT ═══════════════ -->
+<section>
+<h2><span class="n">10</span>Deployment and the free tier constraint</h2>
+
+<h3>10.1 What was measured</h3>
+<p>
+  The hosted instance runs on a free tier that allows 512 MB of RAM. The pipeline does not
+  fit, and the measurement is worth stating because it rules out the obvious workaround.
+</p>
+<table>
+  <thead><tr><th>Configuration</th><th class="n">Peak RSS</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><th>420 Delhi cells, full pipeline</th><td class="n">1,083 MB</td><td>over budget by more than 2×</td></tr>
+    <tr><th>182 cells, reduced grid</th><td class="n">701 MB</td><td>still over budget</td></tr>
+    <tr><th>Implied fixed cost</th><td class="n">~283 MB</td><td>before a single cell is forecast</td></tr>
+    <tr><th>Python, pandas, XGBoost, boosters</th><td class="n">~126 MB</td><td>the floor, with no data loaded</td></tr>
+    <tr><th>Snapshot mode, serving the bundle</th><td class="n">130 MB</td><td class="good">comfortable, ~15 ms per request</td></tr>
+  </tbody>
+  <caption>Table 10.1 Fitting a line through the two pipeline measurements gives a fixed cost of roughly 283 MB independent of grid size. Coarsening the domain would therefore have cost real resolution and still not fitted.</caption>
+</table>
+
+<h3>10.2 The decision, and what it does and does not cost</h3>
+<p>
+  The deployment serves a precomputed bundle of 20 routes captured from the same pipeline
+  at full resolution: 1,120 cells, 2.8 km over Delhi, all four pollutants, the coupled
+  solver, photolysis and the plume. The bundle is 805 KB and is captured from the running
+  API rather than rebuilt from modules, so what ships is exactly what the endpoints return.
+</p>
+<p>
+  <b>A deployment on this tier gives up freshness. It does not give up resolution, and it
+  does not give up physics.</b> That is the correct trade if one has to be made, and the
+  dashboard states which mode it is in rather than presenting a stale forecast as current.
+  Section 12.2 sets out the workaround that removes the compromise entirely without paying
+  for a larger instance.
+</p>
+</section>
+
+<!-- ═══════════════ 11. GAPS ═══════════════ -->
+<section>
+<h2><span class="n">11</span>Gaps: what is not built, and why</h2>
+<p class="lead">
+  Stated with the same care as the results. Two categories: work that is genuinely
+  outstanding, and boundaries chosen deliberately.
+</p>
+
+<h3>11.1 We do not run a chemical transport model &nbsp;<span class="pill part">C1 PARTIAL</span></h3>
+<p>
+  There is no radiative transfer solve, no chemical mechanism integrated forward in time,
+  and no gridded emissions inventory. WRF-Chem needs a Linux cluster, an MPI and netCDF
+  stack, and a district level emission inventory we do not have. What we do instead is
+  consume the output of coupled models that are already running operationally: CAMS for the
+  chemistry prior and aerosol optical depth, and the MoES DSS as the transport reference.
+  The problem statement's "or similar open-source coupled frameworks" admits this reading,
+  and it is genuinely a coupled framework in the pipeline. A reader who requires a CTM
+  executed in house will not find one, and we do not claim otherwise anywhere.
+</p>
+
+<h3>11.2 Two of four species are outside the feedback loop &nbsp;<span class="pill part">C6 PARTIAL</span></h3>
+<p>
+  This is the sharpest gap, because the clause enumerates the species explicitly. The
+  current state, precisely:
+</p>
+<table class="zebra">
+  <thead><tr><th>Species</th><th style="width:22%">In the loop?</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><th>PM2.5</th><td class="good">Yes, fully</td><td>Inside the iterated fixed point. Concentration response feeds aerosol optical depth, which feeds shortwave, which closes back onto concentration.</td></tr>
+    <tr><th>O₃</th><td>Partly, one way</td><td>Coupled to aerosol through photolysis attenuation, but computed from <i>baseline</i> aerosol before the solver runs, so it does not participate in the iteration and does not see the converged value.</td></tr>
+    <tr><th>PM10</th><td>No</td><td>Predicted, but receives no coupled adjustment. The solver's concentration response is applied only to the PM2.5 column.</td></tr>
+    <tr><th>NOx</th><td>No</td><td>Predicted as NO₂, but receives no coupled adjustment, despite two available physical pathways (dilution, and reduced photolytic loss under haze).</td></tr>
+  </tbody>
+  <caption>Table 11.1 Verified by inspection of <span class="mono">vayuchakra/feedback.py</span> and the coupling block of <span class="mono">vayuchakra/forecast.py</span>, which applies the solved result to the PM2.5 column only.</caption>
+</table>
+
+<h3>11.3 The hosted instance is not live &nbsp;<span class="pill part">C7 PARTIAL</span></h3>
+<p>
+  Covered in §10. Run locally the system is live on current data; the hosted one serves a
+  bundle. §12.2 removes this.
+</p>
+
+<h3>11.4 The coupling ablation has not been scored</h3>
+<p>
+  The most important open question about the feedback is whether it lowers forecast error,
+  not only whether its magnitudes are plausible. The ablation panel is built and sits in the
+  repository, but the last full pipeline run was invoked with
+  <span class="mono">--skip-ablation</span>, so no ablation number ships. An earlier
+  configuration measured &minus;0.11 percent, which is flat. It must be re-measured on the
+  current multi winter models and reported whichever way it lands. If it comes out flat
+  again, the honest conclusion is that the trained heads already capture this effect
+  through their radiation and boundary layer features, which is itself a finding.
+</p>
+
+<h3>11.5 Deliberate boundaries</h3>
+<ul>
+  <li><b>No VOC chemistry.</b> Delhi's winter ozone is VOC limited as well as radiation
+    limited, and we have no VOC measurements. TROPOMI formaldehyde and NO₂ could give a
+    regime map, but that requires orbit level netCDF processing. Only the radiation limited
+    half is modelled, and the report says so wherever ozone is discussed.</li>
+  <li><b>A single chemical layer.</b> Vertical structure is diagnosed, not resolved. The
+    lid and mixing depth are tracked in time and height and modulate surface concentration,
+    but chemistry is solved in one layer. This is the largest remaining simplification.</li>
+  <li><b>No data assimilation.</b> Observations enter as features and as training truth,
+    not through an analysis cycle.</li>
+  <li><b>The plume magnitude is partly a DSS emulator.</b> Stated in §6.2.</li>
+</ul>
+</section>
+
+<!-- ═══════════════ 12. ROADMAP ═══════════════ -->
+<section>
+<h2><span class="n">12</span>Roadmap to full compliance</h2>
+<p class="lead">
+  Every partial in Table 2.1 has a costed route to closure. Nothing below requires new data,
+  new funding, or a larger machine.
+</p>
+
+<h3>12.1 Close the species gap in the feedback loop &nbsp;<span class="pill part">closes C6</span></h3>
+<p><b>Effort: about one day. Priority: first.</b></p>
+<table class="zebra">
+  <thead><tr><th style="width:16%">Item</th><th style="width:34%">Mechanism to implement</th><th>Physical justification</th></tr></thead>
+  <tbody>
+    <tr><th>PM10</th><td>Apply the same box-model concentration response, damped by an efficiency factor below one.</td><td>The box model is a pure dilution argument valid for any conserved aerosol mass. PM10 is coarse-mode dominated with a higher deposition velocity and shorter residence time, so its amplification under a collapsing mixing depth should be real but smaller than PM2.5's. The factor is documented and bounded, not fitted.</td></tr>
+    <tr><th>NOx, path 1</th><td>Dilution: the same concentration response.</td><td>NO₂ is a surface-emitted primary pollutant, so a shallower mixing depth concentrates it exactly as it does particulate mass.</td></tr>
+    <tr><th>NOx, path 2</th><td>Reduced photolytic loss: scale NO₂ by the J(NO₂) attenuation ratio.</td><td>J(NO₂) governs the rate at which NO₂ is split. Attenuating the ultraviolet slows that loss, so NO₂ accumulates. Both paths act in the same direction under haze, which is a check on the implementation.</td></tr>
+    <tr><th>O₃</th><td>Recompute photolysis from the <i>converged</i> aerosol optical depth and re-evaluate the ozone response inside the iteration.</td><td>Currently photolysis is computed once from baseline aerosol before the solver runs. Moving it inside closes the chemistry side of the loop and makes ozone a genuine participant rather than a downstream consumer.</td></tr>
+  </tbody>
+  <caption>Table 12.1 After this, all four named species participate and clause C6 is met in full. Each new response needs its own clipped range and its own literature gate entry, on the same pattern as the existing five.</caption>
+</table>
+<p>
+  <b>Acceptance:</b> the literature gate grows from five checks to eight or nine, all
+  passing; the ablation in §12.3 is re-run across all four species; and no head regresses.
+</p>
+
+<h3>12.2 Make the hosted instance genuinely fresh &nbsp;<span class="pill part">closes C7</span></h3>
+<p><b>Effort: about two hours. Priority: second, and it costs nothing.</b></p>
+<p>
+  There is a workaround, and it is better than paying for a larger instance. The constraint
+  is that the <i>web service</i> has 512 MB. Nothing requires the pipeline to run on the web
+  service.
+</p>
+<ol>
+  <li>A <b>scheduled GitHub Actions workflow</b> runs the full pipeline on a hosted runner.
+    Standard runners provide four cores and 16 GB of RAM, against a measured peak of 1.1 GB,
+    so the pipeline runs at full resolution with an order of magnitude of headroom.</li>
+  <li>The workflow writes the snapshot bundle and <b>commits it back to the repository</b>.</li>
+  <li>Render <b>auto-deploys on push</b>, so the hosted site begins serving the fresh bundle
+    within a couple of minutes.</li>
+  <li>Public repositories get <b>unlimited free Actions minutes</b>, so a three or six hourly
+    refresh costs nothing.</li>
+</ol>
+<div class="box">
+  <h4>Why this is not a compromise</h4>
+  <p>
+    No operational forecast system re-solves its physics when a user loads a page. NWP runs
+    on a cycle and serves the most recent cycle's output. A scheduled refresh is therefore
+    not an approximation of real time operation; it <i>is</i> how real time operation works.
+    The remaining artefact is that the free web service still sleeps after fifteen minutes
+    idle, so the first request after a quiet period is slow. That is a cold start, not a
+    stale forecast, and the two should not be confused.
+  </p>
+  <p>
+    A scheduled workflow on a repository with no commits is disabled after sixty days of
+    inactivity. This workflow commits on every run, so it keeps itself alive.
+  </p>
+</div>
+<p>
+  A second, complementary route is to cut the peak memory itself: process the forecast in
+  cell batches writing incrementally, hold the panel in float32 throughout, and release the
+  training panel before the coupling stage. That would plausibly bring the pipeline under
+  512 MB, but it is real engineering effort and the scheduled route delivers freshness
+  <i>and</i> keeps full resolution today.
+</p>
+
+<h3>12.3 Score the coupling ablation &nbsp;<span class="pill part">closes §11.4</span></h3>
+<p><b>Effort: a few hours, mostly compute.</b></p>
+<p>
+  Re-run <span class="mono">scripts/validate.py</span> without
+  <span class="mono">--skip-ablation</span> on the current multi winter models, and report
+  the result split by season, aerosol band and ventilation class so that "where it helps" is
+  answered with a table rather than a single flat number. A regime-resolved negative result
+  is far more informative than an aggregate one, because the feedback is physically expected
+  to do nothing on clean afternoons and the aggregate dilutes the winter signal with them.
+</p>
+
+<h3>12.4 A like for like comparison against the DSS</h3>
+<p><b>Effort: one to two days, dependent on archive access.</b></p>
+<p>
+  Re-run the hindcast on archived <i>forecast</i> meteorology rather than ERA5 reanalysis,
+  so that both systems are asked to predict the weather as well as the chemistry. Until then
+  Table 8.3 is presented with its caveat and is not claimed as a skill result.
+</p>
+
+<h3>12.5 Beyond the statement</h3>
+<ul class="compact">
+  <li><b>Multi layer chemistry.</b> Resolving two or three layers rather than one would let
+    the plume arrive aloft and mix down explicitly rather than through a gate.</li>
+  <li><b>TROPOMI derived VOC regime map.</b> Formaldehyde to NO₂ ratio, with the threshold
+    near 3.1, would let the ozone chemistry be regime aware.</li>
+  <li><b>Assimilation of station observations</b> into the initial state rather than only
+    into the feature set.</li>
+</ul>
+
+<table>
+  <thead><tr><th>Item</th><th style="width:14%">Effort</th><th style="width:18%">Closes</th><th style="width:16%">Cost</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><th>12.1 Species into the loop</th><td>~1 day</td><td>C6</td><td>none</td><td>All four named species coupled</td></tr>
+    <tr><th>12.2 Scheduled refresh</th><td>~2 hours</td><td>C7</td><td>none</td><td>Hosted site genuinely current</td></tr>
+    <tr><th>12.3 Ablation</th><td>~3 hours</td><td>§11.4</td><td>none</td><td>Evidence the coupling earns its place</td></tr>
+    <tr><th>12.4 Like for like DSS</th><td>1 to 2 days</td><td>§8.3 caveat</td><td>archive access</td><td>A defensible skill comparison</td></tr>
+  </tbody>
+  <caption>Table 12.2 After 12.1 and 12.2, ten of the eleven clauses are met in full and C1 remains partial by construction, because we consume a coupled model rather than run one.</caption>
+</table>
+</section>
+
+<!-- ═══════════════ APPENDIX ═══════════════ -->
+<section>
+<h2><span class="n">A</span>Appendix: where every number lives</h2>
+<p>
+  No figure in this report was typed by hand. Each was read from the file named below, and
+  each of those files is produced by a script in the repository.
+</p>
+<table class="zebra">
+  <thead><tr><th style="width:34%">Claim</th><th style="width:38%">File</th><th>Produced by</th></tr></thead>
+  <tbody>
+    <tr><th>Twelve head skill, Table 7.2</th><td><span class="mono">models/metrics_multiwinter.json</span></td><td><span class="mono">scripts/train.py</span></td></tr>
+    <tr><th>Leave one station out, Table 8.1</th><td><span class="mono">models/loso.json</span></td><td><span class="mono">scripts/loso.py</span></td></tr>
+    <tr><th>Coupling magnitudes, Table 4.1</th><td><span class="mono">data/snapshot/coupling.json</span></td><td><span class="mono">vayuchakra/feedback.py</span></td></tr>
+    <tr><th>Photolysis and ozone, Table 4.2</th><td><span class="mono">models/ozone_sensitivity.json</span></td><td><span class="mono">scripts/ozone_sensitivity.py</span></td></tr>
+    <tr><th>Plume calibration, Table 6.1</th><td><span class="mono">models/plume_calibration_octnov.json</span></td><td><span class="mono">scripts/plume_calibrate.py</span></td></tr>
+    <tr><th>GRAP probabilities, Table 8.2</th><td><span class="mono">models/uncertainty_pm25_24h.json</span></td><td><span class="mono">scripts/train_uncertainty.py</span></td></tr>
+    <tr><th>DSS head to head, Table 8.3</th><td><span class="mono">models/validation.json</span></td><td><span class="mono">scripts/validate.py</span></td></tr>
+    <tr><th>Grid construction, Table 3.1</th><td><span class="mono">data/snapshot/health.json</span></td><td><span class="mono">vayuchakra/grid.py</span></td></tr>
+    <tr><th>Species in the loop, Table 11.1</th><td><span class="mono">vayuchakra/feedback.py</span></td><td>source inspection</td></tr>
+    <tr><th>Abandoned UV check, §8.4</th><td><span class="mono">vayuchakra/photolysis.py</span></td><td><span class="mono">cloud_attenuation_check()</span></td></tr>
+  </tbody>
+  <caption>Table A.1 Every claim traced to its artefact.</caption>
+</table>
+
+<h3>A.1 Running it</h3>
+<ul class="compact">
+  <li><span class="mono">pytest</span> runs 76 tests. They include a mesh walk asserting the
+    two grid tiers leave no coverage gap, and they gate on every literature bound in
+    Table 4.1.</li>
+  <li><span class="mono">DECISIONS.md</span> records 59 decisions with the measurement behind
+    each, negative results included.</li>
+  <li><span class="mono">scripts/run_all.sh</span> runs the pipeline end to end.</li>
+  <li>The dashboard reads the same API this report cites, so anything on screen traces back
+    the same way.</li>
+</ul>
+
+<h3>A.2 Sources cited</h3>
+<ul class="compact">
+  <li>Xing et al., <i>Impacts of aerosol-photolysis interaction and aerosol-radiation
+    feedback on surface-layer ozone in North China</i>, Atmos. Chem. Phys. 22, 4101 (2022).</li>
+  <li>Nelson et al., <i>Avoiding high ozone pollution in Delhi, India</i>, Faraday
+    Discussions 226 (2021), APHH-India.</li>
+  <li><i>The impact of aerosols on photolysis frequencies and ozone production in Beijing
+    2012 to 2015</i>, Atmos. Chem. Phys. 19, 9413 (2019).</li>
+  <li>Master Chemical Mechanism v3.3.1 photolysis parameters, University of York.</li>
+  <li><i>Assessing CAMS reanalysis AOD over India</i>, Environ. Sci. Pollut. Res. (2025).</li>
+  <li>MoES and IITM WRF-Chem Decision Support System (JAMES). Third party output, cited and
+    never redistributed.</li>
+  <li>CPCB National Air Quality Index, published breakpoint table.</li>
+</ul>
+</section>
+
+</body>
+</html>

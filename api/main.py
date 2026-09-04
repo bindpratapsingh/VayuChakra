@@ -634,11 +634,33 @@ def validation():
     out = json.loads(chosen.read_text(encoding="utf-8"))
     out["metrics_file"] = chosen.name
     out["metrics_source"] = why
+
+    # scripts/validate.py writes the results that are NOT per-head training scores -
+    # the head-to-head against the operational MoES DSS, and the coupling ablation when
+    # it has been run - into models/validation.json. Those were being computed, written,
+    # and then never served: the endpoint globbed metrics*.json, which validation.json
+    # does not match, so the evidence view showed training skill and nothing else.
+    # Merged rather than replaced, so a key here can never silently shadow a head score.
+    extra = C.MODELS / "validation.json"
+    if extra.exists():
+        try:
+            for k, v in json.loads(extra.read_text(encoding="utf-8")).items():
+                if k not in out:
+                    out[k] = v
+        except Exception:
+            pass          # a malformed side-car must not take the metrics down with it
     return _clean(out)
 
 
-# ─── The dashboard, served from this same origin ─────────────────────────────
+# ─── Documents, then the dashboard, both from this same origin ───────────────
 #
+# /docs carries the project report the rail links to. It is served from the repository's
+# docs/ directory rather than copied into dashboard/, so there is one PDF and the link
+# cannot go stale against a rebuilt one.
+DOCS = Path(__file__).resolve().parent.parent / "docs"
+if DOCS.is_dir():
+    app.mount("/docs", StaticFiles(directory=str(DOCS)), name="docs")
+
 # Mounted last, deliberately. A mount at "/" catches every path that no route above
 # claimed, so registering it earlier would swallow /forecast, /profile and the rest and
 # return 404s from a static file handler instead.
