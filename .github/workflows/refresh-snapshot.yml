@@ -82,25 +82,47 @@ jobs:
         run: python scripts/export_snapshot.py --base http://127.0.0.1:8100
 
       - name: Refuse to ship a broken bundle
-        # The export writes whatever the endpoints returned, including errors. Committing
-        # a bundle of 500s would replace a stale-but-correct forecast with a broken one,
-        # which is strictly worse than doing nothing.
+        # Committing a bundle of 500s would replace a stale-but-correct forecast with a
+        # broken one, which is strictly worse than doing nothing.
+        #
+        # "retained" is not a failure. The MoES DSS workbook is third-party research
+        # output that we cite and deliberately do not redistribute, so it exists on a
+        # developer machine and never here; /dss and /scenario answer 503 on this runner
+        # by design. The exporter keeps the last good capture of those routes and says
+        # so, and the service goes on serving them. Rejecting the whole bundle over a
+        # dependency that was never expected to be present would mean this workflow
+        # never once succeeded.
         run: |
           python - <<'PY'
           import json, pathlib, sys
           m = json.loads(pathlib.Path("data/snapshot/manifest.json").read_text())
           routes = m["routes"]
-          bad = [r for r, v in routes.items() if v.get("status") != "ok"]
-          thin = [r for r, v in routes.items() if (v.get("bytes") or 0) < 100]
-          required = ["/forecast?horizon=24", "/coupling", "/inversion", "/summary"]
+          # Routes that carry the forecast itself. These must be freshly captured: a
+          # retained forecast is exactly the staleness this workflow exists to remove.
+          required = ["/health", "/summary", "/forecast?horizon=24",
+                      "/forecast?horizon=48", "/forecast?horizon=72",
+                      "/coupling", "/inversion", "/photolysis", "/plume"]
           missing = [r for r in required if r not in routes]
-          for label, rs in (("failed", bad), ("suspiciously small", thin),
-                            ("missing", missing)):
+          stale_required = [r for r in required
+                            if routes.get(r, {}).get("status") == "retained"]
+          failed = [r for r, v in routes.items()
+                    if v.get("status") not in ("ok", "retained")]
+          thin = [r for r, v in routes.items()
+                  if v.get("file") and (v.get("bytes") or 0) < 100]
+
+          for label, rs in (("missing entirely", missing),
+                            ("required but not refreshed", stale_required),
+                            ("failed with no previous capture", failed),
+                            ("suspiciously small", thin)):
               if rs:
                   print(f"{label}: {rs}", file=sys.stderr)
-          if bad or thin or missing:
+          if missing or stale_required or failed or thin:
               sys.exit("bundle rejected; the previous one stays live")
-          print(f"bundle ok: {len(routes)} routes")
+
+          retained = [r for r, v in routes.items() if v.get("status") == "retained"]
+          fresh = len(routes) - len(retained)
+          print(f"bundle ok: {fresh} routes refreshed"
+                + (f", {len(retained)} retained ({', '.join(retained)})" if retained else ""))
           PY
 
       - name: Commit if anything actually changed

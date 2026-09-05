@@ -110,8 +110,35 @@ def main() -> int:
         took = time.time() - t0
         path = out / slug(route)
         if payload is None:
-            print(f"  {route:34s} {status:12s} {took:6.1f}s  NOT CAPTURED")
-            manifest["routes"][route] = {"file": None, "status": status}
+            # A route can fail because the pipeline is broken, or because this machine
+            # legitimately cannot reach something another one could. The MoES DSS
+            # workbook is the standing example: it is third-party research output that
+            # we cite and deliberately do not redistribute, so it exists on a developer
+            # machine and never on a CI runner, and /dss and /scenario answer 503 there.
+            #
+            # The old behaviour recorded `file: None` and dropped the route from the
+            # manifest. The previously captured file stayed on disk and the API kept
+            # serving it - it globs the directory rather than reading the manifest - so
+            # the manifest became a document that disagreed with what the service
+            # actually returned. Worse, a CI check reading the manifest would reject an
+            # entire healthy bundle over a dependency that was never expected to be
+            # present.
+            #
+            # So a retained file is reported as retained, with the reason and the age of
+            # what is being kept. That is the honest description: this run did not
+            # refresh the route, and the bundle still serves the last good capture.
+            if path.exists():
+                age_h = (time.time() - path.stat().st_mtime) / 3600.0
+                print(f"  {route:34s} {status:12s} {took:6.1f}s  RETAINED "
+                      f"(previous capture, {age_h:.0f} h old)")
+                manifest["routes"][route] = {
+                    "file": path.name, "status": "retained",
+                    "bytes": path.stat().st_size,
+                    "reason": status,
+                    "retained_age_hours": round(age_h, 1)}
+            else:
+                print(f"  {route:34s} {status:12s} {took:6.1f}s  NOT CAPTURED")
+                manifest["routes"][route] = {"file": None, "status": status}
             continue
         path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
         kb = path.stat().st_size / 1024
