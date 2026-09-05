@@ -1,0 +1,124 @@
+# Keep the hosted forecast current, without paying for a bigger instance.
+#
+# THE PROBLEM
+# The Render free tier gives the web service 512 MB. The pipeline peaks near 1.1 GB and
+# carries about 283 MB of fixed cost before a single cell is forecast, so it does not
+# fit at any grid resolution. Coarsening the domain would have cost real resolution and
+# still not fitted.
+#
+# THE POINT
+# Nothing requires the pipeline to run on the web service. A GitHub-hosted runner has
+# 16 GB against a measured 1.1 GB peak, which is an order of magnitude of headroom. So
+# the pipeline runs here, at full resolution, writes the snapshot bundle, and commits
+# it. Render auto-deploys on push and begins serving the fresh bundle a couple of
+# minutes later.
+#
+# This is not an approximation of real-time operation. No operational forecast system
+# re-solves its physics when someone loads a page: NWP runs on a cycle and serves the
+# most recent cycle. A scheduled refresh IS how real-time operation works. What remains
+# is that the free web service sleeps after fifteen minutes idle, so the first request
+# after a quiet period is slow. That is a cold start, not a stale forecast.
+#
+# Public repositories get unlimited Actions minutes, so this costs nothing.
+name: Refresh forecast snapshot
+
+on:
+  schedule:
+    # Every six hours, offset past the hour so we are not competing with the top-of-hour
+    # crush on GitHub's scheduler. CAMS runs four cycles a day, so a sixth-hourly
+    # refresh tracks the driving data rather than outrunning it.
+    - cron: "17 */6 * * *"
+  workflow_dispatch:          # so a demo can force a fresh bundle on the spot
+
+concurrency:
+  # A run that is still going when the next one fires should finish, not be killed
+  # halfway through writing the bundle. Queue instead.
+  group: refresh-snapshot
+  cancel-in-progress: false
+
+permissions:
+  contents: write             # the only permission this needs: it commits the bundle
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start the API with the pipeline live
+        env:
+          # Secrets, never values. Set these once under Settings > Secrets and
+          # variables > Actions. Missing keys degrade specific stages rather than
+          # failing the run, and the bundle records which stages degraded.
+          OPENAQ_API_KEY: ${{ secrets.OPENAQ_API_KEY }}
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          VAYUCHAKRA_SNAPSHOT: "0"
+        run: |
+          nohup python -m uvicorn api.main:app --port 8100 > api.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://127.0.0.1:8100/health; then
+              echo "API up after ${i} attempts"; exit 0
+            fi
+            sleep 2
+          done
+          echo "API never became healthy"; tail -60 api.log; exit 1
+
+      - name: Capture the bundle
+        env:
+          OPENAQ_API_KEY: ${{ secrets.OPENAQ_API_KEY }}
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: python scripts/export_snapshot.py --base http://127.0.0.1:8100
+
+      - name: Refuse to ship a broken bundle
+        # The export writes whatever the endpoints returned, including errors. Committing
+        # a bundle of 500s would replace a stale-but-correct forecast with a broken one,
+        # which is strictly worse than doing nothing.
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          m = json.loads(pathlib.Path("data/snapshot/manifest.json").read_text())
+          routes = m["routes"]
+          bad = [r for r, v in routes.items() if v.get("status") != "ok"]
+          thin = [r for r, v in routes.items() if (v.get("bytes") or 0) < 100]
+          required = ["/forecast?horizon=24", "/coupling", "/inversion", "/summary"]
+          missing = [r for r in required if r not in routes]
+          for label, rs in (("failed", bad), ("suspiciously small", thin),
+                            ("missing", missing)):
+              if rs:
+                  print(f"{label}: {rs}", file=sys.stderr)
+          if bad or thin or missing:
+              sys.exit("bundle rejected; the previous one stays live")
+          print(f"bundle ok: {len(routes)} routes")
+          PY
+
+      - name: Commit if anything actually changed
+        run: |
+          git config user.name  "vayuchakra-refresh[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot
+          if git diff --cached --quiet; then
+            echo "bundle is byte-identical; nothing to commit"
+            exit 0
+          fi
+          git commit -m "Refresh the forecast snapshot ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
+
+      - name: Keep the API log when something went wrong
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-log
+          path: api.log
+          retention-days: 7
