@@ -103,6 +103,20 @@ jobs:
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
         run: python scripts/export_snapshot.py --base http://127.0.0.1:8100
 
+      - name: What the pipeline actually said
+        # Always, not just on failure. The station feed has been degrading silently on
+        # every run: the key is present and discovery works locally in 0.1s because it
+        # reads data/cache, which is gitignored, so the runner does it cold against a
+        # rate-limited API and we could not see why it failed. A bundle can be
+        # structurally valid and still be missing a whole input, and the only place that
+        # is visible is the pipeline's own log.
+        if: always()
+        run: |
+          echo "--- observations, models, and anything that degraded ---"
+          grep -iE "\[obs\]|\[model\]|\[chem\]|degraded|429|rate|retry|no station" api.log             | tail -40 || echo "(nothing matched)"
+          echo "--- last 25 lines ---"
+          tail -25 api.log || true
+
       - name: Refuse to ship a broken bundle
         # Committing a bundle of 500s would replace a stale-but-correct forecast with a
         # broken one, which is strictly worse than doing nothing.
