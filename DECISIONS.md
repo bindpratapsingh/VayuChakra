@@ -1512,3 +1512,98 @@ serves it from the image.
 bundle at runtime rather than have it baked in. Then data refreshes need no deploy at
 all, and the site could pick up a new forecast faster than it does now. That is a
 different change and is not this one.
+
+---
+
+## D-062
+
+**Decision.** Optical depth is built from two aerosol modes, not one, and the NO2
+photolytic loss share is the haze value rather than the clear-sky one.
+
+**Why.** The single-elasticity AOD model derived column optical depth from PM2.5 alone.
+Over the Indo-Gangetic Plain that is not a simplification, it is a seasonal bias with a
+known sign and a large size: measured against AERONET and MISR climatology it
+underestimates AOD by 15-25% in winter, **60-75% in the pre-monsoon**, and 35-45%
+annually. The fine mode carries 50-80% of extinction in winter and as little as 8-25%
+when Thar dust owns the column. No single elasticity describes both, because they are not
+the same aerosol.
+
+Fine and coarse differ in three ways that all matter and all point the same direction:
+
+| at 550 nm | fine (combustion) | coarse (mineral dust) |
+|---|---|---|
+| mass extinction efficiency | 4.4 m²/g | 0.85 m²/g |
+| single-scattering albedo | 0.855 | 0.95 |
+| asymmetry parameter | 0.625 | 0.725 |
+| hygroscopic growth at 80% RH | 2.2-2.8 | ~1.0 |
+
+So dust carries a great deal of mass per unit of extinction, barely absorbs, throws its
+scattering hard forward, and does not swell. A dust column dims the surface appreciably
+less than a smoke column of the same optical depth, and the old single bracket could not
+say so. Applying the fine growth curve to bulk PM10 would have inflated pre-monsoon AOD
+by 100-150%.
+
+`a` and `c` were chosen inside their published bounds so the resulting fine share
+reproduces the observed seasonal split: **0.79 in winter haze** against an AERONET range
+of 0.50-0.80, and **0.19 in a dust event** against 0.08-0.25. Two constants set to match
+a climatology, not a fit to our own data, and both are asserted in the suite.
+
+**The NO2 correction, and why it moves the answer the other way.** The photolytic share
+phi was 0.7, which describes clear-sky mid-latitude urban daytime: photolysis about 70%
+of the sink, OH 25%, heterogeneous 5%. Delhi winter haze restructures that. The enormous
+aqueous aerosol surface area accelerates N2O5 hydrolysis and direct NO2 uptake until
+heterogeneous sinks take **40-50%** of daytime loss, OH falls to about 10%, and
+photolysis is left with 40-50%. Holding phi at 0.7 assumes a photolytic engine the haze
+has already throttled. Corrected to 0.48, NO2 amplification under haze falls from
+**20.17% to about 12%**, which is a less impressive number and a more defensible one.
+
+---
+
+## D-063
+
+**Decision.** Transported smoke reaches the surface through a two-layer slab model, not a
+comparison against the inversion lid. `vayuchakra/twolayer.py`, wired as plume variant D.
+
+**Why.** The lid test asks where a parcel is. The atmosphere asks how fast the layer is
+growing. That difference is not cosmetic:
+
+- **A gate produces a numerical shock.** When the mixing height crosses the parcel
+  height the entire plume arrives at once. Real fumigation takes two to three hours, and
+  an instantaneous dump is a spike no monitor records.
+- **A gate misses the dilution.** A growing boundary layer entrains polluted air from
+  aloft *and* enlarges the volume it dilutes into. Those happen together, and a
+  threshold models neither.
+
+Aircraft and lidar profiling during APHH-India found transported agricultural plumes
+sitting in the residual layer over Delhi at 500-1500 m through the night, decoupled from
+a nocturnal boundary layer that can collapse below 50 m. That smoke passes overhead
+without touching a monitor and arrives between 07:00 and 10:00 local as the convective
+layer erodes the inversion. Delhi's bimodal "W" diurnal PM2.5 profile is partly that
+fumigation, and a single-layer model cannot produce it.
+
+The formulation is two control volumes:
+
+```
+h dCm/dt = E - vd*Cm + Sm*h + we*(Cr - Cm)
+  dCr/dt = Ar + Sr
+      we = max(dh/dt, 0)
+```
+
+The elegance is `we*(Cr - Cm)`: one term that fumigates when the air aloft is dirtier,
+dilutes when it is cleaner, and vanishes when the layer is not growing, degenerating to
+the single box it replaces. At sunset the air abandoned above the new nocturnal top is
+volume-weighted into the residual layer rather than discarded, which is how single-layer
+models leak mass across the diurnal transition.
+
+**Verified rather than asserted.** Injecting smoke ONLY into the residual layer and ONLY
+overnight, the surface stays at 19 ug/m3 while it is aloft, the reservoir builds to
+219 ug/m3, and the surface then peaks at **10:00 local, inside the observed window**, at
+78 ug/m3. That peak is produced by a mass budget, not by a threshold, and the test suite
+asserts the timing.
+
+**Shipped as a variant, not a replacement.** A to C stay, `plume_pm25_gate` keeps the old
+answer alongside the new one, and the DSS calibration can score them against each other.
+The previous decision to document the lid gate as an acceptable approximation no longer
+holds: when the dominant contributor to surface PM2.5 during a transport episode is the
+transient entrainment of the residual layer, approximating it with a threshold is not a
+defensible simplification.

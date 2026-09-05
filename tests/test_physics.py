@@ -508,3 +508,124 @@ def test_a_species_that_was_not_supplied_is_absent_rather_than_zero():
     assert s["mean_o3_response_pct"] is None
     assert s["mean_no2_amplification_pct"] is not None
     assert set(s["species_coupled"]) == {"pm25", "no2"}
+
+
+# ─── Bimodal aerosol optics (D-062) ──────────────────────────────────────────
+def test_fine_share_matches_the_observed_seasonal_split():
+    """Winter is fine-dominated, a dust event is not, and both must land in range.
+
+    AERONET and MISR climatology over the IGP put the fine share of extinction at
+    0.50 to 0.80 in winter haze and 0.08 to 0.25 in a pre-monsoon dust event. A single
+    elasticity cannot produce both, which is the whole reason the coarse term exists.
+    """
+    winter = feedback.mode_split(np.array([180.0]), np.array([260.0]), np.array([70.0]))[0]
+    dust = feedback.mode_split(np.array([60.0]), np.array([420.0]), np.array([25.0]))[0]
+    assert 0.50 <= winter <= 0.83, f"winter fine share {winter:.2f} outside AERONET range"
+    assert 0.05 <= dust <= 0.28, f"dust fine share {dust:.2f} outside AERONET range"
+    assert dust < winter
+
+
+def test_dust_dims_the_surface_less_than_smoke_at_equal_optical_depth():
+    """Mineral dust scatters forward and barely absorbs; soot does the opposite.
+
+    A single-mode bracket cannot express this, and getting it wrong would have the
+    model cool the surface during a dust storm as hard as during a smoke episode.
+    """
+    tau, m = np.array([0.8]), np.array([2.0])
+    smoke = feedback.shortwave_loss_fraction(tau, m, np.array([0.95]))[0]
+    dust = feedback.shortwave_loss_fraction(tau, m, np.array([0.19]))[0]
+    assert dust < smoke
+    assert smoke / dust > 1.1
+
+
+def test_coarse_mode_does_not_swell_with_humidity():
+    """Mineral dust is insoluble. Applying the fine growth curve to it inflated
+    pre-monsoon optical depth by 100 to 150 percent in published comparisons."""
+    dry = feedback.hygroscopic_growth(np.array([20.0]), C.HYGRO_GAMMA_COARSE)[0]
+    wet = feedback.hygroscopic_growth(np.array([90.0]), C.HYGRO_GAMMA_COARSE)[0]
+    assert abs(wet - dry) < 0.06
+    # the fine mode by contrast must swell substantially
+    f_dry = feedback.hygroscopic_growth(np.array([20.0]), C.HYGRO_GAMMA_FINE)[0]
+    f_wet = feedback.hygroscopic_growth(np.array([80.0]), C.HYGRO_GAMMA_FINE)[0]
+    assert 2.0 <= f_wet / f_dry <= 3.2
+
+
+def test_hygroscopic_growth_does_not_diverge_in_fog():
+    """The power law goes to infinity at saturation; a fog hour must stay finite."""
+    assert np.isfinite(feedback.hygroscopic_growth(np.array([100.0]), C.HYGRO_GAMMA_FINE)[0])
+
+
+def test_no2_photolytic_share_is_the_haze_value_not_the_clear_sky_one():
+    """0.7 describes clear-sky mid-latitude urban daytime. Delhi winter haze pushes
+    heterogeneous N2O5 and NO2 uptake to 40-50% of the sink, leaving photolysis 40-55%."""
+    assert 0.40 <= C.NO2_PHOTOLYSIS_LOSS_SHARE <= 0.55
+
+
+# ─── Two-layer slab model (D-063) ────────────────────────────────────────────
+def _diurnal_depth(n: int = 36):
+    """A day and a half: nocturnal collapse to 80 m, daytime growth to 1400 m."""
+    t = pd.date_range("2026-11-05T18:30:00Z", periods=n, freq="h", tz="UTC")
+    local = ((t.hour + 5) % 24).to_numpy()
+    h = np.where((local >= 7) & (local <= 16), 80 + (local - 7).clip(0) * 150, 80.0)
+    return t, local, np.clip(h.astype(float), 80.0, 1400.0)
+
+
+def test_entrainment_only_happens_while_the_layer_grows():
+    """On collapse the flux is zero, not negative. Mass goes to the residual layer
+    through the evening transition instead, which is a different mechanism."""
+    from vayuchakra import twolayer
+    we = twolayer.entrainment_velocity(np.array([100.0, 400.0, 900.0, 200.0, 80.0]))
+    assert (we >= 0).all()
+    assert we[1] > 0 and we[2] > 0        # growing
+    assert we[3] == 0 and we[4] == 0      # collapsing
+
+
+def test_smoke_arriving_aloft_overnight_lands_in_the_morning():
+    """The claim the whole upgrade rests on, and the one a lid gate cannot make.
+
+    Smoke is injected ONLY into the residual layer and ONLY overnight. The surface must
+    stay comparatively clean while it is up there, then peak during the 07:00 to 10:00
+    fumigation window as the convective layer grows into the reservoir.
+    """
+    from vayuchakra import twolayer
+    t, local, h = _diurnal_depth()
+    aloft = np.where((local >= 20) | (local <= 6), 12.0, 0.0)[:, None]
+    res = twolayer.integrate(h, np.zeros_like(aloft), aloft)
+    d = twolayer.fumigation_diagnostics(t, res["surface"], res["residual"],
+                                        res["entrainment_ms"])
+    assert d["peak_in_fumigation_window"], (
+        f"surface peaked at {d['peak_local_hour']}:00 local, outside 07-10")
+    assert d["mean_surface_in_window_ugm3"] > 2 * d["mean_surface_overnight_ugm3"]
+    assert d["residual_reservoir_peak_ugm3"] > d["mean_surface_overnight_ugm3"]
+
+
+def test_the_slab_conserves_mass_it_is_not_given():
+    """With no source at all, nothing may appear at the surface."""
+    from vayuchakra import twolayer
+    _t, _l, h = _diurnal_depth()
+    z = np.zeros((len(h), 3))
+    res = twolayer.integrate(h, z, z)
+    assert np.allclose(res["surface"], 0.0)
+    assert np.allclose(res["residual"], 0.0)
+
+
+def test_a_clean_residual_layer_dilutes_rather_than_fumigates():
+    """The entrainment term is one expression doing two jobs. When the air aloft is
+    cleaner than the surface it must dilute, not add."""
+    from vayuchakra import twolayer
+    _t, local, h = _diurnal_depth()
+    into_mixed = np.where(local <= 6, 30.0, 0.0)[:, None]   # dirty surface overnight
+    res = twolayer.integrate(h, into_mixed, np.zeros_like(into_mixed))
+    surf = res["surface"][:, 0]
+    grew = np.argmax(h > 500)
+    assert surf[grew] < surf[:grew].max(), "growing into clean air must dilute"
+
+
+def test_evening_collapse_hands_mass_up_rather_than_destroying_it():
+    """Air abandoned above the new nocturnal top becomes residual layer. Losing it is
+    how single-layer models leak mass across the diurnal transition."""
+    from vayuchakra import twolayer
+    h = np.array([1200.0, 1200.0, 100.0, 100.0])
+    into_mixed = np.array([[50.0], [0.0], [0.0], [0.0]])
+    res = twolayer.integrate(h, into_mixed, np.zeros_like(into_mixed))
+    assert res["residual"][2, 0] > 0, "collapse discarded the abandoned mixed layer"

@@ -140,6 +140,52 @@ COUPLING_TOL = 0.5         # ug m-3; convergence when successive PM2.5 differ by
 WIND_RESPONSE_RATIO = 0.20      # fractional wind change per unit fractional PBL change
 MAX_WIND_SUPPRESSION = 0.15     # hard cap; the published range tops out near 4%
 
+#: --- Bimodal aerosol optics (D-062) -------------------------------------------
+#: A PM2.5-only optical depth is not a simplification over the Indo-Gangetic Plain, it
+#: is a seasonal bias with a known sign and a large size. Measured against AERONET and
+#: MISR climatology, deriving column AOD from fine mass alone underestimates it by
+#: 15-25% in winter, **60-75% in the pre-monsoon** when Thar dust dominates the column,
+#: and 35-45% annually. The fine mode carries 50-80% of extinction in winter and as
+#: little as 8-25% in the pre-monsoon, so no single elasticity can describe both.
+#:
+#: So optical depth is built from two modes that are physically different objects:
+#:     AOD_550 = a*(PM2.5)^b*f_fine(RH) + c*(PM10-PM2.5)^d*f_coarse(RH)
+#: All six parameters are bounded by published regional regressions. a and c were then
+#: chosen INSIDE those bounds so the resulting fine share of extinction reproduces the
+#: observed seasonal split: 0.79 in winter haze against an AERONET range of 0.50-0.80,
+#: and 0.19 in a pre-monsoon dust event against 0.08-0.25. That is two constants set to
+#: match a climatology, not a fit to our own data, and the test suite asserts both.
+AOD_FINE_PREFACTOR = 0.0030       # a, bounded 0.003-0.015
+AOD_FINE_ELASTICITY = 0.85        # b, bounded 0.75-0.95; sub-linear because coagulation
+                                  #    lowers mass extinction efficiency at high load
+AOD_COARSE_PREFACTOR = 0.0020     # c, bounded 0.0005-0.002
+AOD_COARSE_ELASTICITY = 0.93      # d, bounded 0.85-1.00; near-linear, dust does not
+                                  #    coagulate the way accumulation mode does
+
+#: Mass extinction efficiency at 550 nm, m2/g. Coarse dust carries a great deal of mass
+#: per unit of extinction; treating it with fine-mode optics would massively overstate
+#: pre-monsoon AOD.
+MEE_FINE = 4.40            # 3.5-6.6 reported
+MEE_COARSE = 0.85          # 0.5-1.2 reported
+
+#: Single-scattering albedo. Delhi's fine mode is strongly absorbing because of black
+#: and brown carbon; mineral dust is near-purely scattering.
+SSA_FINE = 0.855           # 0.80-0.89 reported
+SSA_COARSE = 0.95          # 0.92-0.96 reported
+
+#: Asymmetry parameter. Coarse particles are large against the wavelength, so diffraction
+#: makes their scattering strongly forward: less of it is lost back to space.
+ASYM_FINE = 0.625          # 0.60-0.65 reported
+ASYM_COARSE = 0.725        # 0.70-0.75 reported
+
+#: Hygroscopic growth. The fine mode over the IGP is dominated by soluble sulphate,
+#: nitrate and ammonium and swells sharply: f(RH=80%) reaches 2.2-2.8. Mineral dust is
+#: insoluble and hydrophobic, so its growth factor is essentially unity. Applying the
+#: fine curve to bulk PM10 would inflate pre-monsoon AOD by 100-150%.
+HYGRO_GAMMA_FINE = 0.50    # 0.40-0.60 reported
+HYGRO_GAMMA_COARSE = 0.02  # 0.00-0.05 reported
+HYGRO_MAX_RH = 95.0        # cap; the power law diverges as RH approaches 100
+
 #: --- The other three species the problem statement names (D-060) --------------
 #: The PS asks for two-way feedback across PM2.5, PM10, O3 and NOx. PM2.5 carries the
 #: return path to the atmosphere, because it is the species our AOD model is calibrated
@@ -164,7 +210,14 @@ COARSE_DILUTION_EFFICIENCY = 0.5
 #: and NO2 accumulates. At steady state with source S and loss (k_photo*J + k_other),
 #: attenuating J to a*J multiplies NO2 by 1 / (1 - phi*(1 - a)), where phi is the share
 #: of NO2 loss that runs through photolysis. Urban daytime values put phi at 0.6-0.9.
-NO2_PHOTOLYSIS_LOSS_SHARE = 0.7
+#: Corrected from 0.7 (D-062). The 0.7 figure describes clear-sky, mid-latitude urban
+#: daytime, where photolysis is about 70% of the NO2 sink, OH 25% and heterogeneous
+#: uptake 5%. Delhi winter haze restructures that completely: the enormous aqueous
+#: aerosol surface area accelerates N2O5 hydrolysis and direct NO2 uptake so that
+#: heterogeneous sinks take 40-50% of daytime loss, OH falls to about 10%, and
+#: photolysis is left with 40-50%. Holding phi at 0.7 would assume a photolytic engine
+#: that the haze has already throttled, and would overstate NO2 accumulation.
+NO2_PHOTOLYSIS_LOSS_SHARE = 0.48   # bounded 0.40-0.55 for Delhi winter daytime
 
 #: Ozone production is sub-linear in photolysis: the radical chain saturates, so
 #: accumulated O3 responds more weakly than instantaneous production does. dlnO3/dlnJ in
@@ -172,6 +225,17 @@ NO2_PHOTOLYSIS_LOSS_SHARE = 0.7
 #: APHH-India campaign describes for Delhi winter. Set from photochemistry, then checked
 #: against the published -25% ozone per 50% AOD reduction, never fitted to it.
 O3_J_SENSITIVITY = 0.6
+
+#: --- Two-layer slab model (D-063) ---------------------------------------------
+#: Replaces the lid gate for transported smoke. Values are the operational ones from the
+#: slab-model literature (Batchvarova and Gryning; the CLASS family) for a subtropical
+#: megacity in the post-monsoon transport season.
+SLAB_TOP_M = 2000.0        # domain top: mixed layer plus residual layer
+SLAB_MIN_DEPTH_M = 50.0    # floor on h; the entrainment term we/h is stiff below this,
+                           # and Delhi's nocturnal layer genuinely reaches 50-150 m
+MAX_ENTRAINMENT_MS = 0.20  # observed morning growth is 0.05-0.15 m/s (180-540 m/h);
+                           # the cap is just above that so a data glitch cannot blow up
+DRY_DEPOSITION_MS = 0.002  # 0.2 cm/s, typical accumulation-mode particle deposition
 
 #: --- Acceptance bounds from published Delhi studies ---------------------------
 #: The solver is considered WRONG, not merely surprising, if it lands outside these.

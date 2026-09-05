@@ -126,12 +126,35 @@ class AODModel:
     method: str = "cams-paired-elasticity"
 
     def perturb(self, aod_base, pm_new, pm_ref) -> np.ndarray:
-        """Scale a baseline AOD to a new PM2.5, holding everything else fixed."""
+        """Scale a baseline AOD to a new PM2.5, holding everything else fixed.
+
+        Fine mode only. `perturb_bimodal` is what the solver calls; this remains for
+        the single-mode path and for tests that predate the coarse term.
+        """
         base = _as_array(aod_base)
         new = np.clip(_as_array(pm_new), 0.1, None)
         ref = np.clip(_as_array(pm_ref), 0.1, None)
         out = base * (new / ref) ** self.b
         return np.clip(out, 0.01, 5.0)
+
+    def perturb_bimodal(self, aod_base, fine_share,
+                        pm25_new, pm25_ref, coarse_new, coarse_ref) -> np.ndarray:
+        """Scale a baseline AOD with the two modes moving independently.
+
+        The fine and coarse fractions of the column are perturbed by their own
+        elasticities and recombined. The absolute level still comes from CAMS, because
+        that is the quantity CAMS is actually good at; what this adds is that a dust
+        day and a smoke day no longer move the optical depth the same way.
+        """
+        base = _as_array(aod_base)
+        share = np.clip(_as_array(fine_share), 0.0, 1.0)
+        f_new = np.clip(_as_array(pm25_new), 0.1, None)
+        f_ref = np.clip(_as_array(pm25_ref), 0.1, None)
+        c_new = np.clip(_as_array(coarse_new), 0.1, None)
+        c_ref = np.clip(_as_array(coarse_ref), 0.1, None)
+        fine = base * share * (f_new / f_ref) ** self.b
+        coarse = base * (1.0 - share) * (c_new / c_ref) ** C.AOD_COARSE_ELASTICITY
+        return np.clip(fine + coarse, 0.01, 5.0)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -185,7 +208,71 @@ def calibrate_aod(df: pd.DataFrame) -> AODModel:
 
 
 # ─── Step 2: AOD -> surface shortwave ────────────────────────────────────────
-def shortwave_loss_fraction(aod, airmass) -> np.ndarray:
+def hygroscopic_growth(rh, gamma) -> np.ndarray:
+    """f(RH) = (1 - RH/100)^-gamma, the standard IGP operational form.
+
+    Capped at HYGRO_MAX_RH because the power law diverges at saturation, and a fog hour
+    would otherwise produce an infinite optical depth.
+    """
+    r = np.clip(_as_array(rh), 0.0, C.HYGRO_MAX_RH)
+    return np.power(1.0 - r / 100.0, -float(gamma))
+
+
+def mode_split(pm25, pm10, rh) -> np.ndarray:
+    """Fraction of column extinction carried by the fine mode.
+
+    This is the correction that matters most over the Indo-Gangetic Plain. Column AOD
+    built from PM2.5 alone underestimates by 15-25% in winter and **60-75% in the
+    pre-monsoon**, when Thar dust owns the column and the fine mode carries as little
+    as 8% of the extinction. One elasticity cannot describe both seasons, because they
+    are not the same aerosol.
+
+    Fine and coarse are different objects optically, not just different sizes: mass
+    extinction efficiency 4.4 against 0.85 m2/g, so coarse dust carries a great deal of
+    mass per unit of extinction; and the fine mode is soluble and swells with humidity
+    while mineral dust is hydrophobic and does not. Applying the fine growth curve to
+    bulk PM10 would inflate pre-monsoon optical depth by 100-150%.
+
+    Returns the fine share of extinction, so the caller can split any absolute AOD -
+    including CAMS's, which stays the authority on the level - into two modes that then
+    respond to their own mass independently.
+    """
+    fine = np.clip(_as_array(pm25), 0.1, None)
+    coarse = np.clip(_as_array(pm10) - fine, 0.1, None)   # PM10 below PM2.5 is
+    #                                        instrument disagreement, not negative dust
+    tau_f = (C.AOD_FINE_PREFACTOR * np.power(fine, C.AOD_FINE_ELASTICITY)
+             * hygroscopic_growth(rh, C.HYGRO_GAMMA_FINE))
+    tau_c = (C.AOD_COARSE_PREFACTOR * np.power(coarse, C.AOD_COARSE_ELASTICITY)
+             * hygroscopic_growth(rh, C.HYGRO_GAMMA_COARSE))
+    total = tau_f + tau_c
+    return np.where(total > 1e-12, tau_f / np.maximum(total, 1e-12), 1.0)
+
+
+def surface_bracket(fine_share) -> np.ndarray:
+    """The share of extinction that is genuinely lost to the surface, by mode.
+
+    Forward-scattered light still reaches the ground, so only absorption plus
+    back-scatter counts:  (1 - SSA) + SSA * upscatter.
+
+    Both terms differ sharply between the modes and they pull in the same direction.
+    Delhi's fine mode is black and brown carbon, strongly absorbing (SSA 0.855) and
+    only moderately forward-scattering. Mineral dust is nearly pure scattering
+    (SSA 0.95) and, being large against the wavelength, throws that scattering hard
+    forward (g 0.725), so far less of it is lost. A dust column of the same optical
+    depth as a smoke column dims the surface appreciably less, and a single-mode
+    bracket cannot express that.
+
+    Upscatter is taken as (1 - g)/2, the standard approximation.
+    """
+    w = np.clip(_as_array(fine_share), 0.0, 1.0)
+    up_f = (1.0 - C.ASYM_FINE) / 2.0
+    up_c = (1.0 - C.ASYM_COARSE) / 2.0
+    b_fine = (1.0 - C.SSA_FINE) + C.SSA_FINE * up_f
+    b_coarse = (1.0 - C.SSA_COARSE) + C.SSA_COARSE * up_c
+    return w * b_fine + (1.0 - w) * b_coarse
+
+
+def shortwave_loss_fraction(aod, airmass, fine_share=None) -> np.ndarray:
     """Fraction of surface shortwave removed by aerosol.
 
     Beer-Lambert gives the total extinction along the slant path,
@@ -203,8 +290,11 @@ def shortwave_loss_fraction(aod, airmass) -> np.ndarray:
     tau = np.clip(_as_array(aod), 0.0, 5.0)
     m = np.clip(_as_array(airmass), 1.0, 20.0)
     extinction = 1.0 - np.exp(-tau * m)
-    surface_bracket = (1.0 - SSA) + SSA * UPSCATTER
-    return np.clip(extinction * surface_bracket, 0.0, 0.9)
+    if fine_share is None:
+        bracket = (1.0 - SSA) + SSA * UPSCATTER      # single-mode legacy path
+    else:
+        bracket = surface_bracket(fine_share)
+    return np.clip(extinction * bracket, 0.0, 0.9)
 
 
 #: Optical depth of a pristine atmosphere — the counterfactual the ablation compares
@@ -243,7 +333,8 @@ def climatological_aod(df: pd.DataFrame) -> np.ndarray:
     return clim.fillna(aod.median()).clip(0.05, 2.0).to_numpy()
 
 
-def attenuate_shortwave(sw_baseline, aod_target, aod_climatology, airmass):
+def attenuate_shortwave(sw_baseline, aod_target, aod_climatology, airmass,
+                        fine_share=None):
     """Surface shortwave under a given aerosol load.
 
     Three optical depths are in play and conflating any two of them produces nonsense:
@@ -258,11 +349,11 @@ def attenuate_shortwave(sw_baseline, aod_target, aod_climatology, airmass):
     coupled and uncoupled runs comparable.
     """
     sw = np.clip(_as_array(sw_baseline), 0.0, None)
-    loss_clim = shortwave_loss_fraction(aod_climatology, airmass)
+    loss_clim = shortwave_loss_fraction(aod_climatology, airmass, fine_share)
     # Guard the division: as the climatological loss approaches 1 the implied clear-sky
     # irradiance would explode.
     sw_clear = sw / np.clip(1.0 - loss_clim, 0.15, 1.0)
-    loss_target = shortwave_loss_fraction(aod_target, airmass)
+    loss_target = shortwave_loss_fraction(aod_target, airmass, fine_share)
     return np.clip(sw_clear * (1.0 - loss_target), 0.0, None), sw_clear
 
 
@@ -571,8 +662,30 @@ def solve(
     pm_ref = _as_array(out["cams_pm25"]) if "cams_pm25" in out.columns else np.full(len(out), np.nan)
     pm_ref = np.where(np.isfinite(pm_ref) & (pm_ref > 1.0), pm_ref, pm0)
 
+    # Fine share of column extinction. Fixed for the run: the solver perturbs mass, and
+    # the coarse-to-fine RATIO does not respond to the radiative feedback the way total
+    # mass does. Where PM10 or humidity are missing it falls back to all-fine, which is
+    # the old single-mode behaviour rather than a guess.
+    if "pm10_uncoupled" in out.columns:
+        pm10_for_split = _as_array(out["pm10_uncoupled"])
+    elif "cams_pm10" in out.columns:
+        pm10_for_split = _as_array(out["cams_pm10"])
+    else:
+        pm10_for_split = np.full(len(out), np.nan)
+    rh_for_split = (_as_array(out["relative_humidity_2m"])
+                    if "relative_humidity_2m" in out.columns else np.full(len(out), 50.0))
+    have_split = np.isfinite(pm10_for_split) & np.isfinite(rh_for_split)
+    fine_share = np.where(
+        have_split,
+        mode_split(pm0, np.where(have_split, pm10_for_split, pm0 * 1.5),
+                   np.where(np.isfinite(rh_for_split), rh_for_split, 50.0)),
+        1.0)
+    coarse0 = np.clip(np.where(have_split, pm10_for_split, pm0 * 1.5) - pm0, 0.1, None)
+    out["aod_fine_share"] = fine_share
+
     # --- the control run: a pristine atmosphere, computed once ---
-    sw_pristine, sw_clear = attenuate_shortwave(sw0, AOD_BACKGROUND, aod_clim, airmass)
+    sw_pristine, sw_clear = attenuate_shortwave(sw0, AOD_BACKGROUND, aod_clim, airmass,
+                                                fine_share)
     depth_pristine = pbl_response(depth0, sw0, sw_pristine)
 
     pm = pm0.copy()
@@ -584,10 +697,11 @@ def solve(
     d_t = np.zeros(len(out))
 
     for iterations in range(1, max_iter + 1):
-        # 1. mass -> optical depth (CAMS baseline, scaled by how far our PM2.5 differs)
-        aod_actual = model.perturb(aod_cams, pm, pm_ref)
-        # 2. optical depth -> surface shortwave
-        sw_actual, _ = attenuate_shortwave(sw0, aod_actual, aod_clim, airmass)
+        # 1. mass -> optical depth, fine and coarse moving on their own elasticities
+        aod_actual = model.perturb_bimodal(aod_cams, fine_share, pm, pm_ref,
+                                           coarse0, coarse0)
+        # 2. optical depth -> surface shortwave, with the mode-weighted surface bracket
+        sw_actual, _ = attenuate_shortwave(sw0, aod_actual, aod_clim, airmass, fine_share)
         # 3. shortwave deficit -> temperature response
         d_t = delta_temperature(sw_actual - sw_pristine)
         # 4. heating -> mixing depth

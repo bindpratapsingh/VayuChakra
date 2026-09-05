@@ -404,7 +404,7 @@ def _contribution(puffs: PuffState, cells: list[Cell], wind_puff: dict,
     wobbled by a metre.
     """
     if len(puffs) == 0 or not cells:
-        return np.zeros(len(cells))
+        return np.zeros(len(cells)), np.zeros(len(cells))
 
     sig = sigma_y_m(puffs.age_h, puffs.travel_km, stability)
 
@@ -432,6 +432,7 @@ def _contribution(puffs: PuffState, cells: list[Cell], wind_puff: dict,
     cell_depth = np.clip(wind_cell["mixing_depth_m"], C.MIN_PBL_M, C.MAX_PBL_M)
 
     out = np.zeros(len(cells))
+    aloft = np.zeros(len(cells))
     lat_c = np.array([c.lat for c in cells])
     lon_c = np.array([c.lon for c in cells])
 
@@ -448,11 +449,15 @@ def _contribution(puffs: PuffState, cells: list[Cell], wind_puff: dict,
         # The factor of a million converts to ug/m3, which is what every other
         # concentration in this project is expressed in. Without it the plume silently
         # contributes about a millionth of its real value and reads as a clean zero.
-        conc = (puffs.mass_g[near] * coupled[near]
-                / (2.0 * math.pi * sig[near] ** 2 * cell_depth[i])
-                * np.exp(-d2[near] / (2.0 * sig[near] ** 2))) * 1.0e6
-        out[i] = float(np.sum(conc))
-    return out
+        # Geometry and dilution are shared; only the coupled fraction differs between
+        # what is in the mixed layer now and what is still riding above it. Computing
+        # both here keeps the expensive distance loop to a single pass.
+        shape = (puffs.mass_g[near]
+                 / (2.0 * math.pi * sig[near] ** 2 * cell_depth[i])
+                 * np.exp(-d2[near] / (2.0 * sig[near] ** 2))) * 1.0e6
+        out[i] = float(np.sum(shape * coupled[near]))
+        aloft[i] = float(np.sum(shape * (1.0 - coupled[near])))
+    return out, aloft
 
 
 def run(fires: list[Fire], met_frame: pd.DataFrame, cells: list[Cell],
@@ -507,16 +512,52 @@ def run(fires: list[Fire], met_frame: pd.DataFrame, cells: list[Cell],
         cell_lon = np.array([c.lon for c in cells])
         wind_c = field.at(when, cell_lat, cell_lon)
 
-        contrib = _contribution(puffs, cells, wind_p, wind_c)
+        contrib, aloft = _contribution(puffs, cells, wind_p, wind_c)
         for i, c in enumerate(cells):
             rows.append({"time": when, "cell_id": c.cell_id, "lat": c.lat, "lon": c.lon,
-                         "plume_pm25": float(contrib[i]), "n_puffs": int(len(puffs)),
+                         "plume_pm25": float(contrib[i]),
+                         "plume_aloft": float(aloft[i]), "n_puffs": int(len(puffs)),
                          "mixing_depth_m": float(wind_c["mixing_depth_m"][i]),
                          "lid_m": float(wind_c["lid_m"][i])})
 
         puffs = _step(puffs, wind_p).compress()
 
-    return pd.DataFrame(rows)
+    frame = pd.DataFrame(rows)
+    if VARIANT == "D" and not frame.empty:
+        frame = _apply_two_layer(frame)
+    return frame
+
+
+def _apply_two_layer(frame: pd.DataFrame) -> pd.DataFrame:
+    """Route the plume through the two-layer slab instead of the lid comparison.
+
+    Variants A to C decide surface impact by where the parcel is relative to the lid.
+    This one decides it by a mass budget: smoke above the mixed layer goes into a
+    residual reservoir, and it reaches the ground only as fast as the boundary layer
+    grows into it. That is what produces a fumigation peak spread over the morning
+    rather than a step the moment a threshold is crossed.
+
+    `plume_pm25_gate` keeps the old answer alongside the new one, so the two can be
+    scored against the DSS attribution rather than one replacing the other on faith.
+    """
+    from . import twolayer
+
+    wide_m = frame.pivot_table(index="time", columns="cell_id",
+                               values="plume_pm25", aggfunc="first").sort_index()
+    wide_a = frame.pivot_table(index="time", columns="cell_id",
+                               values="plume_aloft", aggfunc="first").sort_index()
+    depth = (frame.pivot_table(index="time", columns="cell_id",
+                               values="mixing_depth_m", aggfunc="first")
+             .sort_index().mean(axis=1).to_numpy())
+
+    res = twolayer.integrate(depth, wide_m.to_numpy(), wide_a.to_numpy())
+    surface = pd.DataFrame(res["surface"], index=wide_m.index, columns=wide_m.columns)
+    tidy = surface.stack().rename("plume_two_layer").reset_index()
+
+    out = frame.merge(tidy, on=["time", "cell_id"], how="left")
+    out["plume_pm25_gate"] = out["plume_pm25"]
+    out["plume_pm25"] = out["plume_two_layer"].fillna(out["plume_pm25"])
+    return out.drop(columns=["plume_two_layer"])
 
 
 def summarise(fires: list[Fire]) -> dict:

@@ -1,52 +1,80 @@
 # VayuChakra · वायु चक्र
 
-**Coupled weather and chemistry forecasting for Delhi NCR**
-
-> Built for: Ministry of Earth Sciences / NCMRWF,
-> *Air Pollution and Weather Coupled Forecasting System (Delhi NCR Focus)*
+*Vayu chakra* means "the air cycle", and the cycle is the whole point.
 
 ### ▶ [vayuchakra.onrender.com](https://vayuchakra.onrender.com)
 
-**Give it up to a minute on the first click.** It runs on a free instance with no
-keep-alive, so it sleeps after 15 minutes idle and cold-starts on the next request.
-That is deliberate: a keep-alive would burn the free allowance and get the account
-suspended, which is how the sibling project's deployment ended.
-
-The hosted instance serves a **precomputed forecast**, and says so on every view. The
-live pipeline peaks at about 1.1 GB and a free instance has 512 MB, so it replays a
-bundle captured from the same API at full resolution: 420 cells at 2.8 km, all four
-pollutants, the coupled solver, photolysis, the plume and every validation number. A
-deployment gives up freshness, not resolution or physics. Run it locally for a live
-forecast; it is two commands and they are below.
+> **Give it a minute on the first click.** It sleeps on a free instance and wakes
+> slowly. There is no keep-alive pinging it awake, on purpose: that is what burned
+> through the free allowance and got a sibling project's account suspended.
 
 ---
 
-## The problem, in one paragraph
+## Why this exists
 
-Every operational AQI forecast treats weather as an input: wind disperses, rain
-scavenges, a shallow boundary layer concentrates. That is one direction only. The real
-atmosphere runs a loop: dense aerosol blocks sunlight, the surface heats less, the
-mixed layer grows shallower, and the same emissions end up more concentrated, which
-blocks more sunlight. The problem statement calls ignoring that loop a source of
-"significant inaccuracies".
+Ask any air quality forecast what tomorrow looks like and it will tell you about the
+weather: the wind will disperse, the rain will scavenge, a shallow boundary layer will
+trap. All true, and all one direction. Weather happens *to* pollution.
 
-**VayuChakra closes the loop and measures whether closing it helps.**
+Except it does not, quite. On a bad Delhi winter day the smog is thick enough to dim the
+sun measurably. Less sunlight reaches the ground, so the ground warms less, so the
+column of air that mixes over the city grows shallower and the breeze through it
+slackens. The same emissions are now packed into less air. Which makes the smog thicker.
+Which dims the sun further.
+
+That is a loop, and it is running right now over Delhi. Most operational systems cut it
+after the first step, because closing it means solving something rather than evaluating
+it. The MoES problem statement calls leaving it out a source of "significant
+inaccuracies", and it is right.
+
+**VayuChakra closes the loop, and then measures whether closing it actually helped.**
+It did not, much, on forecast error. That answer is in here too, in section
+[Does the coupling help?](#does-the-pm25-coupling-help-a-negative-result), because a
+system that only reports its wins has not been validated.
+
+---
+
+## What you are looking at
+
+A 72-hour air quality forecast for Delhi and the wider NCR, on 1,120 grid cells, about
+2.8 km across the city and 11 km out to Alwar and Karnal. Four pollutants: PM2.5, PM10,
+NO₂ and ozone, combined into the CPCB National AQI. Underneath it:
+
+- **A coupled solver** that runs the loop above to convergence, with every response
+  clipped to a physically defensible range and checked against published Delhi values
+  the model has never been fitted to. Eight of eight land inside.
+- **An inversion tracker**, because the lid over the city is the single most important
+  thing about a Delhi winter night and almost nothing displays it. Strength in kelvin,
+  lid height in metres, and a time-height cross-section you can actually read.
+- **A stubble plume model** that takes satellite fire detections in Punjab and Haryana,
+  carries them on the forecast wind, and works out whether that smoke arrives at
+  breathing height or passes overhead. A thousand fires with the wrong wind are
+  somebody else's problem that day, and the model says so.
+- **Twelve forecast heads**, all of which beat persistence on a winter they were never
+  trained on. Persistence is the baseline that matters and it is unglamorously hard to
+  beat.
+
+Everything on the site is read from a result file. Nothing is typed in by hand, and the
+things that failed are on screen next to the things that worked.
+
+The full write-up is a 26 page PDF:
+**[docs/VayuChakra-Report.pdf](docs/VayuChakra-Report.pdf)**. It takes the problem
+statement apart clause by clause and says exactly which ones are met, which are not, and
+why. It also downloads from the dashboard itself.
 
 ---
 
-## What it does
+## About the hosted version
 
-| | |
-|---|---|
-| **Two-way coupling** | An explicit five-step solver: PM2.5 → optical depth → shortwave → temperature → boundary layer → PM2.5, iterated to convergence |
-| **Separate PM2.5 and O₃** | Two model heads, because their physics and seasons are opposite. Ozone peaks on bright afternoons and *rises when NOx falls* |
-| **Inversion tracking** | Strength in kelvin, lid height, mixing depth, ventilation coefficient, stagnation run length |
-| **Plume dispersion** | Lagrangian puffs released from satellite fire detections, advected on forecast wind, gated by the inversion lid |
-| **72-hour outlook** | 1,120 cells, ~2.8 km over Delhi, ~11 km across the wider NCR |
-| **Validated against the MoES DSS** | Head-to-head with the ministry's own operational system on identical observations |
-| **A forecaster's interface** | Seven views organised around the physics: the region, the vertical column, the loop, transport, the surface product, the evidence, and an About view stating the brief clause by clause |
+It serves a **precomputed forecast**, and every view says so rather than quietly
+presenting stale numbers as live.
 
----
+The reason is arithmetic. The pipeline peaks around 1.1 GB and a free instance has
+512 MB, so it cannot run there at any grid resolution. Instead a GitHub Actions runner
+with 16 GB runs the real pipeline every six hours, at full resolution, and commits the
+result; Render picks it up and serves it. What a free deployment gives up is freshness,
+not resolution and not physics. Run it locally for a live forecast, which is two
+commands and they are further down.
 
 ## The interface
 
@@ -72,12 +100,6 @@ present in 95 hours and absent in 73, and absence is drawn as absence rather tha
 through: "no lid" and "a lid at ground level" are opposite statements about the
 atmosphere and must not share a pixel.
 
-The full write-up is a 26 page PDF: **[docs/VayuChakra-Report.pdf](docs/VayuChakra-Report.pdf)**.
-It sets out the problem statement clause by clause, what each clause requires, what was
-built to meet it, the evidence for every claim, and what remains. It downloads from the
-dashboard rail and from the About view, and is served at
-[`/docs/VayuChakra-Report.pdf`](https://vayuchakra.onrender.com/docs/VayuChakra-Report.pdf).
-
 Screenshots are in [docs/shots/](docs/shots/).
 
 ---
@@ -88,7 +110,7 @@ Five steps, each separately checkable against published values. None is a fitted
 box.
 
 ```
-1. PM2.5  → AOD          elasticity fitted on paired CAMS output
+1. PM + dust → AOD       two modes: fine mass and coarse mass, own elasticities
 2. AOD    → shortwave    Beer–Lambert, minus forward-scattered light that still arrives
 3. ΔSW    → ΔT           surface energy balance
 4. ΔT     → ΔPBL         encroachment: h ∝ √(accumulated heat)
@@ -100,12 +122,21 @@ box.
 ```
 
 All three meteorological variables the problem statement names, **temperature, wind and
-PBL height**, respond. So do **all four chemical species it names**: PM2.5 sits inside the
-iterated fixed point and carries the return path to the atmosphere, because it is what the
-aerosol model is calibrated on; PM10, NO₂ and O₃ respond to the meteorology the solver
-produces without meaningfully driving it, which is physically correct rather than a
-shortcut. Coarse dust, NO₂ and ozone at these concentrations do not move the shortwave
-budget enough to close a loop through it.
+PBL height**, respond. So do **all four chemical species it names**.
+
+The return path used to run through fine mass alone, and that was a real hole rather than
+a tidy simplification. Over the Indo-Gangetic Plain a PM2.5-only optical depth
+underestimates the column by 15 to 25 percent in winter and **60 to 75 percent in the
+pre-monsoon**, when Thar dust owns the sky and the fine mode carries under a fifth of the
+extinction. So optical depth is now built from two modes that are genuinely different
+objects: mass extinction efficiency 4.4 against 0.85 m²/g, and a soluble fine mode that
+swells with humidity against mineral dust that does not. A dust column and a smoke column
+of equal optical depth no longer dim the surface by the same amount, because dust
+scatters forward and barely absorbs while soot does the opposite.
+
+NO₂ and ozone still do not close a loop back to the radiation budget, and that is
+physics rather than a shortcut: neither moves the shortwave balance appreciably at these
+concentrations. They respond to the meteorology the solver produces.
 
 Step 5 feeds step 1, so it is **solved**, not evaluated. Damped fixed-point iteration
 with clipped responses, an iteration cap, and a divergence flag that falls back to the
