@@ -38,3 +38,16 @@ models/**/*_*h_q*.json
 node_modules/
 .DS_Store
 Thumbs.db
+
+# ── Internal prep documents, kept local ─────────────────────────────────────
+# The jury briefing and the team primer are how WE get ready: a script to present
+# from and a primer to learn from. They are not part of the product and they carry
+# our own framing about what to say and what not to say in a room, which has no
+# business in a public repository.
+#
+# docs/VayuChakra-Report.pdf is NOT here on purpose. That one is a deliverable: the
+# dashboard links it, StaticFiles serves it out of the image, and it must ship.
+docs/report/briefing.html
+docs/report/primer.html
+docs/VayuChakra-Jury-Briefing.pdf
+docs/VayuChakra-Team-Primer.pdf

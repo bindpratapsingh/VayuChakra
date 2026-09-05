@@ -39,15 +39,21 @@ HEADER = '<div style="display:none"></div>'
 
 
 def main() -> int:
-    missing = [src for src, _ in DOCUMENTS if not src.exists()]
-    if missing:
-        print(f"missing sources: {missing}", file=sys.stderr)
+    # The briefing and the primer are gitignored internal prep, so a fresh clone will
+    # not have them. Build whatever is present rather than failing: the report is the
+    # only one that has to exist, because the dashboard links it.
+    present = [(src, out) for src, out in DOCUMENTS if src.exists()]
+    absent = [src.name for src, _ in DOCUMENTS if not src.exists()]
+    if absent:
+        print(f"not present, skipping: {', '.join(absent)}")
+    if not any(src.name == "report.html" for src, _ in present):
+        print("missing docs/report/report.html, which is a deliverable", file=sys.stderr)
         return 1
 
     errors: list[str] = []
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
-        for src, out in DOCUMENTS:
+        for src, out in present:
             page = browser.new_page()
             page.on("pageerror", lambda e, s=src: errors.append(f"{s.name}: {str(e)[:180]}"))
             page.goto(src.as_uri(), wait_until="networkidle", timeout=60000)
