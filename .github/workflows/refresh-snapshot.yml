@@ -57,6 +57,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Fetch the trained boosters
+        # Without this the pipeline runs with ZERO trained heads and the dashboard
+        # honestly reports "12 heads untrained", which is what it did for every run
+        # before 6 Sep. The forecast was CAMS prior plus coupling, with no machine
+        # learning in it at all.
+        #
+        # The boosters are gitignored as large binaries on the grounds that they are
+        # "retrainable in minutes". That is true on a laptop and false here: the
+        # training panel is 77 MB and is also untracked, so CI has nothing to retrain
+        # FROM. A release asset is the smallest fix that makes the deployment
+        # self-contained, and 10 MB compressed costs nothing.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download models-2026-09-06 --repo "$GITHUB_REPOSITORY" --pattern 'vc-models.tgz' --output models.tgz --clobber
+          tar -xzf models.tgz
+          n=$(ls models/*_*h.json 2>/dev/null | wc -l)
+          echo "extracted $n boosters"
+          if [ "$n" -lt 12 ]; then
+            echo "expected at least 12 boosters, got $n"; exit 1
+          fi
+
       - name: Start the API with the pipeline live
         env:
           # Secrets, never values. Set these once under Settings > Secrets and
@@ -118,6 +140,22 @@ jobs:
                   print(f"{label}: {rs}", file=sys.stderr)
           if missing or stale_required or failed or thin:
               sys.exit("bundle rejected; the previous one stays live")
+
+          # A bundle can be structurally perfect and still be worthless. Every run
+          # before 6 Sep passed the checks above while carrying a forecast with all
+          # twelve heads degraded, because the boosters were never on the runner. The
+          # dashboard said so honestly and nothing else did. Assert the thing that
+          # actually matters: the forecast came from the models.
+          summary = json.loads(pathlib.Path("data/snapshot/summary.json").read_text())
+          degraded = summary.get("degraded") or []
+          dead_heads = [d for d in degraded if str(d).startswith("model_")]
+          if dead_heads:
+              print(f"{len(dead_heads)} forecast heads degraded: {dead_heads}",
+                    file=sys.stderr)
+              sys.exit("bundle rejected: the forecast did not come from the trained "
+                       "models; the previous one stays live")
+          if degraded:
+              print(f"note: degraded stages (not heads): {degraded}")
 
           retained = [r for r, v in routes.items() if v.get("status") == "retained"]
           fresh = len(routes) - len(retained)
