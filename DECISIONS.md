@@ -1465,3 +1465,50 @@ nothing.
 **The caveat text is now generated from the driver rather than hard-coded.** It had been
 one fixed sentence asserting reanalysis. Left that way it would have gone on claiming an
 advantage we had just removed, which is a worse failure than the original caveat.
+
+---
+
+## D-061
+
+**Decision.** Render redeploys only for commits the running container actually reads.
+`README.md`, `DECISIONS.md`, `DESIGN.md`, `docs/report/**`, `docs/shots/**`, `tests/**`,
+`scripts/**` and `.github/**` are in `buildFilter.ignoredPaths` in `render.yaml`.
+
+**Why.** Every push to `main` built and deployed, and on 5 Sep the deploy half failed in
+a way worth recording, because the log contradicts the verdict:
+
+```
+11:06:51  Build successful
+11:07:34  Application startup complete
+11:07:34  Uvicorn running on http://0.0.0.0:10000
+11:07:35  HEAD /  200 OK          <- Render's own probe passed
+11:07:40  Shutting down            <- killed five seconds later
+   ...    seventeen minutes of nothing
+11:24:54  ==> Timed Out
+11:24:55  ==> Detected service running on port 10000
+```
+
+The port was detected *after* the deploy had already been failed. The commit touched no
+Python at all, only CSS, markup, DESIGN.md and the PDF, and the identical application had
+deployed cleanly eighteen minutes earlier. Two shutdown sequences appear in the log, for
+processes 57 and 58, which is the zero-downtime swap briefly running both copies: on a
+512 MB instance that is where it gets tight. Retrying the same commit went green in two
+minutes. So this is a stall in the handover, not a fault in the build, and the mitigation
+is to have fewer handovers rather than to make each one safer, which is not in our gift.
+
+Of the ten deploys on 5 Sep, three touched nothing the container reads.
+
+**What is deliberately NOT filtered.** `data/snapshot/**`, and the first draft of this
+decision had it in the list. That would have been self-defeating: the bundle is baked
+into the image and read off disk at import, so a snapshot commit has to deploy or the
+six-hourly refresh runs forever and reaches nobody. The site would freeze while the
+schedule kept succeeding, which is a worse failure than the deploys it saves, and a
+quieter one. Pinging a deploy hook instead is the same deploy.
+
+`docs/VayuChakra-Report.pdf` is also not filtered: the dashboard links it and StaticFiles
+serves it from the image.
+
+**What would actually remove those four deploys a day** is for the service to fetch the
+bundle at runtime rather than have it baked in. Then data refreshes need no deploy at
+all, and the site could pick up a new forecast faster than it does now. That is a
+different change and is not this one.
