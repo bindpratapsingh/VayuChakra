@@ -34,24 +34,30 @@
    density, tabular figures, and no decoration competing with the data.
    ========================================================================= */
 :root {
-  --surface: #f4f6f8;
+  /* Neutrals are biased toward the petrol brand rather than toward a default
+     blue-grey, so the ground and the chrome read as one material. */
+  --surface: #eff3f4;
   --panel: #ffffff;
-  --panel-2: #eaeef3;
-  --line: #d6dde5;
-  --line-strong: #b9c4d0;
-  --ink: #101820;
-  --ink-muted: #4a5764;
+  --panel-2: #e2e9ea;
+  --line: #cfd9db;
+  --line-strong: #b0bfc2;
+  --ink: #0e1719;
+  --ink-muted: #47585c;
 
-  /* Atmospheric indigo. 12.54:1 with white. */
-  --brand: #1c3260;
-  --brand-active: #2c4b8a;
-  --brand-wash: #eef1f8;
+  /* Deep petrol: the atmospheric column seen edge-on. 13.10:1 with white.
+     Not navy, deliberately - see DESIGN.md section 12 for why the warm arc is
+     reserved and the chrome is not allowed into it. */
+  --brand: #0f3540;
+  --brand-active: #1d5f70;
+  --brand-wash: #e7eff1;
 
-  /* Validated chart series: CVD separation 14.0 (protan), normal vision 21.7. */
-  --s1: #3b62d4;
-  --s2: #c2701c;
-  --s3: #0f9b8e;
-  --baseline: #8b98a8;
+  /* Chart series. Measured, not chosen by eye: minimum separation dE 41 normal,
+     35 protan, 34 deutan, and dE 30 from the nearest CPCB band (the old orange
+     series sat dE 20.3 from AQI Poor, close enough to be read as severity). */
+  --s1: #1f6bb5;   /* azure, the clear air and the primary model line */
+  --s2: #9c4a24;   /* rust, dust and stubble: earth, not alarm */
+  --s3: #0e7c8a;   /* teal, the atmospheric column */
+  --baseline: #7d8f93;
 
   /* CPCB National AQI. Public standard, reproduced exactly, never recoloured. */
   --aqi-good: #009966;
@@ -61,9 +67,9 @@
   --aqi-very-poor: #cc0033;
   --aqi-severe: #7e0023;
 
-  --ok: #0f7b4a;
-  --warn: #b06a12;
-  --bad: #b3261e;
+  --ok: #0e6b46;
+  --warn: #8a5320;
+  --bad: #a32820;
 
   --r-xs: 2px;
   --r-sm: 6px;
@@ -125,6 +131,15 @@ p { margin: 0; }
 }
 
 .brand { padding: 18px 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.14); }
+.brand .mark {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+  display: flex; align-items: center; gap: 10px; color: #fff;
+  border-radius: var(--r-sm); padding: 2px 4px; margin: -2px -4px;
+  transition: background 160ms var(--ease);
+}
+.brand .mark:hover { background: rgba(255,255,255,0.09); }
+.brand .mark:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .brand .mark { transition: none; } }
 .brand .name { font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.015em; }
 .brand .deva { font-size: 0.8125rem; opacity: 0.72; margin-top: 1px; }
 .brand .tag { font-size: 0.75rem; opacity: 0.66; margin-top: 7px; line-height: 1.35; }
@@ -548,7 +563,8 @@ svg.cycle .pulse { fill: var(--s2); }
 
   <aside class="rail">
     <div class="brand">
-      <div class="mark">
+      <button class="mark" id="home" type="button"
+              aria-label="VayuChakra: what this is">
         <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
           <path d="M26 12.6A11 11 0 1 1 21.2 6.4" fill="none" stroke="currentColor"
                 stroke-width="2.4" stroke-linecap="round"/>
@@ -561,17 +577,17 @@ svg.cycle .pulse { fill: var(--s2); }
           <div class="name">VayuChakra</div>
           <div class="deva">वायु चक्र</div>
         </div>
-      </div>
+      </button>
       <div class="tag">Coupled weather and chemistry forecasting, Delhi NCR</div>
     </div>
     <nav class="nav" id="nav" aria-label="Views">
-      <button data-view="domain" aria-current="page"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h15v13h-15z" opacity=".55"/><circle cx="12" cy="8" r="2"/><path d="M12 10.5v3"/></svg><span class="k">1</span><span>Where the air comes from</span><span class="sub">Domain and fire sources</span></button>
-      <button data-view="vertical"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 5.5h14"/><path d="M5 10h10" opacity=".55"/><path d="M7 14.5h6" opacity=".4"/></svg><span class="k">2</span><span>The lid over the city</span><span class="sub">Inversion and mixing depth</span></button>
-      <button data-view="coupling"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.4 7.6A7 7 0 1 1 13.3 3.6"/><path d="M12.8 1.4 16.8 4.3 12.7 6.7"/></svg><span class="k">3</span><span>The loop we close</span><span class="sub">Two-way aerosol coupling</span></button>
-      <button data-view="transport"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5h9a2.5 2.5 0 1 0-2.5-2.5" opacity=".55"/><path d="M2 10.5h13"/><path d="M12 7.8 15.4 10.5 12 13.2"/><path d="M2 14.5h7" opacity=".55"/></svg><span class="k">4</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
-      <button data-view="forecast"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 16.5v-13" opacity=".55"/><path d="M2.5 16.5h15" opacity=".55"/><path d="M5 13l3.5-4.5 3 2.5L17 5"/></svg><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
-      <button data-view="evidence"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V9m4.5 7.5V4m4.5 12.5v-5" opacity=".55"/><path d="M13.5 13.8 15.6 16 18.5 11.6"/></svg><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
-      <button data-view="about"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5" opacity=".55"/><path d="M10 9v4.5"/><path d="M10 6.4v.1"/></svg><span class="k">7</span><span>What this is</span><span class="sub">The brief, and how it is met</span></button>
+      <button data-view="about"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5" opacity=".55"/><path d="M10 9v4.5"/><path d="M10 6.4v.1"/></svg><span class="k">1</span><span>What this is</span><span class="sub">The brief, and how it is met</span></button>
+      <button data-view="domain" aria-current="page"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h15v13h-15z" opacity=".55"/><circle cx="12" cy="8" r="2"/><path d="M12 10.5v3"/></svg><span class="k">2</span><span>Where the air comes from</span><span class="sub">Domain and fire sources</span></button>
+      <button data-view="vertical"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 5.5h14"/><path d="M5 10h10" opacity=".55"/><path d="M7 14.5h6" opacity=".4"/></svg><span class="k">3</span><span>The lid over the city</span><span class="sub">Inversion and mixing depth</span></button>
+      <button data-view="coupling"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.4 7.6A7 7 0 1 1 13.3 3.6"/><path d="M12.8 1.4 16.8 4.3 12.7 6.7"/></svg><span class="k">4</span><span>The loop we close</span><span class="sub">Two-way aerosol coupling</span></button>
+      <button data-view="transport"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5h9a2.5 2.5 0 1 0-2.5-2.5" opacity=".55"/><path d="M2 10.5h13"/><path d="M12 7.8 15.4 10.5 12 13.2"/><path d="M2 14.5h7" opacity=".55"/></svg><span class="k">5</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
+      <button data-view="forecast"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 16.5v-13" opacity=".55"/><path d="M2.5 16.5h15" opacity=".55"/><path d="M5 13l3.5-4.5 3 2.5L17 5"/></svg><span class="k">6</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
+      <button data-view="evidence"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V9m4.5 7.5V4m4.5 12.5v-5" opacity=".55"/><path d="M13.5 13.8 15.6 16 18.5 11.6"/></svg><span class="k">7</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
     </nav>
     <div class="docs">
       <div class="dt">How this works</div>
@@ -1022,18 +1038,18 @@ if (API) document.querySelectorAll("#doc-pdf, #about-pdf").forEach(
    one is a documented token in DESIGN.md; this object is the single place to audit them
    against it. */
 const T = {
-  ink:        "#101820",   // mixing depth line, the one reading traced across the chart
-  inkMuted:   "#4a5764",   // district markers
-  panel2:     "#eaeef3",   // control-strip fill
-  brand:      "#1c3260",   // Delhi box, the city marker
-  s1:         "#3b62d4",   // first series
-  s2:         "#c2701c",   // second series, and the stubble belt
-  s3:         "#0f9b8e",   // third series
-  baseline:   "#8b98a8",   // the uncoupled control, always also dashed
-  bad:        "#b3261e",   // the inversion lid, and fire detections
-  canvas:     "#f7f9fb",   // map ground, a shade lighter than the surface it sits on
-  noData:     "#e3e8ee",   // a cell with no index, distinct from every band
-  s2Ink:      "#8a4f10",   // s2 darkened to 6.1:1, for 10px labels on the map ground
+  ink:        "#0e1719",   // mixing depth line, the one reading traced across the chart
+  inkMuted:   "#47585c",   // district markers
+  panel2:     "#e2e9ea",   // control-strip fill
+  brand:      "#0f3540",   // Delhi box, the city marker
+  s1:         "#1f6bb5",   // first series
+  s2:         "#9c4a24",   // second series, and the stubble belt
+  s3:         "#0e7c8a",   // third series
+  baseline:   "#7d8f93",   // the uncoupled control, always also dashed
+  bad:        "#a32820",   // the inversion lid, and fire detections
+  canvas:     "#f5f8f8",   // map ground, a shade lighter than the surface it sits on
+  noData:     "#dde5e6",   // a cell with no index, distinct from every band
+  s2Ink:      "#7f3a1a",   // s2 darkened to 6.5:1, for 10px labels on the map ground
   moderateInk:"#8a6d00",   // the Moderate band darkened, because #ffde33 text is unreadable
   white:      "#ffffff",
 };
@@ -1041,10 +1057,10 @@ const T = {
 /* CPCB bands. Public standard. Light bands take dark ink because white on Good is only
    3.65:1, which is large-text-only. */
 const BANDS = [
-  { name: "Good",         lo: 0,   hi: 50,   c: "#009966", ink: "#101820" },
-  { name: "Satisfactory", lo: 51,  hi: 100,  c: "#84cf33", ink: "#101820" },
-  { name: "Moderate",     lo: 101, hi: 200,  c: "#ffde33", ink: "#101820" },
-  { name: "Poor",         lo: 201, hi: 300,  c: "#ff9933", ink: "#101820" },
+  { name: "Good",         lo: 0,   hi: 50,   c: "#009966", ink: "#0e1719" },
+  { name: "Satisfactory", lo: 51,  hi: 100,  c: "#84cf33", ink: "#0e1719" },
+  { name: "Moderate",     lo: 101, hi: 200,  c: "#ffde33", ink: "#0e1719" },
+  { name: "Poor",         lo: 201, hi: 300,  c: "#ff9933", ink: "#0e1719" },
   { name: "Very Poor",    lo: 301, hi: 400,  c: "#cc0033", ink: "#ffffff" },
   { name: "Severe",       lo: 401, hi: 1e4,  c: "#7e0023", ink: "#ffffff" },
 ];
@@ -1052,10 +1068,10 @@ const bandOf = v => (v == null || !Number.isFinite(v)) ? null
   : BANDS.reduce((acc, b) => (v >= b.lo ? b : acc), BANDS[0]);
 
 /* Sequential ramp for the relative map: one hue, light to dark. */
-const RAMP = ["#eef1f8", "#c8d3ea", "#93a9d6", "#5c78bd", "#33539c", "#1c3260"];
+const RAMP = ["#e7eff1", "#c2d8dd", "#93bcc5", "#5b98a6", "#2b7286", "#0f3540"];
 /* Diverging ramp for stability, which is a genuinely two-sided quantity: stable air on
    one side, unstable on the other, neutral in the middle. Two hues, neutral midpoint. */
-const STAB = ["#3b62d4", "#8ba3de", "#c6cfda", "#c9c3b6", "#dcae7e", "#c2701c"];
+const STAB = ["#1f6bb5", "#79a5cd", "#c6d3d7", "#dcc7b8", "#c08a63", "#9c4a24"];
 
 function mixRamp(ramp, t) {
   const x = Math.max(0, Math.min(1, t)) * (ramp.length - 1);
@@ -1410,7 +1426,7 @@ function domainMapGeo(slot, d) {
     ["Forecast domain", "rgba(28,50,96,0.10)"],
     ["Delhi, 2.8 km cells", "rgba(59,98,212,0.28)"],
     ["Stubble belt", "rgba(194,112,28,0.16)"],
-    ["Active fire", "#b3261e", true],
+    ["Active fire", T.bad, true],
   ]), slot);
 
   const m = baseMap(slot.id, [(B.lat[0] + B.lat[1]) / 2, (B.lon[0] + B.lon[1]) / 2], 7);
@@ -2702,8 +2718,13 @@ function go(view, push) {
     b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
   $("#bar-title").textContent = TITLES[view];
   $("#horizon").style.visibility = (view === "forecast") ? "visible" : "hidden";
+  // Scroll position belongs to the view being left, not the one being entered.
+  scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                             ? "auto" : "smooth" });
   LOADERS[view]();
 }
+
+$("#home").addEventListener("click", () => go("about"));
 
 $("#nav").addEventListener("click", e => {
   const b = e.target.closest("button[data-view]"); if (b) go(b.dataset.view);
@@ -2745,8 +2766,8 @@ $("#refresh").addEventListener("click", async () => {
 });
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea")) return;
-  const keys = { "1": "domain", "2": "vertical", "3": "coupling",
-                 "4": "transport", "5": "forecast", "6": "evidence", "7": "about" };
+  const keys = { "1": "about", "2": "domain", "3": "vertical", "4": "coupling",
+                 "5": "transport", "6": "forecast", "7": "evidence" };
   if (keys[e.key]) go(keys[e.key]);
 });
 addEventListener("hashchange", () => go(location.hash.slice(1) || "domain", false));

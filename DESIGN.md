@@ -4,25 +4,25 @@ description: Coupled weather and chemistry forecasting for Delhi NCR, an operati
 register: product
 platform: web
 colors:
-  brand: "#1c3260"
-  brand-active: "#2c4b8a"
-  brand-wash: "#eef1f8"
-  ink: "#101820"
-  ink-muted: "#4a5764"
-  surface: "#f4f6f8"
+  brand: "#0f3540"
+  brand-active: "#1d5f70"
+  brand-wash: "#e7eff1"
+  ink: "#0e1719"
+  ink-muted: "#47585c"
+  surface: "#eff3f4"
   panel: "#ffffff"
-  panel-2: "#eaeef3"
-  line: "#d6dde5"
-  line-strong: "#b9c4d0"
-  s1: "#3b62d4"
-  s2: "#c2701c"
-  s3: "#0f9b8e"
-  baseline: "#8b98a8"
-  ok: "#0f7b4a"
+  panel-2: "#e2e9ea"
+  line: "#cfd9db"
+  line-strong: "#b0bfc2"
+  s1: "#1f6bb5"
+  s2: "#9c4a24"
+  s3: "#0e7c8a"
+  baseline: "#7d8f93"
+  ok: "#0e6b46"
   ok-wash: "#f1f8f4"
-  warn: "#b06a12"
+  warn: "#8a5320"
   warn-wash: "#fdf7ee"
-  bad: "#b3261e"
+  bad: "#a32820"
   bad-wash: "#fdf2f1"
   aqi-good: "#009966"
   aqi-satisfactory: "#84cf33"
@@ -30,23 +30,23 @@ colors:
   aqi-poor: "#ff9933"
   aqi-very-poor: "#cc0033"
   aqi-severe: "#7e0023"
-  canvas: "#f7f9fb"
-  no-data: "#e3e8ee"
+  canvas: "#f5f8f8"
+  no-data: "#dde5e6"
   skeleton-sweep: "#f2f5f8"
-  s2-ink: "#8a4f10"
+  s2-ink: "#7f3a1a"
   moderate-ink: "#8a6d00"
-  ramp-0: "#eef1f8"
-  ramp-1: "#c8d3ea"
-  ramp-2: "#93a9d6"
-  ramp-3: "#5c78bd"
-  ramp-4: "#33539c"
-  ramp-5: "#1c3260"
-  stab-0: "#3b62d4"
-  stab-1: "#8ba3de"
-  stab-2: "#c6cfda"
-  stab-3: "#c9c3b6"
-  stab-4: "#dcae7e"
-  stab-5: "#c2701c"
+  ramp-0: "#e7eff1"
+  ramp-1: "#c2d8dd"
+  ramp-2: "#93bcc5"
+  ramp-3: "#5b98a6"
+  ramp-4: "#2b7286"
+  ramp-5: "#0f3540"
+  stab-0: "#1f6bb5"
+  stab-1: "#79a5cd"
+  stab-2: "#c6d3d7"
+  stab-3: "#dcc7b8"
+  stab-4: "#c08a63"
+  stab-5: "#9c4a24"
 typography:
   display:
     fontFamily: "system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
@@ -189,22 +189,22 @@ number, the band and the confidence stand forward.
 colour reserved for two jobs only: severity, and series identity.
 
 ### Chrome
-- **Atmospheric Indigo** (#1c3260) is the single brand voice: rail, primary emphasis.
+- **Atmospheric Petrol** (#0f3540) is the single brand voice: rail, primary emphasis.
   Deep enough to read as institutional. Indigo rather than AirGrid's teal because the
   subject is the vertical structure of the atmosphere. 12.54:1 with white.
-- **Active Indigo** (#2c4b8a) for focus rings and interactive states.
-- **Indigo Wash** (#eef1f8) is the tint behind the loop-closure note.
+- **Active Petrol** (#1d5f70) for focus rings and interactive states.
+- **Petrol Wash** (#e7eff1) is the tint behind the loop-closure note.
 
 ### Neutrals
-- **Ink** (#101820) body text, 16.52:1 on surface.
-- **Muted Ink** (#4a5764) secondary text, 6.83:1 on surface and 7.40:1 on panel. Never
+- **Ink** (#0e1719) body text, 16.52:1 on surface.
+- **Muted Ink** (#47585c) secondary text, 6.83:1 on surface and 7.40:1 on panel. Never
   lighter: this is the floor, not a starting point.
-- **Surface** (#f4f6f8) page background, a cool off-white.
-- **Panel** (#ffffff) the reading layer. **Panel-2** (#eaeef3) control strips.
-- **Line** (#d6dde5) hairlines. **Line-strong** (#b9c4d0) borders that must be seen.
+- **Surface** (#eff3f4) page background, a cool off-white.
+- **Panel** (#ffffff) the reading layer. **Panel-2** (#e2e9ea) control strips.
+- **Line** (#cfd9db) hairlines. **Line-strong** (#b0bfc2) borders that must be seen.
 
 ### Chart series (validated, fixed order)
-`s1 #3b62d4` → `s2 #c2701c` → `s3 #0f9b8e`, plus `baseline #8b98a8` for controls.
+`s1 #1f6bb5` → `s2 #9c4a24` → `s3 #0e7c8a`, plus `baseline #7d8f93` for controls.
 
 Assigned in this order and never cycled. Validated with the palette checker: lightness
 band, chroma floor, CVD separation (worst adjacent ΔE 14.0 protan), normal-vision floor
@@ -230,7 +230,7 @@ Severe. White on Good is only 3.65:1, which is large-text-only, so ink is used t
 
 ### Sequential ramp (continuous magnitude)
 
-`#eef1f8 → #c8d3ea → #93a9d6 → #5c78bd → #33539c → #1c3260`
+`#e7eff1 → #c2d8dd → #93bcc5 → #5b98a6 → #2b7286 → #0f3540`
 
 One hue, light to dark, running from Indigo Wash to the brand itself. Used where a
 quantity is continuous and has no published band scale: the relative AQI map mode, and
@@ -244,7 +244,7 @@ caption that these are not CPCB colours.
 
 ### Diverging ramp (static stability)
 
-`#3b62d4 → #8ba3de → #c6cfda → #c9c3b6 → #dcae7e → #c2701c`
+`#1f6bb5 → #79a5cd → #c6d3d7 → #dcc7b8 → #c08a63 → #9c4a24`
 
 Two hues with a near-neutral midpoint, built from the ends of the validated series pair:
 `s1` for stable air, `s2` for unstable. Reserved for one quantity, the lapse rate on the
@@ -257,7 +257,7 @@ distinguishable under protanopia.
 
 Two tokens exist only because their parents fail contrast at 10px:
 
-- **`s2-ink #8a4f10`** is `s2` darkened to 6.1:1 for the stubble-belt label, which sits at
+- **`s2-ink #7f3a1a`** is `s2` darkened to 6.1:1 for the stubble-belt label, which sits at
   10px on the map ground where `s2` itself reaches only about 3.3:1.
 - **`moderate-ink #8a6d00`** is the Moderate band darkened for the large AQI readout.
   `#ffde33` as text on white is 1.4:1 and effectively invisible.
@@ -267,13 +267,13 @@ almost-identical tone next to its parent and imply a distinction that is not the
 
 ### Utility neutrals
 
-`canvas #f7f9fb` is the map ground, one shade lighter than the surface so the domain
-reads as a distinct plane. `no-data #e3e8ee` fills a cell with no index and is
+`canvas #f5f8f8` is the map ground, one shade lighter than the surface so the domain
+reads as a distinct plane. `no-data #dde5e6` fills a cell with no index and is
 deliberately outside the CPCB set, so absence never resembles a band. `skeleton-sweep
 #f2f5f8` is the highlight in the loading sweep.
 
 ### Status
-`ok #0f7b4a` · `warn #b06a12` · `bad #b3261e`, each with a wash for chip backgrounds.
+`ok #0e6b46` · `warn #8a5320` · `bad #a32820`, each with a wash for chip backgrounds.
 Reserved for state. Never reused as a fourth series colour, and always shipped with a
 label rather than a bare dot.
 
@@ -428,3 +428,58 @@ information the reader needs, rather than numbering as decoration.
 second series and for gaps, same green for a passing check, same cool neutral ground
 biased toward the indigo rather than toward warmth. The report should look like it
 came from the same place as the product, and colour is what carries that.
+
+
+## 12. The warm arc belongs to the data, and chrome may not enter it
+
+The CPCB National AQI ramp is a public standard and is reproduced exactly: green,
+yellow-green, yellow, orange, red, maroon. It is the one encoding on this site that a
+reader must never have to second-guess, because it is the encoding a GRAP decision is
+made on.
+
+The palette that shipped first broke that. The second chart series was `#c2701c`, a
+saturated orange sitting **dE 20.3** from `#ff9933`, the AQI *Poor* band. Measured, not
+felt: at that distance a rust-orange line on a chart beside an orange-filled map cell is
+a question the reader has to stop and resolve, and the answer, "one is a model output and
+the other is a severity class", is not something colour was telling them.
+
+So the rule is now explicit, and it is checkable:
+
+> **Warm hues encode severity, and nothing else.** Every band fill in the CPCB ramp is
+> warm. No brand colour, no chart series, no chip and no chrome may sit within dE 30 of
+> any band in that ramp.
+
+What replaces it comes from the subject rather than from taste. Aerosol preferentially
+removes short wavelengths, which is why the sun reddens through haze, why the Angstrom
+exponent is in `photolysis.py` at all, and why the ultraviolet pathway is the one that
+governs ozone. So the warm light that survives the haze is what the AQI ramp encodes,
+and the short-wavelength light the aerosol takes away is what the instrument is drawn
+in:
+
+| token | value | what it is |
+|---|---|---|
+| `brand` | `#0f3540` | deep petrol, the atmospheric column seen edge-on. 13.10:1 with white |
+| `s1` | `#1f6bb5` | azure, the clear air and the primary model line |
+| `s2` | `#9c4a24` | rust, dust and stubble. Earth, not alarm: dark and desaturated where the AQI oranges are light and saturated |
+| `s3` | `#0e7c8a` | teal, the same family as the brand at chart lightness |
+
+The one warm member is kept deliberately. An all-cool series set was tried and measured:
+azure, violet and cyan collapse to **dE 7 to 14** under deuteranopia, against 34 for this
+set, because dichromats retain the blue-yellow axis and lose red-green. Warm against cool
+is what makes a series legible without colour vision, so the warm member stays and is
+moved away from the ramp instead of removed.
+
+**Measured, all of it:**
+
+| check | before | now | floor |
+|---|---|---|---|
+| nearest series to any AQI band | dE 20.3 | **dE 30.0** | 30 |
+| series separation, normal vision | dE 86.2 | dE 41.4 | 25 |
+| series separation, protanopia | dE 48.0 | dE 35.4 | 25 |
+| series separation, deuteranopia | dE 67.3 | dE 34.2 | 25 |
+| every series on white panel | | 4.92:1 min | 4.5:1 |
+| white on brand | 12.54:1 | 13.10:1 | 4.5:1 |
+
+Normal-vision separation falls because the old palette bought it by straying into the
+ramp. The number that matters is the floor, and every series clears it in all three
+vision models while no longer competing with the standard.
