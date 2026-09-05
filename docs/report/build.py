@@ -17,8 +17,12 @@ import sys
 from playwright.sync_api import sync_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
-SRC = HERE / "report.html"
-OUT = HERE.parent / "VayuChakra-Report.pdf"
+#: Every print document in this directory, and where it renders to. Both share the
+#: build path so a figure or a footer fix cannot land in one and miss the other.
+DOCUMENTS = [
+    (HERE / "report.html", HERE.parent / "VayuChakra-Report.pdf"),
+    (HERE / "briefing.html", HERE.parent / "VayuChakra-Jury-Briefing.pdf"),
+]
 
 # The footer is styled inline: Chromium renders these templates in an isolated context
 # that inherits nothing from the page, so a class would resolve to no rule at all.
@@ -34,31 +38,34 @@ HEADER = '<div style="display:none"></div>'
 
 
 def main() -> int:
-    if not SRC.exists():
-        print(f"missing source: {SRC}", file=sys.stderr)
+    missing = [src for src, _ in DOCUMENTS if not src.exists()]
+    if missing:
+        print(f"missing sources: {missing}", file=sys.stderr)
         return 1
 
     errors: list[str] = []
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
-        page = browser.new_page()
-        page.on("pageerror", lambda e: errors.append(str(e)[:200]))
-        page.goto(SRC.as_uri(), wait_until="networkidle", timeout=60000)
-        # Fonts are local (Calibri, Times New Roman, Consolas ship with Windows), so
-        # there is nothing to download - but the SVGs still need a layout pass.
-        page.wait_for_timeout(600)
-        page.emulate_media(media="print")
-        page.pdf(path=str(OUT), format="A4", print_background=True,
-                 display_header_footer=True,
-                 header_template=HEADER, footer_template=FOOTER,
-                 margin={"top": "17mm", "bottom": "20mm",
-                         "left": "16mm", "right": "16mm"})
+        for src, out in DOCUMENTS:
+            page = browser.new_page()
+            page.on("pageerror", lambda e, s=src: errors.append(f"{s.name}: {str(e)[:180]}"))
+            page.goto(src.as_uri(), wait_until="networkidle", timeout=60000)
+            # Fonts are local (Calibri, Times New Roman, Consolas ship with Windows), so
+            # there is nothing to download - but the SVGs still need a layout pass.
+            page.wait_for_timeout(600)
+            page.emulate_media(media="print")
+            page.pdf(path=str(out), format="A4", print_background=True,
+                     display_header_footer=True,
+                     header_template=HEADER, footer_template=FOOTER,
+                     margin={"top": "17mm", "bottom": "20mm",
+                             "left": "16mm", "right": "16mm"})
+            page.close()
+            print(f"wrote {out.relative_to(HERE.parent.parent)}  "
+                  f"({out.stat().st_size / 1024:.0f} KB)")
         browser.close()
 
     if errors:
         print("page errors:", errors, file=sys.stderr)
-    size_kb = OUT.stat().st_size / 1024
-    print(f"wrote {OUT.relative_to(HERE.parent.parent)}  ({size_kb:.0f} KB)")
     return 0
 
 

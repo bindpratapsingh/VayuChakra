@@ -393,11 +393,13 @@ not.
   reads as a broken feed unless it also says that outside October and November this is
   the correct reading.
 
-## 11. The report is a print document, and it has its own type system
+## 11. The print documents have their own type system
 
-`docs/report/report.html` is not a web page. It exists only to be rendered to
-`docs/VayuChakra-Report.pdf` by `docs/report/build.py`, and it departs from this
-document in three ways, each deliberate.
+`docs/report/report.html` and `docs/report/briefing.html` are not web pages. They exist
+only to be rendered to `docs/VayuChakra-Report.pdf` and
+`docs/VayuChakra-Jury-Briefing.pdf` by `docs/report/build.py`, and they depart from this
+document in three ways, each deliberate. The briefing sets one step larger throughout,
+because it is read aloud from in a room rather than studied at a desk.
 
 **Typography.** The product UI uses `system-ui` and nothing else, and that rule holds
 on the dashboard: a dashboard is scanned and operated, so a display pairing buys
