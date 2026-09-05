@@ -92,11 +92,38 @@ p { margin: 0; }
 
 .app { display: grid; grid-template-columns: 224px 1fr; min-height: 100vh; }
 
+/* The rail is a fixed-height flex column, so something has to absorb the slack.
+   It used to be nothing: every child sized to its content and the docs card was pushed
+   to the bottom with margin-top:auto. Add a seventh nav item, or open the browser on a
+   laptop screen with a taskbar, and the total exceeded 100vh - so the card and the
+   footer fell past the bottom edge of a container that does not scroll, and there was
+   no gesture that could reach them.
+   The nav is the only part that can afford to scroll, so the nav is what flexes. The
+   brand, the docs card and the footer stay pinned at their natural size, which means
+   the report and the repository links are reachable at any viewport height. */
 .rail {
   background: var(--brand); color: #fff;
   display: flex; flex-direction: column;
-  position: sticky; top: 0; height: 100vh;
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
 }
+.rail > .brand, .rail > .docs, .rail > .rail-foot { flex: 0 0 auto; }
+.rail > .nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* A full-width scrollbar on a 224px rail is most of a nav label. */
+.rail > .nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.28) transparent; }
+.rail > .nav::-webkit-scrollbar { width: 6px; }
+.rail > .nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.28); border-radius: var(--r-pill);
+}
+.rail > .nav::-webkit-scrollbar-track { background: transparent; }
+
+/* On a short viewport the one-line descriptions under each nav label are the first
+   thing worth spending: seven of them is about 110px, which is usually the difference
+   between the nav fitting and the nav scrolling. The labels themselves stay. */
+@media (max-height: 860px) {
+  .nav button .sub { display: none; }
+  .brand .tag { display: none; }
+}
+
 .brand { padding: 18px 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.14); }
 .brand .name { font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.015em; }
 .brand .deva { font-size: 0.8125rem; opacity: 0.72; margin-top: 1px; }
@@ -124,8 +151,14 @@ p { margin: 0; }
    pushes it and the foot to the bottom together, so it never floats mid-rail when the
    nav is short. */
 .docs {
-  margin: auto 10px 0; padding: 13px 13px 12px; border-radius: var(--r-sm);
+  margin: 10px 10px 0; padding: 13px 13px 12px; border-radius: var(--r-sm);
   background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+}
+/* Short viewport: keep both links, drop the explanation that repeats the button. */
+@media (max-height: 780px) {
+  .docs { padding: 10px; }
+  .docs .dd { display: none; }
+  .docs .dt { margin-bottom: 7px; }
 }
 .docs .dt {
   font-size: 0.75rem; font-weight: 650; letter-spacing: -0.005em; margin-bottom: 3px;
@@ -489,11 +522,21 @@ svg.cycle .pulse { fill: var(--s2); }
 }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
-  .rail { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .rail { position: static; height: auto; overflow: visible;
+          flex-direction: row; align-items: center; flex-wrap: wrap; }
   .brand { border-bottom: 0; padding: 12px 16px; }
   .brand .tag { display: none; }
   .nav { flex-direction: row; flex-wrap: wrap; padding: 0 12px 12px; }
+  .rail > .nav { overflow: visible; flex: 1 1 100%; }
   .nav button .sub { display: none; }
+  /* The rail is a horizontal bar here, so the card becomes a row of links rather than
+     a block. The report and the repository must stay reachable on a phone: they are
+     how anyone reads what this is. */
+  .docs { flex: 1 1 100%; margin: 0 12px 12px; display: flex; align-items: center;
+          gap: 8px; padding: 8px 10px; }
+  .docs .dt, .docs .dd { display: none; }
+  .docs a { padding: 6px 10px; font-size: 0.6875rem; }
+  .docs .repo { margin-top: 0; padding-top: 6px; border-top: 0; }
   .rail-foot { display: none; }
   .loop { grid-template-columns: 1fr 1fr; }
   .step { border-left: 0; border-top: 1px solid var(--line); padding-left: 2px; }
