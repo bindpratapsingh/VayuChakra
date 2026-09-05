@@ -488,6 +488,25 @@ The workflow refuses to commit a bundle whose manifest contains a failed route, 
 suspiciously small payload, or a missing required one. Replacing a stale-but-correct
 forecast with a broken one is strictly worse than doing nothing.
 
+### Which commits redeploy
+
+Every push to `main` used to build and deploy, and the deploy is the risky half: on
+5 Sep the zero-downtime swap stalled on the 512 MB instance, sat for eighteen minutes
+and timed out, even though the new process had already bound `$PORT` and answered
+Render's own probe with a 200. The build had succeeded; only the handover failed.
+
+So `render.yaml` now carries a build filter. A commit that touches only `README.md`,
+`DECISIONS.md`, `DESIGN.md`, `docs/report/**`, `docs/shots/**`, `tests/**`,
+`scripts/**` or `.github/**` does not deploy, because none of it is read by the running
+container. `docs/VayuChakra-Report.pdf` is **not** on that list: the dashboard links it
+and it is served from the image.
+
+`data/snapshot/**` is deliberately not on the list either. The bundle is baked into the
+image and read off disk at import, so a snapshot commit has to deploy or the six-hourly
+refresh never reaches anyone. Filtering it would leave the schedule running and the site
+frozen, which is a worse failure than the deploys it would save. Removing those deploys
+needs the service to fetch the bundle at runtime instead, which is a different change.
+
 Two routes are expected to be **retained** rather than refreshed on every run.
 `/dss` and `/scenario` read the MoES DSS workbook, which is third-party research output
 we cite and deliberately do not redistribute, so it exists on a developer machine and

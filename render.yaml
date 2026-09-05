@@ -31,6 +31,32 @@ services:
     buildCommand: pip install --no-cache-dir -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1
     autoDeploy: true
+    # Do not rebuild for commits that change nothing the running service serves.
+    #
+    # Every push to main triggers a build and a deploy, and the deploy is the risky
+    # half: on 5 Sep the zero-downtime swap stalled on this 512 MB instance, sat for
+    # eighteen minutes and timed out, even though the new process had already bound
+    # $PORT and answered Render's probe with a 200. Fewer deploys is fewer chances to
+    # hit that.
+    #
+    # What is listed here is everything the container does not read at runtime. The
+    # report SOURCE and the screenshots are ignored; docs/VayuChakra-Report.pdf is NOT,
+    # because the dashboard links it and StaticFiles serves it from the image.
+    #
+    # data/snapshot/** is deliberately absent from this list. The bundle is baked into
+    # the image and read off disk at import, so a snapshot commit MUST deploy or the
+    # six-hourly refresh never reaches anyone. Ignoring it would leave the schedule
+    # running and the site frozen, which is worse than the deploys it would save.
+    buildFilter:
+      ignoredPaths:
+        - README.md
+        - DECISIONS.md
+        - DESIGN.md
+        - docs/report/**
+        - docs/shots/**
+        - tests/**
+        - scripts/**
+        - .github/**
     envVars:
       # Serve the precomputed bundle rather than running the pipeline.
       - key: VAYUCHAKRA_SNAPSHOT
