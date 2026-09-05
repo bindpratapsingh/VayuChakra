@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T00:13:34Z",
+  "generated_at": "2026-09-05T04:37:45Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,37 +10,37 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2515
+      "bytes": 2404
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 137070
+      "bytes": 140447
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 135666
+      "bytes": 139947
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 137490
+      "bytes": 141046
     },
     "/profile": {
       "file": "profile.json",
       "status": "ok",
-      "bytes": 54274
+      "bytes": 54282
     },
     "/domain": {
       "file": "domain.json",
       "status": "ok",
-      "bytes": 47143
+      "bytes": 45375
     },
     "/coupling": {
       "file": "coupling.json",
       "status": "ok",
-      "bytes": 78519
+      "bytes": 78495
     },
     "/photolysis": {
       "file": "photolysis.json",
@@ -50,12 +50,12 @@
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 58685
+      "bytes": 58575
     },
     "/plume": {
       "file": "plume.json",
       "status": "ok",
-      "bytes": 12511
+      "bytes": 9219
     },
     "/plume/calibration": {
       "file": "plume__calibration.json",
@@ -92,21 +92,21 @@
       "status": "retained",
       "bytes": 1773,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.0
+      "retained_age_hours": 0.4
     },
     "/scenario?kind=district": {
       "file": "scenario__kind=district.json",
       "status": "retained",
       "bytes": 4857,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.0
+      "retained_age_hours": 0.4
     },
     "/dss": {
       "file": "dss.json",
       "status": "retained",
       "bytes": 1184,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.0
+      "retained_age_hours": 0.4
     }
   }
 }
