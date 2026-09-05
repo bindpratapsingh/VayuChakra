@@ -563,7 +563,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 
       <rect x="314" y="16" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
       <text x="374" y="34" text-anchor="middle" font-weight="700" fill="#1c3260">Shortwave</text>
-      <text x="374" y="50" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;11.05 %</text>
+      <text x="374" y="50" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;11.89 %</text>
 
       <rect x="464" y="16" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
       <text x="524" y="34" text-anchor="middle" font-weight="700" fill="#1c3260">Temperature</text>
@@ -571,11 +571,11 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 
       <rect x="464" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
       <text x="524" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">PBL height</text>
-      <text x="524" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;5.70 %</text>
+      <text x="524" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;6.15 %</text>
 
       <rect x="314" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
       <text x="374" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">Surface wind</text>
-      <text x="374" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;1.19 %</text>
+      <text x="374" y="152" text-anchor="middle" font-size="9.5" fill="#34527f">&minus;1.29 %</text>
 
       <rect x="164" y="118" width="120" height="44" rx="3" fill="#eef2f7" stroke="#1c3260"/>
       <text x="224" y="136" text-anchor="middle" font-weight="700" fill="#1c3260">Ventilation</text>
@@ -583,7 +583,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 
       <rect x="14" y="118" width="120" height="44" rx="3" fill="#1c3260"/>
       <text x="74" y="136" text-anchor="middle" font-weight="700" fill="#fff">PM2.5 rises</text>
-      <text x="74" y="152" text-anchor="middle" font-size="9.5" fill="#c8d3ea">+5.68 %</text>
+      <text x="74" y="152" text-anchor="middle" font-size="9.5" fill="#c8d3ea">+6.16 %</text>
     </g>
 
     <g stroke="#1c3260" stroke-width="1.5" fill="none" marker-end="url(#c1)">
@@ -643,7 +643,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   applied, so a runaway cannot occur even in principle. A cell that fails to converge
   within the iteration budget falls back to the uncoupled answer and is counted in the
   diagnostics rather than shipping a number the solver could not actually reach. On the
-  shipped run: <b>4 iterations, converged, 0 cells fell back, maximum residual 0.46
+  shipped run: <b>4 iterations, converged, 0 cells fell back, maximum residual 0.40
   µg/m³</b> across 211,680 cell hours.
 </p>
 
@@ -657,10 +657,10 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 <table class="zebra">
   <thead><tr><th>Response under haze</th><th class="n">Modelled</th><th class="n">Published range</th><th>Result</th></tr></thead>
   <tbody>
-    <tr><th>Shortwave reaching the surface</th><td class="n">&minus;11.05 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Shortwave reaching the surface</th><td class="n">&minus;11.89 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
     <tr><th>Daytime surface temperature</th><td class="n">&minus;0.59 K</td><td class="n">0.1 to 2.5 K</td><td class="good">inside</td></tr>
-    <tr><th>Boundary layer height</th><td class="n">&minus;5.70 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
-    <tr><th>Surface wind speed</th><td class="n">&minus;1.19 %</td><td class="n">0.5 to 6 %</td><td class="good">inside</td></tr>
+    <tr><th>Boundary layer height</th><td class="n">&minus;6.15 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Surface wind speed</th><td class="n">&minus;1.29 %</td><td class="n">0.5 to 6 %</td><td class="good">inside</td></tr>
     <tr><th>Resulting PM2.5 amplification</th><td class="n">+6.16 %</td><td class="n">2 to 30 %</td><td class="good">inside</td></tr>
     <tr><th>PM10 amplification</th><td class="n">+4.30 %</td><td class="n">1 to 25 %</td><td class="good">inside</td></tr>
     <tr><th>NO<sub>2</sub> amplification</th><td class="n">+20.17 %</td><td class="n">2 to 35 %</td><td class="good">inside</td></tr>
@@ -1190,6 +1190,16 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   The workflow refuses to commit a bundle whose manifest contains a failed route, a
   suspiciously small payload, or a missing required one. Replacing a stale but correct
   forecast with a broken one is strictly worse than doing nothing.
+</p>
+<p>
+  Two routes are expected to be <b>retained</b> rather than refreshed. The
+  <span class="mono">/dss</span> and <span class="mono">/scenario</span> endpoints read
+  the MoES DSS workbook, which is third-party research output we cite and deliberately do
+  not redistribute, so it exists on a developer machine and never on a runner. They answer
+  503 there by design; the exporter keeps the last good capture, records it as retained
+  with its age, and the service goes on serving it. The nine routes carrying the forecast
+  itself must be freshly captured, because a retained forecast is exactly the staleness
+  this workflow exists to remove.
 </p>
 <div class="box">
   <h4>Why a schedule is not an approximation of real time</h4>

@@ -467,6 +467,14 @@ The workflow refuses to commit a bundle whose manifest contains a failed route, 
 suspiciously small payload, or a missing required one. Replacing a stale-but-correct
 forecast with a broken one is strictly worse than doing nothing.
 
+Two routes are expected to be **retained** rather than refreshed on every run.
+`/dss` and `/scenario` read the MoES DSS workbook, which is third-party research output
+we cite and deliberately do not redistribute, so it exists on a developer machine and
+never on a runner. Those routes answer 503 there by design; the exporter keeps the last
+good capture, records it as retained with its age, and the service goes on serving it.
+The nine routes carrying the forecast itself must be freshly captured, because a retained
+forecast is exactly the staleness this workflow exists to remove.
+
 To refresh by hand instead:
 
 ```bash
