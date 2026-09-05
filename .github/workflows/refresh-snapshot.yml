@@ -187,7 +187,19 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh the forecast snapshot ($(date -u +'%Y-%m-%d %H:%M UTC'))"
-          git push
+          # Rebase before pushing. This job takes minutes, and anything landing on main
+          # in the meantime - a human commit, or the previous scheduled run - makes the
+          # push a non-fast-forward and throws away a bundle that was already validated.
+          # The bundle touches only data/snapshot, so it never conflicts with code; it
+          # just needs to be replayed onto whatever arrived.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "pushed on attempt ${attempt}"; exit 0
+            fi
+            echo "push rejected, rebasing onto origin/main and retrying"
+            git pull --rebase --autostash origin main || exit 1
+          done
+          echo "could not push after 3 attempts"; exit 1
 
       - name: Keep the API log when something went wrong
         if: failure()
