@@ -26,6 +26,7 @@ TWO MEASURED FACTS THAT SHAPE THIS MODULE
 """
 from __future__ import annotations
 
+import json
 import hashlib
 import csv
 import gzip
@@ -89,8 +90,65 @@ def discover_stations(limit_pages: int = 6) -> list[Station]:
     government stations. O3 coverage (224 sensors) is nearly as good as PM2.5 (238),
     which is what makes a separate ozone head trainable rather than aspirational.
     """
+    live = _discover_from_api()
+    if live:
+        _save_roster(live)
+        return live
+    return _load_roster()
+
+
+#: The station roster, checked into the repository. Ids, coordinates and sensor ids for
+#: the NCR network: our own derived metadata, not third-party measurements, so committing
+#: it redistributes nothing.
+ROSTER = C.DATA / "stations.json"
+
+
+def _save_roster(stations: list[Station]) -> None:
+    """Persist the roster whenever a live discovery succeeds, so it stays current."""
+    try:
+        ROSTER.write_text(json.dumps(
+            [{"id": s.id, "name": s.name, "lat": s.lat, "lon": s.lon,
+              "provider": s.provider, "first": s.first, "last": s.last,
+              "sensors": s.sensors} for s in stations], indent=1), encoding="utf-8")
+    except Exception as exc:                                    # noqa: BLE001
+        print(f"[obs] could not save roster: {exc}")
+
+
+def _load_roster() -> list[Station]:
+    """Fall back to the checked-in roster when the locations API is unavailable.
+
+    This exists because of a specific and quiet failure. Station discovery needs an API
+    key; the S3 archive does not. When the key expired, discovery returned an empty list,
+    and the archive fallback in `forecast.py` is gated on `if stations` - so losing the
+    key took out BOTH paths, including the one that never needed it. The forecast then
+    ran with no observational anchor and said so, which was honest but avoidable.
+
+    The roster is ids and coordinates. It changes when CPCB commissions a station, which
+    is rarely, so a checked-in copy is a good approximation between live refreshes and it
+    is rewritten every time a live discovery succeeds.
+    """
+    if not ROSTER.exists():
+        print("[obs] no API key and no checked-in roster - discovery unavailable")
+        return []
+    try:
+        raw = json.loads(ROSTER.read_text(encoding="utf-8"))
+    except Exception as exc:                                    # noqa: BLE001
+        print(f"[obs] roster unreadable: {exc}")
+        return []
+    out = [Station(id=int(r["id"]), name=r["name"], lat=float(r["lat"]),
+                   lon=float(r["lon"]), provider=r.get("provider", "unknown"),
+                   first=r.get("first"), last=r.get("last"),
+                   sensors={k: int(v) for k, v in (r.get("sensors") or {}).items()})
+           for r in raw]
+    print(f"[obs] locations API unavailable; using checked-in roster "
+          f"({len(out)} stations). Archive reads do not need the key.")
+    return out
+
+
+def _discover_from_api(limit_pages: int = 6) -> list[Station]:
+    """Live discovery. Returns [] on any failure, including a rejected key."""
     if not C.OPENAQ_API_KEY:
-        print("[obs] no OPENAQ_API_KEY - station discovery unavailable")
+        print("[obs] no OPENAQ_API_KEY - falling back to the checked-in roster")
         return []
     bbox = f"{C.LON_MIN},{C.LAT_MIN},{C.LON_MAX},{C.LAT_MAX}"
     out: list[Station] = []

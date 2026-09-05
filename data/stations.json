@@ -1,0 +1,3064 @@
+[
+ {
+  "id": 13,
+  "name": "Delhi Technological University, Delhi - CPCB",
+  "lat": 28.744,
+  "lon": 77.12,
+  "provider": "CPCB",
+  "first": "2016-11-02T19:00:00Z",
+  "last": "2018-02-22T04:00:00Z",
+  "sensors": {
+   "no2": 13866,
+   "o3": 24,
+   "pm25": 13864
+  }
+ },
+ {
+  "id": 15,
+  "name": "IGI Airport",
+  "lat": 28.56,
+  "lon": 77.094,
+  "provider": "CPCB",
+  "first": null,
+  "last": null,
+  "sensors": {
+   "co": 27,
+   "no2": 28,
+   "o3": 29,
+   "pm10": 26,
+   "pm25": 30
+  }
+ },
+ {
+  "id": 16,
+  "name": "Civil Lines",
+  "lat": 28.6787,
+  "lon": 77.2262,
+  "provider": "CPCB",
+  "first": null,
+  "last": null,
+  "sensors": {
+   "co": 33,
+   "no2": 32,
+   "pm10": 31,
+   "pm25": 34
+  }
+ },
+ {
+  "id": 17,
+  "name": "R K Puram, Delhi - DPCC",
+  "lat": 28.563262,
+  "lon": 77.186937,
+  "provider": "CPCB",
+  "first": "2016-02-05T14:55:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234782,
+   "no2": 36,
+   "o3": 12234785,
+   "pm10": 399,
+   "pm25": 35,
+   "relativehumidity": 12234788,
+   "so2": 12234789,
+   "temperature": 12234790,
+   "wind_direction": 14340714,
+   "wind_speed": 14340715
+  }
+ },
+ {
+  "id": 50,
+  "name": "Punjabi Bagh, Delhi - DPCC",
+  "lat": 28.674045,
+  "lon": 77.131023,
+  "provider": "CPCB",
+  "first": "2016-02-05T14:55:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234791,
+   "no2": 400,
+   "o3": 71,
+   "pm10": 12234795,
+   "pm25": 12234796,
+   "relativehumidity": 12234797,
+   "so2": 397,
+   "temperature": 12234799,
+   "wind_direction": 14340717,
+   "wind_speed": 14340718
+  }
+ },
+ {
+  "id": 103,
+  "name": "Income Tax Office, Delhi - CPCB",
+  "lat": 28.623499999999996,
+  "lon": 77.2494,
+  "provider": "CPCB",
+  "first": "2016-11-02T18:30:00Z",
+  "last": "2018-02-22T03:45:00Z",
+  "sensors": {
+   "co": 169,
+   "no2": 13863,
+   "o3": 168,
+   "pm10": 13862,
+   "pm25": 13861
+  }
+ },
+ {
+  "id": 235,
+  "name": "Anand Vihar, New Delhi - DPCC",
+  "lat": 28.646835,
+  "lon": 77.316032,
+  "provider": "CPCB",
+  "first": "2016-02-05T14:15:00Z",
+  "last": "2026-09-01T06:00:00Z",
+  "sensors": {
+   "co": 385,
+   "no2": 12235607,
+   "o3": 380,
+   "pm10": 381,
+   "pm25": 384,
+   "relativehumidity": 12235611,
+   "so2": 12235612,
+   "temperature": 12235613,
+   "wind_direction": 14340865,
+   "wind_speed": 14340866
+  }
+ },
+ {
+  "id": 236,
+  "name": "Mandir Marg, Delhi - DPCC",
+  "lat": 28.6341,
+  "lon": 77.2005,
+  "provider": "CPCB",
+  "first": "2016-02-05T15:00:00Z",
+  "last": "2018-02-21T21:15:00Z",
+  "sensors": {
+   "co": 386,
+   "no2": 389,
+   "o3": 390,
+   "pm10": 391,
+   "pm25": 388,
+   "so2": 387
+  }
+ },
+ {
+  "id": 301,
+  "name": "Vikas Sadan, Gurugram - HSPCB",
+  "lat": 28.4501238,
+  "lon": 77.0263051,
+  "provider": "CPCB",
+  "first": "2016-03-25T08:00:00Z",
+  "last": "2026-09-02T10:45:00Z",
+  "sensors": {
+   "co": 14258983,
+   "no2": 5409,
+   "o3": 5407,
+   "pm10": 506,
+   "pm25": 14258988,
+   "relativehumidity": 14258989,
+   "so2": 5405,
+   "temperature": 14258991,
+   "wind_direction": 14341790,
+   "wind_speed": 14341791
+  }
+ },
+ {
+  "id": 346,
+  "name": "MD University, Rohtak - HSPCB",
+  "lat": 28.876028,
+  "lon": 76.619464,
+  "provider": "CPCB",
+  "first": "2016-03-22T00:30:00Z",
+  "last": "2018-02-22T03:45:00Z",
+  "sensors": {
+   "co": 614,
+   "no2": 593,
+   "o3": 612,
+   "pm10": 13545,
+   "pm25": 14306,
+   "so2": 613
+  }
+ },
+ {
+  "id": 431,
+  "name": "IHBAS, Delhi - CPCB",
+  "lat": 28.6821,
+  "lon": 77.305,
+  "provider": "CPCB",
+  "first": "2016-04-10T18:30:00Z",
+  "last": "2018-02-22T02:45:00Z",
+  "sensors": {
+   "co": 5361,
+   "no2": 747,
+   "pm25": 13868,
+   "so2": 13867
+  }
+ },
+ {
+  "id": 860,
+  "name": "Sanjay Palace, Agra - UPPCB",
+  "lat": 27.19865833,
+  "lon": 78.00598056,
+  "provider": "CPCB",
+  "first": "2016-03-22T01:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235657,
+   "no2": 12235659,
+   "o3": 1544,
+   "pm10": 12235661,
+   "pm25": 1545,
+   "relativehumidity": 12235663,
+   "so2": 14322,
+   "temperature": 12235665,
+   "wind_direction": 14340874,
+   "wind_speed": 14340875
+  }
+ },
+ {
+  "id": 2503,
+  "name": "Shadipur, Delhi - CPCB",
+  "lat": 28.651699999999998,
+  "lon": 77.1581,
+  "provider": "CPCB",
+  "first": "2016-03-21T23:30:00Z",
+  "last": "2018-02-22T02:45:00Z",
+  "sensors": {
+   "co": 4851,
+   "no2": 4852,
+   "o3": 4853,
+   "pm25": 13860,
+   "so2": 13859
+  }
+ },
+ {
+  "id": 2587,
+  "name": "Sector16A, Faridabad - HSPCB",
+  "lat": 28.410122219999998,
+  "lon": 77.313775,
+  "provider": "CPCB",
+  "first": "2016-03-22T00:45:00Z",
+  "last": "2018-02-22T03:25:00Z",
+  "sensors": {
+   "co": 5347,
+   "no2": 5341,
+   "o3": 5344,
+   "pm10": 40563,
+   "pm25": 13900,
+   "so2": 13901
+  }
+ },
+ {
+  "id": 2597,
+  "name": "US Diplomatic Post: New Delhi",
+  "lat": 28.598096,
+  "lon": 77.189066,
+  "provider": "StateAir NewDelhi",
+  "first": "2016-01-30T00:30:00Z",
+  "last": "2016-11-09T16:30:00Z",
+  "sensors": {
+   "pm25": 5398
+  }
+ },
+ {
+  "id": 5404,
+  "name": "Pusa, Delhi - IMD",
+  "lat": 28.639645,
+  "lon": 77.146263,
+  "provider": "CPCB",
+  "first": "2017-09-15T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234697,
+   "no2": 14084,
+   "o3": 12234700,
+   "pm10": 14085,
+   "pm25": 14087
+  }
+ },
+ {
+  "id": 5509,
+  "name": "Anand Vihar, Delhi - DPCC",
+  "lat": 28.647622000000002,
+  "lon": 77.315809,
+  "provider": "caaqm",
+  "first": "2018-03-09T03:30:00Z",
+  "last": "2022-10-31T00:30:00Z",
+  "sensors": {
+   "co": 14519,
+   "no2": 14523,
+   "o3": 14524,
+   "pm10": 14522,
+   "pm25": 14521,
+   "so2": 14520
+  }
+ },
+ {
+  "id": 5540,
+  "name": "Punjabi Bagh, Delhi - DPCC",
+  "lat": 28.6670856,
+  "lon": 77.1301247,
+  "provider": "caaqm",
+  "first": "2018-03-09T03:30:00Z",
+  "last": "2018-05-13T11:30:00Z",
+  "sensors": {
+   "co": 14616,
+   "no2": 14613,
+   "o3": 14614,
+   "pm10": 14612,
+   "pm25": 14617,
+   "so2": 14615
+  }
+ },
+ {
+  "id": 5541,
+  "name": "Burari Crossing, New Delhi - IMD",
+  "lat": 28.7256504,
+  "lon": 77.2011573,
+  "provider": "CPCB",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234679,
+   "no2": 12234681,
+   "o3": 14931,
+   "pm10": 14620,
+   "pm25": 14912
+  }
+ },
+ {
+  "id": 5552,
+  "name": "MD University, Rohtak - HSPCB",
+  "lat": 28.870083,
+  "lon": 76.6205,
+  "provider": "caaqm",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2020-01-01T11:00:00Z",
+  "sensors": {
+   "co": 14670,
+   "no2": 14668,
+   "o3": 14667,
+   "pm25": 14660,
+   "so2": 14669
+  }
+ },
+ {
+  "id": 5570,
+  "name": "Aya Nagar, New Delhi - IMD",
+  "lat": 28.474261,
+  "lon": 77.131606,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234703,
+   "no2": 15019,
+   "o3": 15021,
+   "pm10": 15027,
+   "pm25": 12234708
+  }
+ },
+ {
+  "id": 5576,
+  "name": "Moti Doongri, Alwar - RSPCB",
+  "lat": 27.554793,
+  "lon": 76.611536,
+  "provider": "CPCB",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 15171,
+   "no2": 15160,
+   "o3": 17867,
+   "pm10": 12234822,
+   "pm25": 12234823,
+   "relativehumidity": 12234824,
+   "so2": 12234825,
+   "temperature": 12234826,
+   "wind_direction": 14341731,
+   "wind_speed": 14341732
+  }
+ },
+ {
+  "id": 5581,
+  "name": "Pusa, New Delhi - IMD",
+  "lat": 28.610304,
+  "lon": 77.0996943,
+  "provider": "caaqm",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2018-05-14T02:00:00Z",
+  "sensors": {
+   "co": 15266,
+   "no2": 14800,
+   "o3": 14752,
+   "pm10": 14851,
+   "pm25": 14853
+  }
+ },
+ {
+  "id": 5586,
+  "name": "Sirifort, Delhi - CPCB",
+  "lat": 28.5504249,
+  "lon": 77.2159377,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234764,
+   "no2": 12234766,
+   "o3": 12234767,
+   "pm10": 12234768,
+   "pm25": 12234769,
+   "relativehumidity": 12234770,
+   "so2": 12234771,
+   "temperature": 12234772,
+   "wind_direction": 14340708,
+   "wind_speed": 14340709
+  }
+ },
+ {
+  "id": 5588,
+  "name": "RIICO Ind. Area III, Bhiwadi - RSPCB",
+  "lat": 28.194909,
+  "lon": 76.862296,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12234827,
+   "no2": 12234829,
+   "o3": 12234830,
+   "pm10": 12234831,
+   "pm25": 12234832,
+   "relativehumidity": 12234833,
+   "so2": 12234834,
+   "temperature": 12234835,
+   "wind_direction": 14341734,
+   "wind_speed": 14341735
+  }
+ },
+ {
+  "id": 5598,
+  "name": "Sector - 125, Noida, UP - UPPCB",
+  "lat": 28.5447608,
+  "lon": 77.3231257,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235182,
+   "no2": 12235184,
+   "o3": 12235185,
+   "pm10": 12235186,
+   "pm25": 12235187,
+   "relativehumidity": 12235188,
+   "so2": 12235189,
+   "temperature": 12235190,
+   "wind_direction": 14340785,
+   "wind_speed": 14340786
+  }
+ },
+ {
+  "id": 5610,
+  "name": "North Campus, DU, Delhi - IMD",
+  "lat": 28.6573814,
+  "lon": 77.1585447,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 14909,
+   "no2": 12234687,
+   "o3": 12234688,
+   "pm10": 14886,
+   "pm25": 14860
+  }
+ },
+ {
+  "id": 5613,
+  "name": "ITO, New Delhi - CPCB",
+  "lat": 28.628624,
+  "lon": 77.24106,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12234748,
+   "no2": 12234750,
+   "o3": 17785,
+   "pm10": 14869,
+   "pm25": 14878,
+   "so2": 17781
+  }
+ },
+ {
+  "id": 5616,
+  "name": "Sector - 62, Noida, UP - IMD",
+  "lat": 28.6245479,
+  "lon": 77.3577104,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:13:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234715,
+   "no2": 12234717,
+   "o3": 12234718,
+   "pm10": 12234719,
+   "pm25": 12234720
+  }
+ },
+ {
+  "id": 5617,
+  "name": "Sector- 16A, Faridabad - HSPCB",
+  "lat": 28.4088421,
+  "lon": 77.3099081,
+  "provider": "caaqm",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2022-10-31T02:00:00Z",
+  "sensors": {
+   "co": 17865,
+   "no2": 14887,
+   "o3": 15229,
+   "pm10": 17547,
+   "pm25": 14930,
+   "so2": 15107
+  }
+ },
+ {
+  "id": 5622,
+  "name": "NSIT Dwarka, Delhi - CPCB",
+  "lat": 28.60909,
+  "lon": 77.0325413,
+  "provider": "CPCB",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14916,
+   "no2": 14919,
+   "o3": 12234742,
+   "pm10": 12234743,
+   "pm25": 14922,
+   "relativehumidity": 12234745,
+   "so2": 12234746,
+   "temperature": 12234747,
+   "wind_direction": 14341690,
+   "wind_speed": 14341692
+  }
+ },
+ {
+  "id": 5626,
+  "name": "DTU, New Delhi - CPCB",
+  "lat": 28.7500499,
+  "lon": 77.1112615,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 14933,
+   "no2": 14941,
+   "o3": 14949,
+   "pm10": 12234759,
+   "pm25": 12234760,
+   "relativehumidity": 12234761,
+   "so2": 12234762,
+   "temperature": 12234763,
+   "wind_direction": 14340705,
+   "wind_speed": 14340706
+  }
+ },
+ {
+  "id": 5627,
+  "name": "CRRI Mathura Road, New Delhi - IMD",
+  "lat": 28.5512005,
+  "lon": 77.2735737,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15098,
+   "no2": 15082,
+   "o3": 12234676,
+   "pm10": 12234677,
+   "pm25": 14935
+  }
+ },
+ {
+  "id": 5630,
+  "name": "Shadipur, Delhi - CPCB",
+  "lat": 28.6514781,
+  "lon": 77.1473105,
+  "provider": "CPCB",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 15119,
+   "no2": 12234723,
+   "o3": 15011,
+   "pm10": 12234725,
+   "pm25": 14959,
+   "relativehumidity": 12234727,
+   "so2": 14952,
+   "temperature": 12234729,
+   "wind_direction": 14341722,
+   "wind_speed": 14341723
+  }
+ },
+ {
+  "id": 5634,
+  "name": "Lodhi Road, New Delhi - IMD",
+  "lat": 28.5918245,
+  "lon": 77.2273074,
+  "provider": "CPCB",
+  "first": "2018-03-09T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 14978,
+   "no2": 14980,
+   "o3": 14981,
+   "pm10": 12234713,
+   "pm25": 12234714
+  }
+ },
+ {
+  "id": 5639,
+  "name": "R K Puram, New Delhi - DPCC",
+  "lat": 28.5646102,
+  "lon": 77.1670103,
+  "provider": "caaqm",
+  "first": "2018-03-09T03:30:00Z",
+  "last": "2018-05-12T04:45:00Z",
+  "sensors": {
+   "co": 15008,
+   "no2": 15030,
+   "o3": 15042,
+   "pm10": 15059,
+   "pm25": 15071,
+   "so2": 15092
+  }
+ },
+ {
+  "id": 5641,
+  "name": "Mandir Marg, New Delhi - DPCC",
+  "lat": 28.6372688,
+  "lon": 77.2005604,
+  "provider": "caaqm",
+  "first": "2018-03-09T03:30:00Z",
+  "last": "2018-05-12T04:30:00Z",
+  "sensors": {
+   "co": 15028,
+   "no2": 15025,
+   "o3": 15023,
+   "pm10": 15022,
+   "pm25": 15014,
+   "so2": 15013
+  }
+ },
+ {
+  "id": 5650,
+  "name": "IGI Airport (T3), Delhi - IMD",
+  "lat": 28.5627763,
+  "lon": 77.1180053,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:16:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234691,
+   "no2": 12234693,
+   "o3": 12234694,
+   "pm10": 12234695,
+   "pm25": 12234696
+  }
+ },
+ {
+  "id": 5665,
+  "name": "Vasundhara, Ghaziabad - UPPCB",
+  "lat": 28.6603346,
+  "lon": 77.3572563,
+  "provider": "CPCB",
+  "first": "2018-03-09T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15234,
+   "no2": 15236,
+   "o3": 12235158,
+   "pm10": 15238,
+   "pm25": 12235160,
+   "relativehumidity": 12235161,
+   "so2": 15240,
+   "temperature": 12235163,
+   "wind_direction": 14340782,
+   "wind_speed": 14340783
+  }
+ },
+ {
+  "id": 5742,
+  "name": "Patparganj, Delhi - DPCC",
+  "lat": 28.6310495,
+  "lon": 77.2846218,
+  "provider": "caaqm",
+  "first": "2018-04-16T07:30:00Z",
+  "last": "2018-05-13T11:30:00Z",
+  "sensors": {
+   "no2": 15498,
+   "o3": 15500,
+   "pm10": 15628,
+   "pm25": 15629,
+   "so2": 15499
+  }
+ },
+ {
+  "id": 5743,
+  "name": "Rohini, Delhi - DPCC",
+  "lat": 28.7407056,
+  "lon": 77.0577492,
+  "provider": "caaqm",
+  "first": "2018-04-26T02:45:00Z",
+  "last": "2018-05-12T06:30:00Z",
+  "sensors": {
+   "co": 15503,
+   "no2": 15508,
+   "o3": 15506,
+   "pm10": 15622,
+   "pm25": 15618,
+   "so2": 15504
+  }
+ },
+ {
+  "id": 5744,
+  "name": "Dr. Karni Singh Shooting Range, Delhi - DPCC",
+  "lat": 28.4997315,
+  "lon": 77.2649067,
+  "provider": "caaqm",
+  "first": "2018-04-16T07:30:00Z",
+  "last": "2018-05-12T04:45:00Z",
+  "sensors": {
+   "co": 15510,
+   "no2": 15505,
+   "o3": 15507,
+   "pm10": 15588,
+   "pm25": 15589,
+   "so2": 15509
+  }
+ },
+ {
+  "id": 5753,
+  "name": "Vivek Vihar, Delhi - DPCC",
+  "lat": 28.6687803,
+  "lon": 77.3130982,
+  "provider": "caaqm",
+  "first": "2018-04-16T06:00:00Z",
+  "last": "2018-05-12T06:00:00Z",
+  "sensors": {
+   "co": 15545,
+   "no2": 15544,
+   "o3": 15543,
+   "pm10": 15615,
+   "pm25": 15604,
+   "so2": 15546
+  }
+ },
+ {
+  "id": 5754,
+  "name": "Jawaharlal Nehru Stadium, Delhi - DPCC",
+  "lat": 28.5828503,
+  "lon": 77.2321778,
+  "provider": "caaqm",
+  "first": "2018-04-16T14:30:00Z",
+  "last": "2018-05-12T06:30:00Z",
+  "sensors": {
+   "co": 15548,
+   "no2": 15547,
+   "o3": 15550,
+   "pm10": 15619,
+   "pm25": 15620,
+   "so2": 15552
+  }
+ },
+ {
+  "id": 5755,
+  "name": "Major Dhyan Chand National Stadium, Delhi - DPCC",
+  "lat": 28.6125027,
+  "lon": 77.2351994,
+  "provider": "caaqm",
+  "first": "2018-04-26T23:00:00Z",
+  "last": "2018-05-12T04:30:00Z",
+  "sensors": {
+   "co": 15582,
+   "no2": 15574,
+   "o3": 15586,
+   "pm10": 15549,
+   "pm25": 15551,
+   "so2": 15587
+  }
+ },
+ {
+  "id": 5759,
+  "name": "Sonia Vihar, Delhi - DPCC",
+  "lat": 28.67795,
+  "lon": 77.29868,
+  "provider": "caaqm",
+  "first": "2018-04-16T06:00:00Z",
+  "last": "2018-05-12T05:00:00Z",
+  "sensors": {
+   "co": 15568,
+   "no2": 15567,
+   "o3": 15566,
+   "pm10": 15591,
+   "pm25": 15595,
+   "so2": 15565
+  }
+ },
+ {
+  "id": 5760,
+  "name": "Dwarka-Sector 8, Delhi - DPCC ",
+  "lat": 28.5206826,
+  "lon": 76.8023871,
+  "provider": "caaqm",
+  "first": "2018-04-16T09:00:00Z",
+  "last": "2018-05-12T05:00:00Z",
+  "sensors": {
+   "co": 15594,
+   "no2": 15593,
+   "o3": 15592,
+   "pm10": 15569,
+   "pm25": 15570,
+   "so2": 15590
+  }
+ },
+ {
+  "id": 5761,
+  "name": "Jahangirpuri, Delhi - DPCC",
+  "lat": 28.7258373,
+  "lon": 77.1605631,
+  "provider": "caaqm",
+  "first": "2018-04-16T07:30:00Z",
+  "last": "2018-05-12T06:30:00Z",
+  "sensors": {
+   "co": 15578,
+   "no2": 15572,
+   "o3": 15577,
+   "pm10": 15623,
+   "pm25": 15621,
+   "so2": 15585
+  }
+ },
+ {
+  "id": 5762,
+  "name": "Ashok Vihar, Delhi - DPCC",
+  "lat": 28.6957202,
+  "lon": 77.1812947,
+  "provider": "caaqm",
+  "first": "2018-04-16T15:00:00Z",
+  "last": "2018-05-12T06:00:00Z",
+  "sensors": {
+   "co": 15583,
+   "no2": 15584,
+   "o3": 15573,
+   "pm10": 15605,
+   "pm25": 15602,
+   "so2": 15579
+  }
+ },
+ {
+  "id": 5763,
+  "name": "Narela, Delhi - DPCC",
+  "lat": 28.8446874,
+  "lon": 77.0332666,
+  "provider": "caaqm",
+  "first": "2018-04-16T09:00:00Z",
+  "last": "2018-05-12T06:00:00Z",
+  "sensors": {
+   "co": 15576,
+   "no2": 15581,
+   "o3": 15580,
+   "pm10": 15609,
+   "pm25": 15606,
+   "so2": 15575
+  }
+ },
+ {
+  "id": 5765,
+  "name": "Okhla Phase-2, Delhi - DPCC",
+  "lat": 28.5366411,
+  "lon": 77.2664587,
+  "provider": "caaqm",
+  "first": "2018-04-26T03:00:00Z",
+  "last": "2018-05-13T10:00:00Z",
+  "sensors": {
+   "co": 15597,
+   "no2": 15600,
+   "o3": 15598,
+   "pm10": 15624,
+   "pm25": 15627,
+   "so2": 15599
+  }
+ },
+ {
+  "id": 5766,
+  "name": "Nehru Nagar, Delhi - DPCC",
+  "lat": 28.5639543,
+  "lon": 77.2587868,
+  "provider": "caaqm",
+  "first": "2018-04-15T20:00:00Z",
+  "last": "2018-05-13T10:00:00Z",
+  "sensors": {
+   "co": 15607,
+   "no2": 15612,
+   "o3": 15616,
+   "pm10": 15625,
+   "pm25": 15626,
+   "so2": 15608
+  }
+ },
+ {
+  "id": 6314,
+  "name": "NISE Gwal Pahari, Gurugram - IMD",
+  "lat": 28.4228859,
+  "lon": 76.8496963,
+  "provider": "caaqm",
+  "first": "2018-11-15T02:00:00Z",
+  "last": "2018-11-16T04:00:00Z",
+  "sensors": {
+   "co": 17561,
+   "no2": 17562,
+   "pm10": 17563,
+   "pm25": 17564
+  }
+ },
+ {
+  "id": 6356,
+  "name": "Pusa, Delhi - DPCC",
+  "lat": 28.639645,
+  "lon": 77.146262,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235316,
+   "no2": 12235318,
+   "o3": 12235319,
+   "pm10": 12235320,
+   "pm25": 12235321,
+   "relativehumidity": 12235322,
+   "so2": 12235323,
+   "temperature": 12235324,
+   "wind_direction": 14340818,
+   "wind_speed": 14340819
+  }
+ },
+ {
+  "id": 6357,
+  "name": "Punjabi Bagh, Delhi - DPCC",
+  "lat": 28.674045000000003,
+  "lon": 77.13102300000001,
+  "provider": "caaqm",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2022-10-16T14:15:00Z",
+  "sensors": {
+   "co": 17769,
+   "no2": 17771,
+   "o3": 17774,
+   "pm10": 17768,
+   "pm25": 17776,
+   "so2": 17778
+  }
+ },
+ {
+  "id": 6358,
+  "name": "Mandir Marg, New Delhi - DPCC",
+  "lat": 28.636429,
+  "lon": 77.201067,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 17772,
+   "no2": 17773,
+   "o3": 12234776,
+   "pm10": 12234777,
+   "pm25": 12234778,
+   "relativehumidity": 12234779,
+   "so2": 12234780,
+   "temperature": 12234781,
+   "wind_direction": 14340711,
+   "wind_speed": 14340712
+  }
+ },
+ {
+  "id": 6359,
+  "name": "IHBAS, Dilshad Garden,New Delhi - CPCB",
+  "lat": 28.6811736,
+  "lon": 77.3025234,
+  "provider": "CPCB",
+  "first": "2018-04-28T15:45:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 17792,
+   "no2": 12234732,
+   "o3": 12234733,
+   "pm10": 36050,
+   "pm25": 17790,
+   "relativehumidity": 12234736,
+   "so2": 17780,
+   "temperature": 12234738,
+   "wind_direction": 14341691,
+   "wind_speed": 14341693
+  }
+ },
+ {
+  "id": 6923,
+  "name": "New Mandi, Muzaffarnagar - UPPCB",
+  "lat": 29.4723508,
+  "lon": 77.7194031,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235217,
+   "no2": 19880,
+   "o3": 12235220,
+   "pm10": 12235221,
+   "pm25": 12235222,
+   "relativehumidity": 12235223,
+   "so2": 12235224,
+   "temperature": 12235225,
+   "wind_direction": 14341802,
+   "wind_speed": 14341803
+  }
+ },
+ {
+  "id": 6924,
+  "name": "Indirapuram, Ghaziabad - UPPCB",
+  "lat": 28.646233,
+  "lon": 77.358075,
+  "provider": "CPCB",
+  "first": "2019-04-27T12:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235774,
+   "no2": 12235776,
+   "o3": 19883,
+   "pm10": 19886,
+   "pm25": 12235779,
+   "relativehumidity": 12235780,
+   "so2": 12235781,
+   "temperature": 12235782,
+   "wind_direction": 14340908,
+   "wind_speed": 14340909
+  }
+ },
+ {
+  "id": 6929,
+  "name": "Major Dhyan Chand National Stadium, Delhi - DPCC",
+  "lat": 28.611281,
+  "lon": 77.237738,
+  "provider": "CPCB",
+  "first": "2018-08-10T07:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 19901,
+   "no2": 12235044,
+   "o3": 19903,
+   "pm10": 19904,
+   "pm25": 19900,
+   "relativehumidity": 12235048,
+   "so2": 12235049,
+   "temperature": 12235050,
+   "wind_direction": 14340753,
+   "wind_speed": 14340754
+  }
+ },
+ {
+  "id": 6931,
+  "name": "Dwarka-Sector 8, Delhi - DPCC",
+  "lat": 28.5710274,
+  "lon": 77.0719006,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 19957,
+   "no2": 19956,
+   "o3": 12235018,
+   "pm10": 12235019,
+   "pm25": 20150,
+   "relativehumidity": 12235021,
+   "so2": 20147,
+   "temperature": 12235023,
+   "wind_direction": 14340744,
+   "wind_speed": 14340745
+  }
+ },
+ {
+  "id": 6932,
+  "name": "Alipur, Delhi - DPCC",
+  "lat": 28.815329,
+  "lon": 77.15301,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T05:30:00Z",
+  "sensors": {
+   "co": 19939,
+   "no2": 19948,
+   "o3": 19950,
+   "pm10": 12235697,
+   "pm25": 12235698,
+   "relativehumidity": 12235699,
+   "so2": 12235700,
+   "temperature": 12235701,
+   "wind_direction": 14340883,
+   "wind_speed": 14340884
+  }
+ },
+ {
+  "id": 6934,
+  "name": "Dr. Karni Singh Shooting Range, Delhi - DPCC",
+  "lat": 28.498571,
+  "lon": 77.26484,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235006,
+   "no2": 19930,
+   "o3": 12235009,
+   "pm10": 19941,
+   "pm25": 12235011,
+   "relativehumidity": 12235012,
+   "so2": 12235013,
+   "temperature": 12235014,
+   "wind_direction": 14340741,
+   "wind_speed": 14340742
+  }
+ },
+ {
+  "id": 6936,
+  "name": "Arya Nagar, Bahadurgarh - HSPCB",
+  "lat": 28.6701,
+  "lon": 76.9254,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14233899,
+   "no2": 14233901,
+   "o3": 19931,
+   "pm10": 14233903,
+   "pm25": 14233904,
+   "relativehumidity": 14233905,
+   "so2": 19920,
+   "temperature": 14233907,
+   "wind_direction": 14341894,
+   "wind_speed": 14341895
+  }
+ },
+ {
+  "id": 6938,
+  "name": "Vivek Vihar, Delhi - DPCC",
+  "lat": 28.672342,
+  "lon": 77.31526,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 19926,
+   "no2": 19929,
+   "o3": 12235131,
+   "pm10": 12235132,
+   "pm25": 12235133,
+   "relativehumidity": 12235134,
+   "so2": 19938,
+   "temperature": 12235136,
+   "wind_direction": 14340779,
+   "wind_speed": 14340780
+  }
+ },
+ {
+  "id": 6944,
+  "name": "H.B. Colony, Bhiwani - HSPCB",
+  "lat": 28.806223,
+  "lon": 76.141105,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 19966,
+   "no2": 19967,
+   "o3": 12251162,
+   "pm10": 19970,
+   "pm25": 12251164,
+   "relativehumidity": 12251165,
+   "so2": 19974,
+   "temperature": 12251167,
+   "wind_direction": 14341900,
+   "wind_speed": 14341901
+  }
+ },
+ {
+  "id": 6947,
+  "name": "General Hospital, Mandikhera - HSPCB",
+  "lat": 27.9002,
+  "lon": 76.9938,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 19990,
+   "no2": 14216052,
+   "o3": 20072,
+   "pm10": 14216054,
+   "pm25": 19983,
+   "relativehumidity": 14216056,
+   "so2": 14216057,
+   "temperature": 14216058,
+   "wind_direction": 14341915,
+   "wind_speed": 14341916
+  }
+ },
+ {
+  "id": 6949,
+  "name": "Municipal Corporation Office, Dharuhera -  HSPCB",
+  "lat": 28.2068,
+  "lon": 76.7997,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20100,
+   "no2": 20045,
+   "o3": 14291089,
+   "pm10": 20060,
+   "pm25": 14291091,
+   "relativehumidity": 14291092,
+   "so2": 20078,
+   "temperature": 14291094,
+   "wind_direction": 14340889,
+   "wind_speed": 14340890
+  }
+ },
+ {
+  "id": 6951,
+  "name": "Murthal, Sonipat - HSPCB",
+  "lat": 29.0272,
+  "lon": 77.0621,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 19989,
+   "no2": 14258140,
+   "o3": 20082,
+   "pm10": 14258142,
+   "pm25": 20013,
+   "relativehumidity": 14258144,
+   "so2": 20066,
+   "temperature": 14258146,
+   "wind_direction": 14341888,
+   "wind_speed": 14341889
+  }
+ },
+ {
+  "id": 6953,
+  "name": "Sector-2 IMT, Manesar - HSPCB",
+  "lat": 28.360699,
+  "lon": 76.93609,
+  "provider": "CPCB",
+  "first": "2019-01-02T22:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14250040,
+   "no2": 20012,
+   "o3": 14250043,
+   "pm10": 14250044,
+   "pm25": 14250045,
+   "relativehumidity": 14250046,
+   "so2": 20003,
+   "temperature": 14250048,
+   "wind_direction": 14341885,
+   "wind_speed": 14341886
+  }
+ },
+ {
+  "id": 6957,
+  "name": "Jawaharlal Nehru Stadium, Delhi - DPCC",
+  "lat": 28.58028,
+  "lon": 77.233829,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20015,
+   "no2": 12235035,
+   "o3": 20018,
+   "pm10": 20019,
+   "pm25": 20020,
+   "relativehumidity": 12235039,
+   "so2": 20021,
+   "temperature": 12235041,
+   "wind_direction": 14340750,
+   "wind_speed": 14340751
+  }
+ },
+ {
+  "id": 6958,
+  "name": "Sector-18, Panipat - HSPCB",
+  "lat": 29.435587,
+  "lon": 76.975531,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14248662,
+   "no2": 14248664,
+   "o3": 14248665,
+   "pm10": 14248666,
+   "pm25": 20024,
+   "relativehumidity": 14248668,
+   "so2": 14248669,
+   "temperature": 14248670,
+   "wind_direction": 14341903,
+   "wind_speed": 14341904
+  }
+ },
+ {
+  "id": 6960,
+  "name": "Patparganj, Delhi - DPCC",
+  "lat": 28.623748,
+  "lon": 77.287205,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235096,
+   "no2": 12235098,
+   "o3": 20039,
+   "pm10": 20040,
+   "pm25": 12235101,
+   "relativehumidity": 12235102,
+   "so2": 12235103,
+   "temperature": 12235104,
+   "wind_direction": 14340770,
+   "wind_speed": 14340771
+  }
+ },
+ {
+  "id": 6963,
+  "name": "Police Lines, Jind - HSPCB",
+  "lat": 29.307814,
+  "lon": 76.337619,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14259001,
+   "no2": 14259003,
+   "o3": 14259004,
+   "pm10": 20071,
+   "pm25": 14259006,
+   "relativehumidity": 14259007,
+   "so2": 20057,
+   "temperature": 14259009,
+   "wind_direction": 14341918,
+   "wind_speed": 14341919
+  }
+ },
+ {
+  "id": 6970,
+  "name": "Shastri Nagar, Narnaul - HSPCB",
+  "lat": 28.060249,
+  "lon": 76.113115,
+  "provider": "CPCB",
+  "first": "2019-02-13T01:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14224807,
+   "no2": 14224809,
+   "o3": 14224810,
+   "pm10": 20115,
+   "pm25": 20110,
+   "relativehumidity": 14224813,
+   "so2": 20963,
+   "temperature": 14224815,
+   "wind_direction": 14341912,
+   "wind_speed": 14341913
+  }
+ },
+ {
+  "id": 6971,
+  "name": "Rishi Nagar, Kaithal - HSPCB",
+  "lat": 29.8006,
+  "lon": 76.4155,
+  "provider": "CPCB",
+  "first": "2019-04-27T11:30:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 20120,
+   "no2": 20117,
+   "o3": 20116,
+   "pm10": 20114,
+   "pm25": 12353756,
+   "relativehumidity": 12353757,
+   "so2": 20111,
+   "temperature": 12353759,
+   "wind_direction": 14341931,
+   "wind_speed": 14341932
+  }
+ },
+ {
+  "id": 6972,
+  "name": "Nathu Colony, Ballabgarh - HSPCB",
+  "lat": 28.3419248,
+  "lon": 77.319699,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 20148,
+   "no2": 14283597,
+   "o3": 20127,
+   "pm10": 14283599,
+   "pm25": 20123,
+   "relativehumidity": 14283601,
+   "so2": 20118,
+   "temperature": 14283603,
+   "wind_direction": 14341921,
+   "wind_speed": 14341922
+  }
+ },
+ {
+  "id": 6976,
+  "name": "Jai Bhim Nagar, Meerut - UPPCB",
+  "lat": 28.9535882,
+  "lon": 77.7622941,
+  "provider": "CPCB",
+  "first": "2019-07-03T05:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235864,
+   "no2": 20204,
+   "o3": 12235867,
+   "pm10": 20238,
+   "pm25": 20257,
+   "relativehumidity": 12235870,
+   "so2": 12235871,
+   "temperature": 12235872,
+   "wind_direction": 14340932,
+   "wind_speed": 14340933
+  }
+ },
+ {
+  "id": 6978,
+  "name": "Knowledge Park - III, Greater Noida - UPPCB",
+  "lat": 28.47272,
+  "lon": 77.482,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20181,
+   "no2": 12235193,
+   "o3": 20180,
+   "pm10": 12235195,
+   "pm25": 12235196,
+   "relativehumidity": 12235197,
+   "so2": 12235198,
+   "temperature": 12235199,
+   "wind_direction": 14340788,
+   "wind_speed": 14340789
+  }
+ },
+ {
+  "id": 6979,
+  "name": "New Collectorate, Baghpat - UPPCB",
+  "lat": 28.974801000000003,
+  "lon": 77.21335699999999,
+  "provider": "caaqm",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2022-01-31T04:45:00Z",
+  "sensors": {
+   "co": 20193,
+   "no2": 20183,
+   "o3": 20178,
+   "pm10": 20184,
+   "pm25": 20188,
+   "so2": 20202
+  }
+ },
+ {
+  "id": 6980,
+  "name": "Sector-1, Noida - UPPCB",
+  "lat": 28.589247,
+  "lon": 77.321962,
+  "provider": "CPCB",
+  "first": "2019-06-28T05:45:00Z",
+  "last": "2026-09-02T11:15:00Z",
+  "sensors": {
+   "co": 12235946,
+   "no2": 20187,
+   "o3": 20189,
+   "pm10": 12235950,
+   "pm25": 12235951,
+   "relativehumidity": 12235952,
+   "so2": 20207,
+   "temperature": 12235954,
+   "wind_direction": 14340948,
+   "wind_speed": 14340949
+  }
+ },
+ {
+  "id": 6985,
+  "name": "Yamunapuram, Bulandshahr - UPPCB",
+  "lat": 28.406963,
+  "lon": 77.849831,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20220,
+   "no2": 20219,
+   "o3": 12235203,
+   "pm10": 12235204,
+   "pm25": 20216,
+   "relativehumidity": 12235206,
+   "so2": 20215,
+   "temperature": 12235208,
+   "wind_direction": 14340791,
+   "wind_speed": 14340792
+  }
+ },
+ {
+  "id": 6986,
+  "name": "Knowledge Park - V, Greater Noida - UPPCB",
+  "lat": 28.557054,
+  "lon": 77.453663,
+  "provider": "CPCB",
+  "first": "2019-06-28T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20230,
+   "no2": 12235932,
+   "o3": 12235933,
+   "pm10": 12235934,
+   "pm25": 20242,
+   "relativehumidity": 12235936,
+   "so2": 12235937,
+   "temperature": 12235938,
+   "wind_direction": 14340942,
+   "wind_speed": 14340943
+  }
+ },
+ {
+  "id": 6988,
+  "name": "Sector-116, Noida - UPPCB",
+  "lat": 28.56923,
+  "lon": 77.393848,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235939,
+   "no2": 12241383,
+   "o3": 12235940,
+   "pm10": 12235941,
+   "pm25": 12235942,
+   "relativehumidity": 12235943,
+   "so2": 12235944,
+   "temperature": 12235945,
+   "wind_direction": 14340945,
+   "wind_speed": 14340946
+  }
+ },
+ {
+  "id": 7005,
+  "name": "Loni, Ghaziabad - UPPCB",
+  "lat": 28.757294,
+  "lon": 77.278792,
+  "provider": "CPCB",
+  "first": "2019-04-27T11:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 20295,
+   "no2": 12235785,
+   "o3": 20292,
+   "pm10": 20293,
+   "pm25": 12235787,
+   "relativehumidity": 12235788,
+   "so2": 20291,
+   "temperature": 12235790,
+   "wind_direction": 14340911,
+   "wind_speed": 14340912
+  }
+ },
+ {
+  "id": 7044,
+  "name": "R K Puram, Delhi - DPCC",
+  "lat": 28.563262000000005,
+  "lon": 77.186937,
+  "provider": "caaqm",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2022-10-31T00:45:00Z",
+  "sensors": {
+   "co": 20410,
+   "no2": 20409,
+   "o3": 20406,
+   "pm10": 20407,
+   "pm25": 20411,
+   "so2": 20408
+  }
+ },
+ {
+  "id": 7280,
+  "name": "Shyam Nagar, Palwal - HSPCB",
+  "lat": 28.1485564,
+  "lon": 77.3320667,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 14249199,
+   "no2": 14249201,
+   "o3": 20946,
+   "pm10": 14249203,
+   "pm25": 14249204,
+   "relativehumidity": 14249205,
+   "so2": 14249206,
+   "temperature": 14249207,
+   "wind_direction": 14341906,
+   "wind_speed": 14341907
+  }
+ },
+ {
+  "id": 7281,
+  "name": "Shyam Nagar, Palwal - HSPCB",
+  "lat": 28.1485564,
+  "lon": 77.3320667,
+  "provider": "caaqm",
+  "first": "2020-01-01T10:15:00Z",
+  "last": "2022-10-31T01:30:00Z",
+  "sensors": {
+   "co": 20953,
+   "no2": 20951,
+   "o3": 20952,
+   "pm10": 20957,
+   "pm25": 20962,
+   "so2": 20958
+  }
+ },
+ {
+  "id": 7283,
+  "name": "MD University, Rohtak - HSPCB",
+  "lat": 28.87793,
+  "lon": 76.620825,
+  "provider": "CPCB",
+  "first": "2020-01-01T11:45:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12599848,
+   "no2": 20967,
+   "o3": 12599851,
+   "pm10": 12599852,
+   "pm25": 20965,
+   "relativehumidity": 12599854,
+   "so2": 20966,
+   "temperature": 12599856,
+   "wind_direction": 14341793,
+   "wind_speed": 14341794
+  }
+ },
+ {
+  "id": 7434,
+  "name": "East Arjun Nagar, Delhi - CPCB",
+  "lat": 28.655601699999995,
+  "lon": 77.2859318,
+  "provider": "caaqm",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2020-02-10T03:00:00Z",
+  "sensors": {
+   "no2": 21624,
+   "o3": 21625,
+   "so2": 21623
+  }
+ },
+ {
+  "id": 7720,
+  "name": "Pallavpuram Phase 2, Meerut - UPPCB",
+  "lat": 29.06351,
+  "lon": 77.709723,
+  "provider": "CPCB",
+  "first": "2019-10-14T16:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 25456,
+   "no2": 25457,
+   "o3": 25458,
+   "pm10": 12236074,
+   "pm25": 25460,
+   "relativehumidity": 12236076,
+   "so2": 22459,
+   "temperature": 12236078,
+   "wind_direction": 14340975,
+   "wind_speed": 14340976
+  }
+ },
+ {
+  "id": 7833,
+  "name": "Ganga Nagar, Meerut - UPPCB",
+  "lat": 28.999264,
+  "lon": 77.7590354,
+  "provider": "CPCB",
+  "first": "2019-10-14T16:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 22716,
+   "no2": 36532,
+   "o3": 12236082,
+   "pm10": 36530,
+   "pm25": 12236084,
+   "relativehumidity": 12236085,
+   "so2": 36678,
+   "temperature": 12236087,
+   "wind_direction": 14340978,
+   "wind_speed": 14340979
+  }
+ },
+ {
+  "id": 8092,
+  "name": "East Arjun Nagar, Delhi - CPCB",
+  "lat": 28.655935,
+  "lon": 77.294904,
+  "provider": "caaqm",
+  "first": "2020-02-29T21:00:00Z",
+  "last": "2022-01-26T07:00:00Z",
+  "sensors": {
+   "no2": 23669,
+   "o3": 23465,
+   "so2": 34750
+  }
+ },
+ {
+  "id": 8118,
+  "name": "New Delhi",
+  "lat": 28.63576,
+  "lon": 77.22445,
+  "provider": "AirNow",
+  "first": "2016-11-09T19:00:00Z",
+  "last": "2026-09-04T01:30:00Z",
+  "sensors": {
+   "pm25": 23534
+  }
+ },
+ {
+  "id": 8235,
+  "name": "Jahangirpuri, Delhi - DPCC",
+  "lat": 28.73282,
+  "lon": 77.170633,
+  "provider": "CPCB",
+  "first": "2018-08-10T07:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 23993,
+   "no2": 12235026,
+   "o3": 23995,
+   "pm10": 12235028,
+   "pm25": 23997,
+   "relativehumidity": 12235030,
+   "so2": 12235031,
+   "temperature": 12235032,
+   "wind_direction": 14340747,
+   "wind_speed": 14340748
+  }
+ },
+ {
+  "id": 8239,
+  "name": "Okhla Phase-2, Delhi - DPCC",
+  "lat": 28.530785,
+  "lon": 77.271255,
+  "provider": "CPCB",
+  "first": "2018-08-22T11:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235069,
+   "no2": 24008,
+   "o3": 24012,
+   "pm10": 24011,
+   "pm25": 24007,
+   "relativehumidity": 12235075,
+   "so2": 24009,
+   "temperature": 12235077,
+   "wind_direction": 14340762,
+   "wind_speed": 14340763
+  }
+ },
+ {
+  "id": 8319,
+  "name": "Anand Vihar, Hapur - UPPCB",
+  "lat": 28.725645,
+  "lon": 77.749675,
+  "provider": "CPCB",
+  "first": "2018-10-23T11:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235684,
+   "no2": 12235686,
+   "o3": 12235687,
+   "pm10": 12235688,
+   "pm25": 12235689,
+   "relativehumidity": 12235690,
+   "so2": 12235691,
+   "temperature": 12235692,
+   "wind_direction": 14340880,
+   "wind_speed": 14340881
+  }
+ },
+ {
+  "id": 8365,
+  "name": "Nehru Nagar, Delhi - DPCC",
+  "lat": 28.56789,
+  "lon": 77.250515,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 34799,
+   "no2": 12235080,
+   "o3": 35017,
+   "pm10": 12235082,
+   "pm25": 35010,
+   "relativehumidity": 12235084,
+   "so2": 35009,
+   "temperature": 12235086,
+   "wind_direction": 14341775,
+   "wind_speed": 14340765
+  }
+ },
+ {
+  "id": 8472,
+  "name": "Bawana, Delhi - DPCC",
+  "lat": 28.7762,
+  "lon": 77.051074,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235289,
+   "no2": 36394,
+   "o3": 36393,
+   "pm10": 24602,
+   "pm25": 12235294,
+   "relativehumidity": 12235295,
+   "so2": 12235296,
+   "temperature": 12235297,
+   "wind_direction": 14340809,
+   "wind_speed": 14340810
+  }
+ },
+ {
+  "id": 8475,
+  "name": "Sonia Vihar, Delhi - DPCC",
+  "lat": 28.710508,
+  "lon": 77.249485,
+  "provider": "CPCB",
+  "first": "2018-08-10T08:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235105,
+   "no2": 12235107,
+   "o3": 12235108,
+   "pm10": 12235109,
+   "pm25": 12235110,
+   "relativehumidity": 12235111,
+   "so2": 12235112,
+   "temperature": 12235113,
+   "wind_direction": 14341776,
+   "wind_speed": 14340773
+  }
+ },
+ {
+  "id": 8915,
+  "name": "Wazirpur, Delhi - DPCC",
+  "lat": 28.699793,
+  "lon": 77.165453,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 34728,
+   "no2": 34732,
+   "o3": 34730,
+   "pm10": 12235123,
+   "pm25": 34731,
+   "relativehumidity": 12235125,
+   "so2": 34729,
+   "temperature": 12235127,
+   "wind_direction": 14340776,
+   "wind_speed": 14340777
+  }
+ },
+ {
+  "id": 8917,
+  "name": "Ashok Vihar, Delhi - DPCC",
+  "lat": 28.695381,
+  "lon": 77.181665,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12234997,
+   "no2": 12234999,
+   "o3": 34782,
+   "pm10": 12235001,
+   "pm25": 26032,
+   "relativehumidity": 12235003,
+   "so2": 12235004,
+   "temperature": 12235005,
+   "wind_direction": 14340738,
+   "wind_speed": 14340739
+  }
+ },
+ {
+  "id": 10484,
+  "name": "Sri Aurobindo Marg, Delhi - DPCC",
+  "lat": 28.531346,
+  "lon": 77.190156,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235307,
+   "no2": 34758,
+   "o3": 12235310,
+   "pm10": 34781,
+   "pm25": 34772,
+   "relativehumidity": 12235313,
+   "so2": 12235314,
+   "temperature": 12235315,
+   "wind_direction": 14340815,
+   "wind_speed": 14340816
+  }
+ },
+ {
+  "id": 10485,
+  "name": "Narela, Delhi - DPCC",
+  "lat": 28.822836,
+  "lon": 77.101981,
+  "provider": "CPCB",
+  "first": "2018-08-10T05:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 34776,
+   "no2": 12235053,
+   "o3": 34792,
+   "pm10": 12235055,
+   "pm25": 34790,
+   "relativehumidity": 12235057,
+   "so2": 12235058,
+   "temperature": 12235059,
+   "wind_direction": 14340756,
+   "wind_speed": 14340757
+  }
+ },
+ {
+  "id": 10486,
+  "name": "Mundka, Delhi - DPCC",
+  "lat": 28.684678,
+  "lon": 77.076574,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 34763,
+   "no2": 12235300,
+   "o3": 34765,
+   "pm10": 34766,
+   "pm25": 34767,
+   "relativehumidity": 12235304,
+   "so2": 34769,
+   "temperature": 12235306,
+   "wind_direction": 14340812,
+   "wind_speed": 14340813
+  }
+ },
+ {
+  "id": 10487,
+  "name": "Anand Vihar, Delhi - DPCC",
+  "lat": 28.646835,
+  "lon": 77.316032,
+  "provider": "caaqm",
+  "first": "2018-08-13T11:00:00Z",
+  "last": "2021-09-20T07:45:00Z",
+  "sensors": {
+   "co": 34787,
+   "no2": 34784,
+   "o3": 34783,
+   "pm10": 34780,
+   "pm25": 34771,
+   "so2": 34770
+  }
+ },
+ {
+  "id": 10488,
+  "name": "Najafgarh, Delhi - DPCC",
+  "lat": 28.570173,
+  "lon": 76.933762,
+  "provider": "CPCB",
+  "first": "2018-12-15T15:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235060,
+   "no2": 34778,
+   "o3": 34777,
+   "pm10": 12235064,
+   "pm25": 34774,
+   "relativehumidity": 12235066,
+   "so2": 34773,
+   "temperature": 12235068,
+   "wind_direction": 14340759,
+   "wind_speed": 14340760
+  }
+ },
+ {
+  "id": 10489,
+  "name": "ITO, Delhi - CPCB",
+  "lat": 28.628624,
+  "lon": 77.24106,
+  "provider": "caaqm",
+  "first": "2020-01-20T08:15:00Z",
+  "last": "2022-10-31T01:45:00Z",
+  "sensors": {
+   "co": 34823,
+   "no2": 34821,
+   "o3": 34816,
+   "pm10": 34793,
+   "pm25": 35016,
+   "so2": 35015
+  }
+ },
+ {
+  "id": 10725,
+  "name": "Mini Secretariat, Charkhi Dadri - HSPCB",
+  "lat": 28.593883,
+  "lon": 76.270653,
+  "provider": "CPCB",
+  "first": "2020-04-23T08:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 35760,
+   "no2": 35757,
+   "o3": 35756,
+   "pm10": 12236217,
+   "pm25": 12236218,
+   "relativehumidity": 12236219,
+   "so2": 35739,
+   "temperature": 12236221,
+   "wind_direction": 14342024,
+   "wind_speed": 14342025
+  }
+ },
+ {
+  "id": 10820,
+  "name": "Sector 30, Faridabad - HSPCB",
+  "lat": 28.4417,
+  "lon": 77.3217,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12236231,
+   "no2": 12236233,
+   "o3": 12236234,
+   "pm10": 12236235,
+   "pm25": 12236236,
+   "relativehumidity": 12236237,
+   "so2": 12236238,
+   "temperature": 12236239,
+   "wind_direction": 14342030,
+   "wind_speed": 14342031
+  }
+ },
+ {
+  "id": 10825,
+  "name": "Sector-51, Gurugram - HSPCB",
+  "lat": 28.4227,
+  "lon": 77.0667,
+  "provider": "CPCB",
+  "first": "2020-03-11T09:00:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 36177,
+   "no2": 36178,
+   "o3": 36179,
+   "pm10": 36180,
+   "pm25": 12236259,
+   "relativehumidity": 12236260,
+   "so2": 12236261,
+   "temperature": 12236262,
+   "wind_direction": 14342036,
+   "wind_speed": 14342037
+  }
+ },
+ {
+  "id": 10831,
+  "name": "Rohini, Delhi - DPCC",
+  "lat": 28.732528,
+  "lon": 77.11992,
+  "provider": "CPCB",
+  "first": "2018-08-10T06:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 36208,
+   "no2": 12235089,
+   "o3": 36213,
+   "pm10": 12235091,
+   "pm25": 36399,
+   "relativehumidity": 12235093,
+   "so2": 36449,
+   "temperature": 12235095,
+   "wind_direction": 14340767,
+   "wind_speed": 14340768
+  }
+ },
+ {
+  "id": 10900,
+  "name": "Teri Gram, Gurugram - HSPCB",
+  "lat": 28.4275,
+  "lon": 77.1465,
+  "provider": "CPCB",
+  "first": "2020-03-30T16:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 36534,
+   "no2": 14573420,
+   "o3": 36536,
+   "pm10": 12236250,
+   "pm25": 36539,
+   "relativehumidity": 12236252,
+   "so2": 14516016,
+   "temperature": 12236253,
+   "wind_direction": 14340983,
+   "wind_speed": 14340984
+  }
+ },
+ {
+  "id": 10905,
+  "name": "Rishi Nagar, Kaithal - HSPCB",
+  "lat": 29.8006,
+  "lon": 76.4155,
+  "provider": "caaqm",
+  "first": "2019-08-07T07:00:00Z",
+  "last": "2022-10-31T02:00:00Z",
+  "sensors": {
+   "co": 36578,
+   "no2": 36577,
+   "o3": 36576,
+   "pm10": 36552,
+   "pm25": 36601,
+   "so2": 36682
+  }
+ },
+ {
+  "id": 10906,
+  "name": "Murthal, Sonipat - HSPCB",
+  "lat": 29.027199999999997,
+  "lon": 77.0621,
+  "provider": "caaqm",
+  "first": "2020-01-02T08:00:00Z",
+  "last": "2022-10-16T16:00:00Z",
+  "sensors": {
+   "co": 36568,
+   "no2": 36567,
+   "o3": 36565,
+   "pm10": 36557,
+   "pm25": 36556,
+   "so2": 36553
+  }
+ },
+ {
+  "id": 10908,
+  "name": "Sector 11, Faridabad - HSPCB",
+  "lat": 28.376058,
+  "lon": 77.315741,
+  "provider": "CPCB",
+  "first": "2020-03-11T08:30:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 36559,
+   "no2": 12236242,
+   "o3": 36561,
+   "pm10": 36562,
+   "pm25": 12236245,
+   "relativehumidity": 12236246,
+   "so2": 12236247,
+   "temperature": 12236248,
+   "wind_direction": 14342033,
+   "wind_speed": 14342034
+  }
+ },
+ {
+  "id": 10910,
+  "name": "Sector-12, Karnal - HSPCB",
+  "lat": 29.6953,
+  "lon": 77.0027,
+  "provider": "CPCB",
+  "first": "2019-02-13T00:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 36585,
+   "no2": 14276479,
+   "o3": 36588,
+   "pm10": 14275734,
+   "pm25": 36590,
+   "relativehumidity": 14275736,
+   "so2": 14276481,
+   "temperature": 14275737,
+   "wind_direction": 14690931,
+   "wind_speed": 14340892
+  }
+ },
+ {
+  "id": 10919,
+  "name": "Sanjay Nagar, Ghaziabad - UPPCB",
+  "lat": 28.685382,
+  "lon": 77.453839,
+  "provider": "CPCB",
+  "first": "2019-04-27T12:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12235765,
+   "no2": 12235767,
+   "o3": 36646,
+   "pm10": 36660,
+   "pm25": 12235770,
+   "relativehumidity": 12235771,
+   "so2": 12235772,
+   "temperature": 12235773,
+   "wind_direction": 14340906,
+   "wind_speed": 14340907
+  }
+ },
+ {
+  "id": 10920,
+  "name": "New Industrial Town, Faridabad - HSPCB",
+  "lat": 28.39072,
+  "lon": 77.30059,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12236222,
+   "no2": 12236224,
+   "o3": 12236225,
+   "pm10": 12236226,
+   "pm25": 12236227,
+   "relativehumidity": 12236228,
+   "so2": 12236229,
+   "temperature": 12236230,
+   "wind_direction": 14342027,
+   "wind_speed": 14342028
+  }
+ },
+ {
+  "id": 10921,
+  "name": "NISE Gwal Pahari, Gurugram - IMD",
+  "lat": 28.422681,
+  "lon": 77.148944,
+  "provider": "CPCB",
+  "first": "2018-11-16T09:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 36700,
+   "no2": 12235704,
+   "o3": 12235705,
+   "pm10": 12235706,
+   "pm25": 36701
+  }
+ },
+ {
+  "id": 11603,
+  "name": "Chandni Chowk, Delhi - IITM",
+  "lat": 28.656756,
+  "lon": 77.227234,
+  "provider": "CPCB",
+  "first": "2020-11-13T12:15:00Z",
+  "last": "2026-09-02T17:00:00Z",
+  "sensors": {
+   "co": 39414,
+   "no2": 39412,
+   "o3": 39415,
+   "pm10": 12236360,
+   "pm25": 12236361,
+   "relativehumidity": 12236362,
+   "so2": 12236363,
+   "temperature": 12236364,
+   "wind_direction": 14342051,
+   "wind_speed": 14342052
+  }
+ },
+ {
+  "id": 11607,
+  "name": "Lodhi Road, Delhi - IITM",
+  "lat": 28.588333,
+  "lon": 77.221667,
+  "provider": "CPCB",
+  "first": "2020-11-13T12:00:00Z",
+  "last": "2025-12-27T06:00:00Z",
+  "sensors": {
+   "co": 39437,
+   "no2": 12236374,
+   "o3": 39438,
+   "pm10": 39434,
+   "pm25": 39433,
+   "relativehumidity": 12236377,
+   "so2": 39436,
+   "temperature": 12236379,
+   "wind_direction": 14342054,
+   "wind_speed": 14342055
+  }
+ },
+ {
+  "id": 227535,
+  "name": "Manoharpur, Agra - UPPCB",
+  "lat": 27.237109999999998,
+  "lon": 78.01935999999999,
+  "provider": "CPCB",
+  "first": "2021-06-04T18:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12236643,
+   "no2": 12236645,
+   "o3": 12236646,
+   "pm10": 12236647,
+   "pm25": 12236648,
+   "relativehumidity": 12236649,
+   "so2": 1312454,
+   "temperature": 12236651,
+   "wind_direction": 14341057,
+   "wind_speed": 14341058
+  }
+ },
+ {
+  "id": 227931,
+  "name": "Sector-3B Avas Vikas Colony, Agra - UPPCB",
+  "lat": 27.19412,
+  "lon": 77.96236999999999,
+  "provider": "CPCB",
+  "first": "2021-06-12T16:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 1314233,
+   "no2": 12236654,
+   "o3": 12236655,
+   "pm10": 1314230,
+   "pm25": 12236657,
+   "relativehumidity": 12236658,
+   "so2": 1314231,
+   "temperature": 12236660,
+   "wind_direction": 14341060,
+   "wind_speed": 14341061
+  }
+ },
+ {
+  "id": 228352,
+  "name": "Shastripuram, Agra - UPPCB",
+  "lat": 27.198620000000002,
+  "lon": 77.92066,
+  "provider": "CPCB",
+  "first": "2021-06-20T21:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 1316049,
+   "no2": 12236636,
+   "o3": 1316053,
+   "pm10": 12236638,
+   "pm25": 12236639,
+   "relativehumidity": 12236640,
+   "so2": 1316052,
+   "temperature": 12236642,
+   "wind_direction": 14341054,
+   "wind_speed": 14341055
+  }
+ },
+ {
+  "id": 233414,
+  "name": "Omex Eternity, Vrindavan - UPPCB",
+  "lat": 27.571409000000003,
+  "lon": 77.655757,
+  "provider": "CPCB",
+  "first": "2021-08-25T17:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12236756,
+   "no2": 12236758,
+   "o3": 1342951,
+   "pm10": 1342939,
+   "pm25": 1342941,
+   "relativehumidity": 12236762,
+   "so2": 1342948,
+   "temperature": 12236764,
+   "wind_direction": 14341096,
+   "wind_speed": 14341097
+  }
+ },
+ {
+  "id": 234997,
+  "name": "Dharmapuri, Agra - UPPCB",
+  "lat": 27.169338,
+  "lon": 78.03582,
+  "provider": "CPCB",
+  "first": "2021-09-07T08:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 1351507,
+   "no2": 12236821,
+   "o3": 1351511,
+   "pm10": 12236823,
+   "pm25": 1351510,
+   "relativehumidity": 12236825,
+   "so2": 12236826,
+   "temperature": 12236827,
+   "wind_direction": 14341117,
+   "wind_speed": 14341118
+  }
+ },
+ {
+  "id": 278159,
+  "name": "Rohta, Agra - UPPCB",
+  "lat": 27.106972,
+  "lon": 78.000111,
+  "provider": "CPCB",
+  "first": "2022-01-28T05:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12236747,
+   "no2": 12236749,
+   "o3": 1583417,
+   "pm10": 12236751,
+   "pm25": 1583416,
+   "relativehumidity": 12236753,
+   "so2": 12236754,
+   "temperature": 12236755,
+   "wind_direction": 14341093,
+   "wind_speed": 14341094
+  }
+ },
+ {
+  "id": 301388,
+  "name": "Sardar Patel Inter College, Baghpat - UPPCB",
+  "lat": 28.964949,
+  "lon": 77.278761,
+  "provider": "CPCB",
+  "first": "2022-03-24T21:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 1854533,
+   "no2": 1719189,
+   "o3": 1713356,
+   "pm10": 12237034,
+   "pm25": 1713367,
+   "relativehumidity": 12237036,
+   "so2": 12237037,
+   "temperature": 12237038,
+   "wind_direction": 14341182,
+   "wind_speed": 14341183
+  }
+ },
+ {
+  "id": 346439,
+  "name": "Kalindi Kunj, Khurja - UPPCB",
+  "lat": 28.234892699999996,
+  "lon": 77.8683002,
+  "provider": "CPCB",
+  "first": "2022-06-02T12:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 1971899,
+   "no2": 1971910,
+   "o3": 12237150,
+   "pm10": 12237151,
+   "pm25": 1971908,
+   "relativehumidity": 12237153,
+   "so2": 1971900,
+   "temperature": 12237155,
+   "wind_direction": 14341221,
+   "wind_speed": 14341222
+  }
+ },
+ {
+  "id": 2860223,
+  "name": "GK1 (Oberoi Terrace)",
+  "lat": 28.5500047,
+  "lon": 77.2431058,
+  "provider": "AirGradient",
+  "first": "2024-05-22T11:00:00Z",
+  "last": "2026-08-10T08:00:00Z",
+  "sensors": {
+   "pm10": 9320368,
+   "pm25": 9320367,
+   "relativehumidity": 9320350,
+   "temperature": 9320356
+  }
+ },
+ {
+  "id": 3024966,
+  "name": "NASA GSFC Rutgers Calib. N8",
+  "lat": 28.31733,
+  "lon": 76.91603,
+  "provider": "Clarity",
+  "first": "2024-08-20T06:43:12Z",
+  "last": "2026-09-04T00:49:55Z",
+  "sensors": {
+   "pm25": 10326358
+  }
+ },
+ {
+  "id": 3409402,
+  "name": "Krishna Nagar, Bharatpur - RSPCB",
+  "lat": 27.215415000000004,
+  "lon": 77.50873,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12237716,
+   "no2": 12237718,
+   "o3": 12237719,
+   "pm10": 12237720,
+   "pm25": 12237721,
+   "relativehumidity": 12237722,
+   "so2": 12237723,
+   "temperature": 12237724,
+   "wind_direction": 14341372,
+   "wind_speed": 14341373
+  }
+ },
+ {
+  "id": 3409496,
+  "name": "New Moti Bagh, Delhi - MHUA",
+  "lat": 28.57834,
+  "lon": 77.184,
+  "provider": "CPCB",
+  "first": "2026-03-10T10:30:00Z",
+  "last": "2026-06-13T09:15:00Z",
+  "sensors": {
+   "co": 15646331,
+   "no2": 15646333,
+   "pm25": 15646335,
+   "relativehumidity": 15646336,
+   "temperature": 15646337,
+   "wind_direction": 15646338,
+   "wind_speed": 15646339
+  }
+ },
+ {
+  "id": 3409519,
+  "name": "Vasundhara Nagar_UIT, Bhiwadi - RSPCB",
+  "lat": 28.207266,
+  "lon": 76.829265,
+  "provider": "CPCB",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 12238635,
+   "no2": 12238637,
+   "o3": 12238638,
+   "pm10": 12238639,
+   "pm25": 12238640,
+   "relativehumidity": 12238641,
+   "so2": 12238642,
+   "temperature": 12238643,
+   "wind_direction": 14341656,
+   "wind_speed": 14341657
+  }
+ },
+ {
+  "id": 3410004,
+  "name": "Amity University, Panchgaon - IITM",
+  "lat": 28.3153,
+  "lon": 76.9143,
+  "provider": "N/A",
+  "first": "2025-02-18T20:15:00Z",
+  "last": "2026-09-02T18:00:00Z",
+  "sensors": {
+   "co": 12238720,
+   "no2": 12238722,
+   "o3": 12238723,
+   "pm10": 12238724,
+   "pm25": 12238725,
+   "relativehumidity": 12238726,
+   "so2": 12238727,
+   "temperature": 12238728,
+   "wind_direction": 14342285,
+   "wind_speed": 14342286
+  }
+ },
+ {
+  "id": 4663956,
+  "name": "Santushti Apartments, Vasant Kunj",
+  "lat": 28.5266,
+  "lon": 77.1493,
+  "provider": "AirGradient",
+  "first": "2025-06-08T09:00:00Z",
+  "last": "2026-09-04T01:00:00Z",
+  "sensors": {
+   "pm25": 13273790,
+   "relativehumidity": 13273791,
+   "temperature": 13273792
+  }
+ },
+ {
+  "id": 4712609,
+  "name": "Air Check",
+  "lat": 28.623056,
+  "lon": 77.234167,
+  "provider": "AirGradient",
+  "first": "2026-01-28T11:00:00Z",
+  "last": "2026-09-04T01:00:00Z",
+  "sensors": {
+   "pm25": 15289075,
+   "relativehumidity": 15289076,
+   "temperature": 15289077
+  }
+ },
+ {
+  "id": 6105800,
+  "name": "Sector 1, Noida extension",
+  "lat": 28.583491,
+  "lon": 77.431714,
+  "provider": "AirGradient",
+  "first": "2025-10-23T18:00:00Z",
+  "last": "2026-09-04T01:00:00Z",
+  "sensors": {
+   "pm25": 14453757,
+   "relativehumidity": 14453758,
+   "temperature": 14453759
+  }
+ },
+ {
+  "id": 6119272,
+  "name": "Sector - 5, Vasundhara, Ghaziabad, Uttar Pradesh ",
+  "lat": 28.658398,
+  "lon": 77.3780531,
+  "provider": "AirGradient",
+  "first": "2025-11-04T15:00:00Z",
+  "last": "2026-03-26T05:00:00Z",
+  "sensors": {
+   "pm25": 14551755,
+   "relativehumidity": 14551756,
+   "temperature": 14551757
+  }
+ },
+ {
+  "id": 6125489,
+  "name": "Uptitude Cloud Pvt Ltd - Sector 62, GGN",
+  "lat": 28.40240847053802,
+  "lon": 77.08477464826682,
+  "provider": "AirGradient",
+  "first": "2025-11-10T09:00:00Z",
+  "last": "2026-09-04T01:00:00Z",
+  "sensors": {
+   "pm25": 14598776,
+   "relativehumidity": 14598777,
+   "temperature": 14598778
+  }
+ },
+ {
+  "id": 6145551,
+  "name": "Anand Lok",
+  "lat": 28.5587,
+  "lon": 77.21886,
+  "provider": "AirGradient",
+  "first": "2025-11-28T11:00:00Z",
+  "last": "2026-09-04T01:00:00Z",
+  "sensors": {
+   "pm25": 14745878,
+   "relativehumidity": 14745879,
+   "temperature": 14745880
+  }
+ },
+ {
+  "id": 6148686,
+  "name": "IIT Delhi, Delhi - IITM",
+  "lat": 28.54246,
+  "lon": 77.191651,
+  "provider": "N/A",
+  "first": "2025-12-01T11:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 14769468,
+   "no2": 14769470,
+   "o3": 14769472,
+   "pm10": 14769473,
+   "pm25": 14769474
+  }
+ },
+ {
+  "id": 6254594,
+  "name": "Talkatora Garden, Delhi - DPCC",
+  "lat": 28.62181,
+  "lon": 77.1944633,
+  "provider": "N/A",
+  "first": "2026-02-27T15:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15554202,
+   "no2": 15554204,
+   "o3": 15554206,
+   "pm10": 15554207,
+   "pm25": 15554208,
+   "relativehumidity": 15554209,
+   "so2": 15554210,
+   "temperature": 15554211,
+   "wind_direction": 15554212,
+   "wind_speed": 15554213
+  }
+ },
+ {
+  "id": 6254663,
+  "name": "JNU, Delhi - DPCC",
+  "lat": 28.540721,
+  "lon": 77.168544,
+  "provider": "N/A",
+  "first": "2026-02-27T17:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15554698,
+   "no2": 15554700,
+   "o3": 15554702,
+   "pm10": 15554703,
+   "pm25": 15554704,
+   "relativehumidity": 15554705,
+   "so2": 15554706,
+   "temperature": 15554707,
+   "wind_direction": 15554708,
+   "wind_speed": 15554709
+  }
+ },
+ {
+  "id": 6254664,
+  "name": "NSUT Jaffarpur, Delhi - DPCC",
+  "lat": 28.594004,
+  "lon": 76.909423,
+  "provider": "N/A",
+  "first": "2026-02-27T17:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15554710,
+   "no2": 15554712,
+   "o3": 15554714,
+   "pm10": 15554715,
+   "pm25": 15554716,
+   "relativehumidity": 15554717,
+   "so2": 15554718,
+   "temperature": 15554719,
+   "wind_direction": 15554720,
+   "wind_speed": 15554721
+  }
+ },
+ {
+  "id": 6254665,
+  "name": "Commonwealth Sports Complex, Delhi - DPCC",
+  "lat": 28.615828,
+  "lon": 77.271992,
+  "provider": "N/A",
+  "first": "2026-02-27T17:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15554722,
+   "no2": 15554724,
+   "o3": 15554726,
+   "pm10": 15554727,
+   "pm25": 15554728,
+   "relativehumidity": 15554729,
+   "so2": 15554730,
+   "temperature": 15554731,
+   "wind_direction": 15554732,
+   "wind_speed": 15554733
+  }
+ },
+ {
+  "id": 6254666,
+  "name": "IGNOU_Maidan Garhi, Delhi - DPCC",
+  "lat": 28.493624,
+  "lon": 77.201159,
+  "provider": "N/A",
+  "first": "2026-02-27T16:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15554734,
+   "no2": 15554736,
+   "o3": 15554738,
+   "pm10": 15554739,
+   "pm25": 15554740,
+   "relativehumidity": 15554741,
+   "so2": 15554742,
+   "temperature": 15554743,
+   "wind_direction": 15554744,
+   "wind_speed": 15554745
+  }
+ },
+ {
+  "id": 6257818,
+  "name": "Cantonment Area, Delhi - DPCC",
+  "lat": 28.594169,
+  "lon": 77.1251,
+  "provider": "N/A",
+  "first": "2026-03-02T13:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15578285,
+   "no2": 15578287,
+   "o3": 15578289,
+   "pm10": 15578290,
+   "pm25": 15578291,
+   "relativehumidity": 15578292,
+   "so2": 15578293,
+   "temperature": 15578294,
+   "wind_direction": 15578295,
+   "wind_speed": 15578296
+  }
+ },
+ {
+  "id": 6299494,
+  "name": "Prashant Garden, Khora - UPPCB",
+  "lat": 28.61119,
+  "lon": 77.34206,
+  "provider": "N/A",
+  "first": "2026-04-07T12:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15888912,
+   "no2": 15888914,
+   "o3": 15888916,
+   "pm10": 15888917,
+   "pm25": 15888918,
+   "relativehumidity": 15888919,
+   "so2": 15888920,
+   "temperature": 15888921,
+   "wind_direction": 15888922,
+   "wind_speed": 15888923
+  }
+ },
+ {
+  "id": 6299603,
+  "name": "SRM University, Modinagar - UPPCB",
+  "lat": 28.798171,
+  "lon": 77.540243,
+  "provider": "N/A",
+  "first": "2026-04-07T15:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15889764,
+   "no2": 15889766,
+   "o3": 15889768,
+   "pm10": 15889769,
+   "pm25": 15889770,
+   "relativehumidity": 15889771,
+   "so2": 15889772,
+   "temperature": 15889773,
+   "wind_direction": 15889774,
+   "wind_speed": 15889775
+  }
+ },
+ {
+  "id": 6299678,
+  "name": "Ved Vihar-Loni, Ghaziabad - UPPCB",
+  "lat": 28.739153,
+  "lon": 77.273668,
+  "provider": "N/A",
+  "first": "2026-04-07T17:00:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15890335,
+   "no2": 15890337,
+   "o3": 15890339,
+   "pm10": 15890340,
+   "pm25": 15890341,
+   "relativehumidity": 15890342,
+   "so2": 15890343,
+   "temperature": 15890344,
+   "wind_direction": 15890345,
+   "wind_speed": 15890346
+  }
+ },
+ {
+  "id": 6311324,
+  "name": "Govindpuram, Ghaziabad - UPPCB",
+  "lat": 28.694528,
+  "lon": 77.494705,
+  "provider": "N/A",
+  "first": "2026-04-17T13:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15978427,
+   "no2": 15978429,
+   "o3": 15978431,
+   "pm10": 15978432,
+   "pm25": 15978433,
+   "relativehumidity": 15978434,
+   "so2": 15978435,
+   "temperature": 15978436,
+   "wind_direction": 15978437,
+   "wind_speed": 15978438
+  }
+ },
+ {
+  "id": 6311325,
+  "name": "MIET College, Meerut - UPPCB",
+  "lat": 28.972677,
+  "lon": 77.641018,
+  "provider": "N/A",
+  "first": "2026-04-17T13:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 15978439,
+   "no2": 15978441,
+   "o3": 15978443,
+   "pm10": 15978444,
+   "pm25": 15978445,
+   "relativehumidity": 15978446,
+   "so2": 15978447,
+   "temperature": 15978448,
+   "wind_direction": 15978449,
+   "wind_speed": 15978450
+  }
+ },
+ {
+  "id": 6404322,
+  "name": "New Anaj Mandi, Khairthal - RSPCB",
+  "lat": 27.8015617,
+  "lon": 76.6365217,
+  "provider": "N/A",
+  "first": "2026-06-15T18:00:00Z",
+  "last": "2026-08-27T05:30:00Z",
+  "sensors": {
+   "co": 16627835,
+   "no2": 16627837,
+   "o3": 16627839,
+   "pm10": 16627840,
+   "pm25": 16627841,
+   "relativehumidity": 16627842,
+   "so2": 16627843,
+   "temperature": 16627844,
+   "wind_direction": 16627845,
+   "wind_speed": 16627846
+  }
+ },
+ {
+  "id": 6404323,
+  "name": "Pali Dungra, Mathura - UPPCB",
+  "lat": 27.410954,
+  "lon": 77.550619,
+  "provider": "N/A",
+  "first": "2026-06-15T16:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 16627847,
+   "no2": 16627849,
+   "o3": 16627851,
+   "pm10": 16627852,
+   "pm25": 16627853,
+   "relativehumidity": 16627854,
+   "so2": 16627855,
+   "temperature": 16627856,
+   "wind_direction": 16627857,
+   "wind_speed": 16627858
+  }
+ },
+ {
+  "id": 6418671,
+  "name": "Dadupura, Fatehpur Sikri - UPPCB",
+  "lat": 27.097694,
+  "lon": 77.671335,
+  "provider": "CPCB",
+  "first": "2026-06-25T16:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 16733572,
+   "no2": 16733574,
+   "o3": 16733576,
+   "pm10": 16733577,
+   "pm25": 16733578,
+   "relativehumidity": 16733579,
+   "so2": 16733580,
+   "temperature": 16733581,
+   "wind_direction": 16733582,
+   "wind_speed": 16733583
+  }
+ },
+ {
+  "id": 6435505,
+  "name": "New Tehsil, Shamli - UPPCB",
+  "lat": 29.4603683,
+  "lon": 77.3410291,
+  "provider": "N/A",
+  "first": "2026-07-07T10:45:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 16858112,
+   "no2": 16858114,
+   "o3": 16858116,
+   "pm10": 16858117,
+   "pm25": 16858118,
+   "relativehumidity": 16858119,
+   "so2": 16858120,
+   "temperature": 16858121,
+   "wind_direction": 16858122,
+   "wind_speed": 16858123
+  }
+ },
+ {
+  "id": 6452644,
+  "name": "Vigyan Nagar, Alwar - RSPCB",
+  "lat": 27.598796,
+  "lon": 76.63861,
+  "provider": "N/A",
+  "first": "2026-07-20T10:30:00Z",
+  "last": "2026-08-24T13:15:00Z",
+  "sensors": {
+   "co": 16982242,
+   "no2": 16982244,
+   "o3": 16982246,
+   "pm10": 16982247,
+   "pm25": 16982248,
+   "relativehumidity": 16982249,
+   "so2": 16982250,
+   "temperature": 16982251,
+   "wind_direction": 16982252,
+   "wind_speed": 16982253
+  }
+ },
+ {
+  "id": 6458520,
+  "name": "Wave City, Ghaziabad - UPPCB",
+  "lat": 28.646675,
+  "lon": 77.489049,
+  "provider": "N/A",
+  "first": "2026-07-24T10:30:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 17025416,
+   "no2": 17025418,
+   "o3": 17025420,
+   "pm10": 17025421,
+   "pm25": 17025422,
+   "so2": 17025423
+  }
+ },
+ {
+  "id": 6487074,
+  "name": "Nagar Palika Parishad, Baraut - UPPCB",
+  "lat": 29.09956,
+  "lon": 77.26235,
+  "provider": "N/A",
+  "first": "2026-08-13T12:15:00Z",
+  "last": "2026-09-02T18:15:00Z",
+  "sensors": {
+   "co": 17234108,
+   "no2": 17234110,
+   "o3": 17234112,
+   "pm10": 17234113,
+   "pm25": 17234114,
+   "so2": 17234115,
+   "wind_direction": 17234116,
+   "wind_speed": 17234117
+  }
+ }
+]

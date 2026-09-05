@@ -244,7 +244,13 @@ def run(
     latest = obs.fetch_latest(stations) if stations else pd.DataFrame()
     if latest.empty:
         # Recent archive is a reasonable stand-in and better than starting cold.
-        since = (now - dt.timedelta(days=4)).strftime("%Y-%m-%d")
+        #
+        # Ten days, not four. The S3 archive publishes with roughly a three-day lag, so a
+        # four-day window overlapped it by about a day and returned data for four of
+        # twelve stations - which looked like a sparse network rather than a window that
+        # was too narrow. Ten days costs a few more station-days to download and gives
+        # the lag and rolling features a real history to sit on.
+        since = (now - dt.timedelta(days=10)).strftime("%Y-%m-%d")
         latest = obs.fetch_archive([s.id for s in stations[:40]], since,
                                    now.strftime("%Y-%m-%d")) if stations else pd.DataFrame()
         if not latest.empty:
