@@ -46,22 +46,22 @@ closing it helped.
 
 ```mermaid
 flowchart TD
-    A1[CPCB stations<br/>159 sites, hourly]:::src
-    A2[Open-Meteo NWP<br/>met + PBL, 11 km]:::src
-    A3[CAMS<br/>coupled model, AOD]:::ext
-    A4[NASA FIRMS<br/>fire detections]:::src
+    A1["CPCB stations<br/>159 sites"]:::src
+    A2["Open-Meteo NWP<br/>met + PBL, 11 km"]:::src
+    A3["CAMS<br/>coupled model, AOD"]:::ext
+    A4["NASA FIRMS<br/>fire detections"]:::src
 
-    A1 & A2 & A3 & A4 --> P[Feature panel<br/>571,037 station-hours · 142 features]:::core
+    A1 & A2 & A3 & A4 --> P["Feature panel<br/>571,037 station-hours<br/>142 features"]:::core
 
-    P --> X1[Inversion tracker<br/>lid, mixing depth, ventilation]:::phys
-    P --> X2[Lagrangian plume<br/>puffs on forecast wind]:::phys
-    P --> X3[Photolysis<br/>MCM v3.3.1 + AOD]:::phys
+    P --> X1["Inversion tracker<br/>lid, mixing depth<br/>ventilation"]:::phys
+    P --> X2["Lagrangian plume<br/>puffs on wind"]:::phys
+    P --> X3["Photolysis<br/>MCM v3.3.1 + AOD"]:::phys
 
-    X1 & X2 & X3 --> M[12 gradient-boosted heads<br/>PM2.5 · PM10 · NO₂ · O₃ × 24/48/72 h]:::core
-    M --> S[Coupled feedback solver<br/>damped fixed point, converged]:::core
-    S --> O1[CPCB AQI]:::out
-    S --> O2[GRAP probability]:::out
-    S --> O3[Dashboard, 7 views]:::out
+    X1 & X2 & X3 --> M["12 boosted heads<br/>PM2.5, PM10, NO2, O3<br/>24 / 48 / 72 h"]:::core
+    M --> S["Coupled feedback solver<br/>damped fixed point<br/>converged"]:::core
+    S --> O1["CPCB AQI"]:::out
+    S --> O2["GRAP probability"]:::out
+    S --> O3["Dashboard, 7 views"]:::out
 
     classDef src fill:#eff3f4,stroke:#c5d2d5,color:#16202b
     classDef ext fill:#dbe7ea,stroke:#0f3540,color:#0f3540
@@ -82,16 +82,9 @@ Three layers, and it matters which is which.
 | **Explicit mechanism** | Our own code | Photolysis, bimodal aerosol optics, the radiative feedback, plume transport |
 | **Statistical layer** | 12 boosted-tree heads | Physical state → measured concentration |
 
-The one reaction we integrate ourselves is **photolysis**, and it is not fitted:
+The one reaction we integrate ourselves is **photolysis**, the pathway that governs ozone:
 
-```
-J = l · cos(SZA)^m · exp(−n · sec(SZA))        MCM v3.3.1
-J(NO₂):  l = 1.165×10⁻²   m = 0.244   n = 0.267
-```
-
-Aerosol then attenuates it, scaled 550 nm → 380 nm through an Ångström exponent of 1.2.
-No coefficient was tuned, and it reproduces the published seasonal J(NO₂) reduction
-(22.0 % summer, 19.8 % winter against ~24 % and ~30 %) without being shown those numbers.
+![Photolysis rate](docs/shots/rm-photolysis.png)
 
 **We do not have a full gas-phase mechanism** - no NOx–VOC–ozone cycle integrated forward,
 no emissions inventory.
@@ -194,11 +187,11 @@ every six hours**, commits the result, and Render serves it.
 
 ```mermaid
 flowchart LR
-    C[cron, every 6 h]:::t --> R[Actions runner, 16 GB<br/>full pipeline, 1,120 cells]:::core
-    R --> V{bundle valid?}:::t
-    V -->|no| K[keep the old one]:::bad
-    V -->|yes| G[commit to main]:::ok
-    G --> D[Render auto-deploys]:::ok
+    C["cron, every 6 h"]:::t --> R["Actions runner, 16 GB<br/>full pipeline<br/>1,120 cells"]:::core
+    R --> V{"bundle valid?"}:::t
+    V -->|no| K["keep the old one"]:::bad
+    V -->|yes| G["commit to main"]:::ok
+    G --> D["Render auto-deploys"]:::ok
     classDef t fill:#eff3f4,stroke:#c5d2d5,color:#16202b
     classDef core fill:#0f3540,stroke:#0f3540,color:#ffffff
     classDef ok fill:#eaf3ee,stroke:#0e6b46,color:#0e6b46
