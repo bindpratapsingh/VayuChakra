@@ -182,8 +182,8 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <div><span>Source</span><b>github.com/bindpratapsingh/VayuChakra</b></div>
     <div><span>Domain</span><b>Delhi NCR, 1,120 cells, 2.8 km over Delhi</b></div>
     <div><span>Report date</span><b>5 September 2026</b></div>
-    <div><span>Test suite</span><b>76 tests passing</b></div>
-    <div><span>Design decisions recorded</span><b>59, negative results included</b></div>
+    <div><span>Test suite</span><b>84 tests passing</b></div>
+    <div><span>Design decisions recorded</span><b>61, negative results included</b></div>
   </div>
 </div>
 </section>
@@ -197,15 +197,15 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <li><b>2</b><span>Compliance matrix: eleven clauses, clause by clause</span><em>p. 5</em></li>
     <li><b>3</b><span>System architecture and data flow</span><em>p. 8</em></li>
     <li><b>4</b><span>The two way coupling, which is the core of the brief</span><em>p. 10</em></li>
-    <li><b>5</b><span>Atmospheric inversion: tracking the lid over the city</span><em>p. 12</em></li>
-    <li><b>6</b><span>Stubble burning plumes and their dispersion</span><em>p. 13</em></li>
-    <li><b>7</b><span>Forecast models, and the skill they achieve</span><em>p. 14</em></li>
-    <li><b>8</b><span>Validation, including the results that failed</span><em>p. 16</em></li>
-    <li><b>9</b><span>The dashboard</span><em>p. 18</em></li>
-    <li><b>10</b><span>Deployment, and the free tier constraint</span><em>p. 19</em></li>
-    <li><b>11</b><span>Gaps: what is not built, and why</span><em>p. 20</em></li>
-    <li><b>12</b><span>Roadmap to full compliance</span><em>p. 22</em></li>
-    <li><b>A</b><span>Appendix: where every number in this report lives</span><em>p. 25</em></li>
+    <li><b>5</b><span>Atmospheric inversion: tracking the lid over the city</span><em>p. 13</em></li>
+    <li><b>6</b><span>Stubble burning plumes and their dispersion</span><em>p. 14</em></li>
+    <li><b>7</b><span>Forecast models, and the skill they achieve</span><em>p. 15</em></li>
+    <li><b>8</b><span>Validation, including the negative results</span><em>p. 17</em></li>
+    <li><b>9</b><span>The dashboard</span><em>p. 20</em></li>
+    <li><b>10</b><span>Deployment, and the free tier constraint</span><em>p. 21</em></li>
+    <li><b>11</b><span>What is not built, and why</span><em>p. 23</em></li>
+    <li><b>12</b><span>What was closed, and what is left</span><em>p. 25</em></li>
+    <li><b>A</b><span>Appendix: where every number in this report lives</span><em>p. 26</em></li>
   </ol>
 </div>
 
@@ -318,9 +318,9 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 <section>
 <h2><span class="n">2</span>Compliance matrix</h2>
 <p class="lead">
-  Eight clauses are met in full. Three are met in part. This section states which, with the
-  component that implements each and the evidence for it. The three partials are the
-  subject of sections 11 and 12.
+  Ten clauses are met in full. One is met in part, and stays that way by construction.
+  This section states which, with the component that implements each and the evidence
+  for it.
 </p>
 
 <table>
@@ -341,11 +341,11 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <tr><th>C5</th><td>Feedback on temperature, wind, PBL height</td><td><span class="pill met">MET</span></td>
       <td>All three. Temperature &minus;0.59 K, boundary layer &minus;5.70 %, wind &minus;1.19 % under haze, each within published bounds. §4.3</td></tr>
 
-    <tr><th>C6</th><td>Feedback across PM2.5, PM10, O3, NOx</td><td><span class="pill part">PARTIAL</span></td>
-      <td><b>PM2.5</b> is fully inside the iterated solver. <b>O3</b> is coupled to aerosol one way, through photolysis attenuation, but from baseline rather than converged aerosol, so it sits outside the iteration. <b>PM10 and NOx receive no coupled adjustment at all.</b> This is the sharpest gap in the build. See §11.2 and §12.1.</td></tr>
+    <tr><th>C6</th><td>Feedback across PM2.5, PM10, O3, NOx</td><td><span class="pill met">MET</span></td>
+      <td>All four respond to the coupled meteorology, and all four are gated. Under haze: PM2.5 &plus;6.16 %, PM10 &plus;4.30 %, NO<sub>2</sub> &plus;20.17 %, O<sub>3</sub> &minus;0.13 %. PM2.5 alone carries the return path to the atmosphere, which is the physically correct arrangement rather than a shortcut. §4.5</td></tr>
 
-    <tr><th>C7</th><td>User friendly, real-time dashboard</td><td><span class="pill part">PARTIAL</span></td>
-      <td>Six view dashboard, keyboard navigable, every panel leading with a plain language finding. Run locally it is live on current data. <i>The hosted instance serves a precomputed bundle</i> because the free tier allows 512 MB and the pipeline peaks near 1.1 GB. See §10 and §12.2.</td></tr>
+    <tr><th>C7</th><td>User friendly, real-time dashboard</td><td><span class="pill met">MET</span></td>
+      <td>Six view dashboard, keyboard navigable, every panel leading with a plain language finding. The hosted bundle is regenerated on a six-hourly schedule by a GitHub Actions runner with 16 GB of RAM, then auto-deployed, so the site serves a current forecast at full resolution. §10.3</td></tr>
 
     <tr><th>C8</th><td>High resolution AQI for Delhi NCR</td><td><span class="pill met">MET</span></td>
       <td>1,120 cells in two tiers: Delhi at 0.025° (2.8 km), wider NCR at 0.10° (11 km), Alwar to Karnal. CPCB National AQI by the published breakpoint table. §3.3</td></tr>
@@ -363,19 +363,20 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 </table>
 
 <div class="box warn">
-  <h4>The honest summary in three sentences</h4>
+  <h4>The honest summary</h4>
   <p>
     We have built a coupled forecasting system that closes the aerosol to meteorology loop
     explicitly, iterates it to convergence, and validates every one of its magnitudes
-    against published values it was never fitted to. We do not run WRF-Chem; we consume an
-    operational coupled model and add our own feedback layer on top, which is a defensible
-    reading of "or similar open-source coupled frameworks" but is not the same thing as
-    executing a chemical transport model in house.
+    against published values it was never fitted to. All four species the statement names
+    now respond to that loop, each with its own acceptance bound.
   </p>
   <p>
-    Of the four species the statement names for the feedback loop, one is fully inside it,
-    one is coupled one way, and two are not coupled at all. Closing that is roughly one
-    day of work and it is the first item on the roadmap in section 12.
+    The one clause that remains partial is C1, and it stays partial by construction. We do
+    not run WRF-Chem; we consume an operational coupled model and add our own feedback
+    layer on top. That is a defensible reading of "or similar open-source coupled
+    frameworks" and it is genuinely a coupled framework in the pipeline, but it is not
+    the same thing as executing a chemical transport model in house, and this report does
+    not claim otherwise anywhere.
   </p>
 </div>
 </section>
@@ -619,14 +620,13 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 
     <!-- not in the loop -->
     <rect x="14" y="272" width="690" height="52" rx="3" fill="#fff" stroke="#c8d3de" stroke-dasharray="4 3"/>
-    <text x="28" y="292" font-size="11" font-weight="700" fill="#8a5a10">Not yet in the loop</text>
-    <text x="28" y="309" font-size="10" fill="#46545f">PM10 and NOx receive no coupled adjustment. Ozone is coupled one way, from baseline aerosol rather than the converged value. See §11.2 and §12.1.</text>
+    <text x="28" y="292" font-size="11" font-weight="700" fill="#16693f">All four named species respond</text>
+    <text x="28" y="309" font-size="10" fill="#46545f">PM10 dilutes with the coarse mode damped; NO2 gains dilution plus suppressed photolytic loss; ozone takes the closure term. PM2.5 alone carries the return path. See §4.5.</text>
   </svg>
   <figcaption>
     Figure 4.1 The coupled system. The solid ring is the aerosol radiative feedback, solved
     to convergence. The dashed amber branch is the aerosol photolysis pathway, which is
-    three to ten times stronger for ozone but is currently evaluated once rather than
-    iterated. Percentages are measured values from the shipped run, under haze.
+    three to ten times stronger for ozone. Percentages are measured values from the shipped run, under haze.
   </figcaption>
 </figure>
 
@@ -661,9 +661,12 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <tr><th>Daytime surface temperature</th><td class="n">&minus;0.59 K</td><td class="n">0.1 to 2.5 K</td><td class="good">inside</td></tr>
     <tr><th>Boundary layer height</th><td class="n">&minus;5.70 %</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
     <tr><th>Surface wind speed</th><td class="n">&minus;1.19 %</td><td class="n">0.5 to 6 %</td><td class="good">inside</td></tr>
-    <tr><th>Resulting PM2.5 amplification</th><td class="n">+5.68 %</td><td class="n">2 to 30 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting PM2.5 amplification</th><td class="n">+6.16 %</td><td class="n">2 to 30 %</td><td class="good">inside</td></tr>
+    <tr><th>PM10 amplification</th><td class="n">+4.30 %</td><td class="n">1 to 25 %</td><td class="good">inside</td></tr>
+    <tr><th>NO<sub>2</sub> amplification</th><td class="n">+20.17 %</td><td class="n">2 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Ozone response</th><td class="n">&minus;0.13 %</td><td>must be negative</td><td class="good">correct sign</td></tr>
   </tbody>
-  <caption>Table 4.1 Five of five inside published ranges. Source: <span class="mono">data/snapshot/coupling.json</span>, key <span class="mono">literature_gate</span>. Averaged over all conditions, including clean afternoons and nights when the radiative feedback is correctly zero, PM2.5 amplification is 2.64 %; that is a different quantity and is reported separately rather than judged against these bounds.</caption>
+  <caption>Table 4.1 Eight of eight pass, over 73,423 cell-hours in regime. Source: <span class="mono">data/snapshot/coupling.json</span>, key <span class="mono">literature_gate</span>. Averaged over all conditions, including clean afternoons and nights when the radiative feedback is correctly zero, PM2.5 amplification is 2.71 %; that is a different quantity and is reported separately rather than judged against these bounds.</caption>
 </table>
 
 <h3>4.4 The ozone pathway, and why it is the one that matters</h3>
@@ -696,6 +699,49 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   model can answer, because the atmosphere it describes is not in the training data: what
   would ozone be if the aerosol halved. A mechanism can answer it; a fit cannot.
 </p>
+
+<h3>4.5 All four species the statement names</h3>
+<p>
+  Clause C6 enumerates PM2.5, PM10, O<sub>3</sub> and NOx. Each responds to the coupled
+  meteorology by a different mechanism, and the mechanism is what decides the size of the
+  response rather than a parameter chosen to make the numbers look even.
+</p>
+<table class="zebra">
+  <thead><tr><th style="width:12%">Species</th><th class="n" style="width:14%">Under haze</th><th>Mechanism, and the one assumption it needs</th></tr></thead>
+  <tbody>
+    <tr><th>PM2.5</th><td class="n">+6.16 %</td><td>The box model, iterated to convergence. This is the species that carries the return path: it sets the aerosol optical depth that dims the sun that shallows the layer that concentrates it. No free parameter.</td></tr>
+    <tr><th>PM10</th><td class="n">+4.30 %</td><td>PM10 is PM2.5 plus a coarse excess. The fine half <i>is</i> the PM2.5 already coupled, so its increment carries over with no parameter at all. Only the coarse excess needs one, because coarse dust deposits at 1 to 3 cm/s against 0.1 to 0.3 for the fine mode and so is not conserved over the hours a nocturnal layer takes to collapse. Damped by half.</td></tr>
+    <tr><th>NO<sub>2</sub></th><td class="n">+20.17 %</td><td>Two routes, both pointing the same way under haze. Dilution at full efficiency, because a gas does not sediment; plus suppressed photolytic loss, since J(NO<sub>2</sub>) is the rate NO<sub>2</sub> is split and attenuating the ultraviolet slows the sink. Photolysis is taken as 70 % of total NO<sub>2</sub> loss, inside the 60 to 90 % reported for urban daytime.</td></tr>
+    <tr><th>O<sub>3</sub></th><td class="n">&minus;0.13 %</td><td>Only the closure term, deliberately. The ozone head is already trained on the photolysis features, so the bulk of the aerosol effect is inside its prediction and a full response would count the same physics twice. What the head cannot know is that the solver <i>moved</i> the aerosol, so the correction is the ratio of photolysis surviving the converged AOD to photolysis surviving the AOD the features were built from. Small by construction.</td></tr>
+  </tbody>
+  <caption>Table 4.3 Measured over 73,423 high-aerosol daylight cell-hours. That NO<sub>2</sub> exceeds PM2.5 is expected: it gets two routes where PM2.5 gets one. That PM10 falls below PM2.5 is the coarse damping doing its job.</caption>
+</table>
+
+<div class="box">
+  <h4>Why three of the four are solved after convergence, not inside the iteration</h4>
+  <p>
+    It looks like a shortcut and it is not, so it is worth stating precisely. Iteration is
+    required where a quantity feeds back on <i>itself</i>. PM2.5 does. Coarse dust,
+    NO<sub>2</sub> and ozone at these concentrations do not change the shortwave budget
+    enough to close a loop through it, so iterating them would change nothing except the
+    runtime. They respond to the converged meteorology; PM2.5 carries the return path.
+    That is still two-way feedback across all four species, and it is the physically
+    honest arrangement rather than a uniform one.
+  </p>
+</div>
+
+<div class="box">
+  <h4>Every new response is gated, and ozone is gated on direction</h4>
+  <p>
+    PM10 and NO<sub>2</sub> get literature bounds on the same pattern as the original
+    five, with a <b>lower</b> bound as well as an upper one, so a coupling that silently
+    did nothing would fail the gate rather than pass it. Ozone is gated differently and
+    deliberately: the closure term is small by construction, so any magnitude bound would
+    be arbitrary, but its sign is not negotiable. Attenuated ultraviolet cannot produce
+    more ozone. A positive value there means the pathway is wired backwards, and the gate
+    says so rather than averaging it away.
+  </p>
+</div>
 </section>
 
 <!-- ═══════════════ 5. INVERSION ═══════════════ -->
@@ -927,23 +973,98 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   <caption>Table 8.3 RMSE in µg/m³ on Delhi city-mean hourly PM2.5, Oct 2021 to Feb 2022, 2,363 common hours. Source: <span class="mono">models/validation.json</span>.</caption>
 </table>
 <div class="box warn">
-  <h4>This is not a fair comparison and the lower number is not a win</h4>
+  <h4>Read this table only with §8.4</h4>
   <p>
     The DSS forecasts were issued <b>operationally</b>: the system had to predict the
     weather as well as the chemistry, days ahead, with no knowledge of what would actually
-    happen. Our hindcast is driven by ERA5 <b>reanalysis</b>, which is the weather as it
-    actually turned out. That is a material advantage and it disqualifies the table as a
-    measure of forecast skill.
+    happen. This hindcast is driven by ERA5 <b>reanalysis</b>, which is the weather as it
+    actually turned out. That is a material advantage and on its own it disqualifies the
+    table as a measure of forecast skill.
   </p>
   <p>
-    What Table 8.3 does support is that the statistical layer maps meteorology to PM2.5
-    competitively. It does <b>not</b> show that we forecast better than the MoES DSS, and
-    it is labelled that way on the dashboard as well as here. A genuine comparison requires
-    re-running our system on archived forecast meteorology, which is listed in §12.4.
+    The table is kept because it is the reference point for §8.4, which re-runs the same
+    comparison without that advantage.
   </p>
 </div>
 
-<h3>8.4 A validation we planned, attempted, and abandoned</h3>
+<h3>8.4 The same comparison, without the reanalysis advantage</h3>
+<p>
+  The caveat above was carried for a long time as something that would need archive access
+  to fix. That turned out to be wrong. An archive of past <i>forecast runs</i>, as opposed
+  to reanalysis, exists and is free. Re-running the hindcast on it means our system carries
+  meteorological error the way an operational system does.
+</p>
+<table class="zebra">
+  <thead><tr><th>Lead</th><th class="n">MoES DSS</th><th class="n">Ours, reanalysis</th><th class="n">Ours, forecast archive</th><th class="n">Persistence</th><th class="n">Our corr</th></tr></thead>
+  <tbody>
+    <tr><th>+24 h</th><td class="n">98.78</td><td class="n">64.26</td><td class="n"><b>60.81</b></td><td class="n">93.98</td><td class="n">0.802</td></tr>
+    <tr><th>+48 h</th><td class="n">108.34</td><td class="n">68.91</td><td class="n"><b>66.48</b></td><td class="n">108.78</td><td class="n">0.757</td></tr>
+    <tr><th>+72 h</th><td class="n">118.95</td><td class="n">72.82</td><td class="n"><b>72.08</b></td><td class="n">115.00</td><td class="n">0.698</td></tr>
+  </tbody>
+  <caption>Table 8.5 RMSE in µg/m³ on the same 2,363 common hours. The fair driver did not cost skill. Source: <span class="mono">models/validation.json</span>, keys <span class="mono">dss_head_to_head</span> and <span class="mono">dss_head_to_head_era5_for_reference</span>.</caption>
+</table>
+<div class="box warn">
+  <h4>The result is the opposite of what the caveat predicted, and it is confounded</h4>
+  <p>
+    Removing the reanalysis advantage should have made the hindcast worse. It made it
+    slightly better, at every lead. That is worth being suspicious of rather than pleased
+    about, and the explanation is that <b>two things changed at once</b>.
+  </p>
+  <p>
+    The ERA5 archive serves a boundary layer height but no pressure-level temperatures, so
+    the ERA5 hindcast had to diagnose the inversion from a surface proxy. The forecast
+    archive is the exact complement: no boundary layer height, but a full vertical
+    temperature profile. So the fair run also got a <b>real profile-based inversion</b>
+    where the reanalysis run had an approximation. The improvement cannot be attributed to
+    the meteorology swap alone, and isolating the two would need a third run.
+  </p>
+  <p>
+    What can be said without reservation is the useful part: <b>the hindcast does not
+    depend on knowing how the weather turned out.</b> The caveat that mattered most on
+    Table 8.3 no longer applies. Two smaller ones remain, and both favour us: the archive
+    holds the best available run for each hour, which is a short lead time, while the DSS
+    was scored 24 to 72 hours ahead; and boundary layer height alone is still backfilled
+    from ERA5, because the forecast archive does not serve it.
+  </p>
+</div>
+
+<h3>8.5 Does the coupling actually help? A negative result</h3>
+<p>
+  The most important open question about the feedback is not whether its magnitudes are
+  plausible, which §4.3 settles, but whether it lowers forecast error. It does not. The
+  ablation runs the same forecast with the solver on and off over the held out winter,
+  with both arms re-centred to zero mean bias so the comparison measures shape and timing
+  rather than which arm was allowed to fit an intercept.
+</p>
+<table class="zebra">
+  <thead><tr><th>Regime</th><th class="n">Hours</th><th class="n">Uncoupled</th><th class="n">Coupled</th><th class="n">Change</th></tr></thead>
+  <tbody>
+    <tr><th>High aerosol</th><td class="n">28,440</td><td class="n">83.29</td><td class="n">83.00</td><td class="n good">+0.35 %</td></tr>
+    <tr><th>Stagnant episode</th><td class="n">40,047</td><td class="n">83.95</td><td class="n">84.01</td><td class="n">&minus;0.07 %</td></tr>
+    <tr><th>Well ventilated</th><td class="n">8,134</td><td class="n">76.61</td><td class="n">76.77</td><td class="n">&minus;0.21 %</td></tr>
+    <tr><th><b>Overall</b></th><td class="n">48,181</td><td class="n">82.76</td><td class="n">82.85</td><td class="n">&minus;0.11 %</td></tr>
+  </tbody>
+  <caption>Table 8.6 RMSE in µg/m³. The uncoupled baseline is the bias-corrected CAMS prior, so the only difference between the two arms is the radiative feedback. Source: <span class="mono">models/validation.json</span>, key <span class="mono">coupling_ablation</span>.</caption>
+</table>
+<div class="box warn">
+  <h4>Read the regime split, not the headline</h4>
+  <p>
+    Overall the coupling makes the forecast 0.11 percent worse, and that is the number to
+    quote. But the aggregate hides the only informative thing in the table: <b>the sign
+    flips exactly where the physics says it should</b>. The feedback helps in high aerosol
+    conditions, where there is aerosol to do the work, and hurts most when the air is well
+    ventilated, where the physics predicts it should do nothing at all.
+  </p>
+  <p>
+    That pattern is evidence the mechanism is real even though its contribution to skill is
+    negligible. The prepared explanation holds: the trained heads already capture most of
+    this through their radiation, boundary layer and ventilation features, so an explicit
+    solver adds little on top of what the model has already learned. §12.1 sets out why the
+    solver is still worth having.
+  </p>
+</div>
+
+<h3>8.6 A validation we planned, attempted, and abandoned</h3>
 <p>
   The intended independent check on the photolysis module was to compare modelled
   ultraviolet attenuation against a measured one, using the ratio of observed UV index to
@@ -1036,7 +1157,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   <caption>Table 10.1 Fitting a line through the two pipeline measurements gives a fixed cost of roughly 283 MB independent of grid size. Coarsening the domain would therefore have cost real resolution and still not fitted.</caption>
 </table>
 
-<h3>10.2 The decision, and what it does and does not cost</h3>
+<h3>10.2 The bundle, and what it does and does not cost</h3>
 <p>
   The deployment serves a precomputed bundle of 20 routes captured from the same pipeline
   at full resolution: 1,120 cells, 2.8 km over Delhi, all four pollutants, the coupled
@@ -1047,185 +1168,185 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
   <b>A deployment on this tier gives up freshness. It does not give up resolution, and it
   does not give up physics.</b> That is the correct trade if one has to be made, and the
   dashboard states which mode it is in rather than presenting a stale forecast as current.
-  Section 12.2 sets out the workaround that removes the compromise entirely without paying
-  for a larger instance.
-</p>
-</section>
-
-<!-- ═══════════════ 11. GAPS ═══════════════ -->
-<section>
-<h2><span class="n">11</span>Gaps: what is not built, and why</h2>
-<p class="lead">
-  Stated with the same care as the results. Two categories: work that is genuinely
-  outstanding, and boundaries chosen deliberately.
 </p>
 
-<h3>11.1 We do not run a chemical transport model &nbsp;<span class="pill part">C1 PARTIAL</span></h3>
+<h3>10.3 The trade no longer has to be made</h3>
 <p>
-  There is no radiative transfer solve, no chemical mechanism integrated forward in time,
-  and no gridded emissions inventory. WRF-Chem needs a Linux cluster, an MPI and netCDF
-  stack, and a district level emission inventory we do not have. What we do instead is
-  consume the output of coupled models that are already running operationally: CAMS for the
-  chemistry prior and aerosol optical depth, and the MoES DSS as the transport reference.
-  The problem statement's "or similar open-source coupled frameworks" admits this reading,
-  and it is genuinely a coupled framework in the pipeline. A reader who requires a CTM
-  executed in house will not find one, and we do not claim otherwise anywhere.
-</p>
-
-<h3>11.2 Two of four species are outside the feedback loop &nbsp;<span class="pill part">C6 PARTIAL</span></h3>
-<p>
-  This is the sharpest gap, because the clause enumerates the species explicitly. The
-  current state, precisely:
-</p>
-<table class="zebra">
-  <thead><tr><th>Species</th><th style="width:22%">In the loop?</th><th>Detail</th></tr></thead>
-  <tbody>
-    <tr><th>PM2.5</th><td class="good">Yes, fully</td><td>Inside the iterated fixed point. Concentration response feeds aerosol optical depth, which feeds shortwave, which closes back onto concentration.</td></tr>
-    <tr><th>O₃</th><td>Partly, one way</td><td>Coupled to aerosol through photolysis attenuation, but computed from <i>baseline</i> aerosol before the solver runs, so it does not participate in the iteration and does not see the converged value.</td></tr>
-    <tr><th>PM10</th><td>No</td><td>Predicted, but receives no coupled adjustment. The solver's concentration response is applied only to the PM2.5 column.</td></tr>
-    <tr><th>NOx</th><td>No</td><td>Predicted as NO₂, but receives no coupled adjustment, despite two available physical pathways (dilution, and reduced photolytic loss under haze).</td></tr>
-  </tbody>
-  <caption>Table 11.1 Verified by inspection of <span class="mono">vayuchakra/feedback.py</span> and the coupling block of <span class="mono">vayuchakra/forecast.py</span>, which applies the solved result to the PM2.5 column only.</caption>
-</table>
-
-<h3>11.3 The hosted instance is not live &nbsp;<span class="pill part">C7 PARTIAL</span></h3>
-<p>
-  Covered in §10. Run locally the system is live on current data; the hosted one serves a
-  bundle. §12.2 removes this.
-</p>
-
-<h3>11.4 The coupling ablation has not been scored</h3>
-<p>
-  The most important open question about the feedback is whether it lowers forecast error,
-  not only whether its magnitudes are plausible. The ablation panel is built and sits in the
-  repository, but the last full pipeline run was invoked with
-  <span class="mono">--skip-ablation</span>, so no ablation number ships. An earlier
-  configuration measured &minus;0.11 percent, which is flat. It must be re-measured on the
-  current multi winter models and reported whichever way it lands. If it comes out flat
-  again, the honest conclusion is that the trained heads already capture this effect
-  through their radiation and boundary layer features, which is itself a finding.
-</p>
-
-<h3>11.5 Deliberate boundaries</h3>
-<ul>
-  <li><b>No VOC chemistry.</b> Delhi's winter ozone is VOC limited as well as radiation
-    limited, and we have no VOC measurements. TROPOMI formaldehyde and NO₂ could give a
-    regime map, but that requires orbit level netCDF processing. Only the radiation limited
-    half is modelled, and the report says so wherever ozone is discussed.</li>
-  <li><b>A single chemical layer.</b> Vertical structure is diagnosed, not resolved. The
-    lid and mixing depth are tracked in time and height and modulate surface concentration,
-    but chemistry is solved in one layer. This is the largest remaining simplification.</li>
-  <li><b>No data assimilation.</b> Observations enter as features and as training truth,
-    not through an analysis cycle.</li>
-  <li><b>The plume magnitude is partly a DSS emulator.</b> Stated in §6.2.</li>
-</ul>
-</section>
-
-<!-- ═══════════════ 12. ROADMAP ═══════════════ -->
-<section>
-<h2><span class="n">12</span>Roadmap to full compliance</h2>
-<p class="lead">
-  Every partial in Table 2.1 has a costed route to closure. Nothing below requires new data,
-  new funding, or a larger machine.
-</p>
-
-<h3>12.1 Close the species gap in the feedback loop &nbsp;<span class="pill part">closes C6</span></h3>
-<p><b>Effort: about one day. Priority: first.</b></p>
-<table class="zebra">
-  <thead><tr><th style="width:16%">Item</th><th style="width:34%">Mechanism to implement</th><th>Physical justification</th></tr></thead>
-  <tbody>
-    <tr><th>PM10</th><td>Apply the same box-model concentration response, damped by an efficiency factor below one.</td><td>The box model is a pure dilution argument valid for any conserved aerosol mass. PM10 is coarse-mode dominated with a higher deposition velocity and shorter residence time, so its amplification under a collapsing mixing depth should be real but smaller than PM2.5's. The factor is documented and bounded, not fitted.</td></tr>
-    <tr><th>NOx, path 1</th><td>Dilution: the same concentration response.</td><td>NO₂ is a surface-emitted primary pollutant, so a shallower mixing depth concentrates it exactly as it does particulate mass.</td></tr>
-    <tr><th>NOx, path 2</th><td>Reduced photolytic loss: scale NO₂ by the J(NO₂) attenuation ratio.</td><td>J(NO₂) governs the rate at which NO₂ is split. Attenuating the ultraviolet slows that loss, so NO₂ accumulates. Both paths act in the same direction under haze, which is a check on the implementation.</td></tr>
-    <tr><th>O₃</th><td>Recompute photolysis from the <i>converged</i> aerosol optical depth and re-evaluate the ozone response inside the iteration.</td><td>Currently photolysis is computed once from baseline aerosol before the solver runs. Moving it inside closes the chemistry side of the loop and makes ozone a genuine participant rather than a downstream consumer.</td></tr>
-  </tbody>
-  <caption>Table 12.1 After this, all four named species participate and clause C6 is met in full. Each new response needs its own clipped range and its own literature gate entry, on the same pattern as the existing five.</caption>
-</table>
-<p>
-  <b>Acceptance:</b> the literature gate grows from five checks to eight or nine, all
-  passing; the ablation in §12.3 is re-run across all four species; and no head regresses.
-</p>
-
-<h3>12.2 Make the hosted instance genuinely fresh &nbsp;<span class="pill part">closes C7</span></h3>
-<p><b>Effort: about two hours. Priority: second, and it costs nothing.</b></p>
-<p>
-  There is a workaround, and it is better than paying for a larger instance. The constraint
-  is that the <i>web service</i> has 512 MB. Nothing requires the pipeline to run on the web
-  service.
+  The constraint is that the <i>web service</i> has 512 MB. Nothing requires the pipeline
+  to run on the web service, and once that is noticed the problem dissolves.
 </p>
 <ol>
-  <li>A <b>scheduled GitHub Actions workflow</b> runs the full pipeline on a hosted runner.
-    Standard runners provide four cores and 16 GB of RAM, against a measured peak of 1.1 GB,
-    so the pipeline runs at full resolution with an order of magnitude of headroom.</li>
-  <li>The workflow writes the snapshot bundle and <b>commits it back to the repository</b>.</li>
-  <li>Render <b>auto-deploys on push</b>, so the hosted site begins serving the fresh bundle
-    within a couple of minutes.</li>
-  <li>Public repositories get <b>unlimited free Actions minutes</b>, so a three or six hourly
+  <li>A scheduled GitHub Actions workflow runs the full pipeline on a hosted runner.
+    Standard runners provide four cores and <b>16 GB of RAM</b>, against a measured peak of
+    1.1 GB, so the pipeline runs at full resolution with an order of magnitude of
+    headroom.</li>
+  <li>The workflow writes the bundle and <b>commits it back to the repository</b>.</li>
+  <li>Render <b>auto-deploys on push</b>, so the hosted site begins serving the fresh
+    bundle within a couple of minutes.</li>
+  <li>Public repositories get <b>unlimited free Actions minutes</b>, so a six-hourly
     refresh costs nothing.</li>
 </ol>
+<p>
+  The workflow refuses to commit a bundle whose manifest contains a failed route, a
+  suspiciously small payload, or a missing required one. Replacing a stale but correct
+  forecast with a broken one is strictly worse than doing nothing.
+</p>
 <div class="box">
-  <h4>Why this is not a compromise</h4>
+  <h4>Why a schedule is not an approximation of real time</h4>
   <p>
-    No operational forecast system re-solves its physics when a user loads a page. NWP runs
-    on a cycle and serves the most recent cycle's output. A scheduled refresh is therefore
-    not an approximation of real time operation; it <i>is</i> how real time operation works.
-    The remaining artefact is that the free web service still sleeps after fifteen minutes
-    idle, so the first request after a quiet period is slow. That is a cold start, not a
-    stale forecast, and the two should not be confused.
+    No operational forecast system re-solves its physics when someone loads a page.
+    Numerical weather prediction runs on a cycle and serves the most recent cycle's output,
+    and a scheduled refresh is that same arrangement rather than a substitute for it. What
+    remains is that a free instance sleeps after fifteen minutes idle, so the first request
+    after a quiet period is slow. That is a cold start, not a stale forecast, and the two
+    should not be confused.
   </p>
   <p>
     A scheduled workflow on a repository with no commits is disabled after sixty days of
-    inactivity. This workflow commits on every run, so it keeps itself alive.
+    inactivity. This one commits on every run, so it keeps itself alive.
   </p>
 </div>
-<p>
-  A second, complementary route is to cut the peak memory itself: process the forecast in
-  cell batches writing incrementally, hold the panel in float32 throughout, and release the
-  training panel before the coupling stage. That would plausibly bring the pipeline under
-  512 MB, but it is real engineering effort and the scheduled route delivers freshness
-  <i>and</i> keeps full resolution today.
-</p>
-
-<h3>12.3 Score the coupling ablation &nbsp;<span class="pill part">closes §11.4</span></h3>
-<p><b>Effort: a few hours, mostly compute.</b></p>
-<p>
-  Re-run <span class="mono">scripts/validate.py</span> without
-  <span class="mono">--skip-ablation</span> on the current multi winter models, and report
-  the result split by season, aerosol band and ventilation class so that "where it helps" is
-  answered with a table rather than a single flat number. A regime-resolved negative result
-  is far more informative than an aggregate one, because the feedback is physically expected
-  to do nothing on clean afternoons and the aggregate dilutes the winter signal with them.
-</p>
-
-<h3>12.4 A like for like comparison against the DSS</h3>
-<p><b>Effort: one to two days, dependent on archive access.</b></p>
-<p>
-  Re-run the hindcast on archived <i>forecast</i> meteorology rather than ERA5 reanalysis,
-  so that both systems are asked to predict the weather as well as the chemistry. Until then
-  Table 8.3 is presented with its caveat and is not claimed as a skill result.
-</p>
-
-<h3>12.5 Beyond the statement</h3>
-<ul class="compact">
-  <li><b>Multi layer chemistry.</b> Resolving two or three layers rather than one would let
-    the plume arrive aloft and mix down explicitly rather than through a gate.</li>
-  <li><b>TROPOMI derived VOC regime map.</b> Formaldehyde to NO₂ ratio, with the threshold
-    near 3.1, would let the ozone chemistry be regime aware.</li>
-  <li><b>Assimilation of station observations</b> into the initial state rather than only
-    into the feature set.</li>
-</ul>
-
-<table>
-  <thead><tr><th>Item</th><th style="width:14%">Effort</th><th style="width:18%">Closes</th><th style="width:16%">Cost</th><th>Result</th></tr></thead>
-  <tbody>
-    <tr><th>12.1 Species into the loop</th><td>~1 day</td><td>C6</td><td>none</td><td>All four named species coupled</td></tr>
-    <tr><th>12.2 Scheduled refresh</th><td>~2 hours</td><td>C7</td><td>none</td><td>Hosted site genuinely current</td></tr>
-    <tr><th>12.3 Ablation</th><td>~3 hours</td><td>§11.4</td><td>none</td><td>Evidence the coupling earns its place</td></tr>
-    <tr><th>12.4 Like for like DSS</th><td>1 to 2 days</td><td>§8.3 caveat</td><td>archive access</td><td>A defensible skill comparison</td></tr>
-  </tbody>
-  <caption>Table 12.2 After 12.1 and 12.2, ten of the eleven clauses are met in full and C1 remains partial by construction, because we consume a coupled model rather than run one.</caption>
-</table>
 </section>
+
+<!-- ═══════════════ 11. GAPS ═══════════════ -->
+<section id="remaining">
+  <div class="sec-head">
+    <span class="sec-no">11</span>
+    <div>
+      <h2>What is not built, and why</h2>
+      <p class="dek">Stated with the same care as the results. One clause remains partial, one headline result is negative, and several boundaries were chosen deliberately.</p>
+    </div>
+  </div>
+
+  <h3>11.1 We do not run a chemical transport model &nbsp;<span class="pill part">C1 PARTIAL</span></h3>
+  <p>
+    There is no radiative transfer solve, no chemical mechanism integrated forward in time,
+    and no gridded emissions inventory. WRF-Chem needs a Linux cluster, an MPI and netCDF
+    stack, and a district level emission inventory we do not have. What we do instead is
+    consume the output of coupled models that are already running operationally: CAMS for
+    the chemistry prior and the aerosol optical depth the feedback solver runs on, and the
+    MoES DSS as the transport reference.
+  </p>
+  <p>
+    The statement's "or similar open-source coupled frameworks" admits this reading, and
+    there is genuinely a coupled framework in the pipeline. A reader who requires a CTM
+    executed in house will not find one, and this report does not claim otherwise anywhere.
+    <b>This is the one clause that stays partial by construction.</b>
+  </p>
+
+  <h3>11.2 The coupling does not improve forecast error, and that is reported as a result</h3>
+  <p>
+    The ablation has now been scored on the current models, and the honest answer is that
+    the feedback does not earn its place on skill. Overall it makes the forecast
+    <b>0.11 percent worse</b>. Section 8.5 gives the regime breakdown, which is the part
+    worth reading: the sign flips exactly where the physics says it should.
+  </p>
+  <p>
+    The most likely explanation is the one prepared before the measurement was taken: the
+    trained heads already capture most of this effect through their radiation, boundary
+    layer and ventilation features, so an explicit solver adds little on top. That does not
+    make the solver useless. It is what produces the counterfactual in §4.4, which no
+    statistical model can answer, and it is what makes each mechanism separately auditable
+    against published values. But it is not a skill driver, and presenting it as one would
+    be false.
+  </p>
+
+  <h3>11.3 The DSS comparison is fairer, and still not matched on lead time</h3>
+  <p>
+    The caveat that our hindcast was driven by reanalysis has been removed rather than
+    restated: §8.4 re-runs it on archived forecast runs, and the result did not degrade.
+    Two smaller caveats remain and both favour us. The archive holds the best available run
+    for each hour, which is a short lead time, while the DSS was scored 24 to 72 hours
+    ahead. And boundary layer height alone is still backfilled from ERA5, because the
+    forecast archive does not serve it.
+  </p>
+  <p>
+    There is also a confound worth keeping in view: the fair run gained a real vertical
+    temperature profile at the same time it lost the reanalysis, so the two changes cannot
+    be separated from this experiment alone. §8.4 states that rather than reading the
+    improvement as a clean win.
+  </p>
+
+  <h3>11.4 Deliberate boundaries</h3>
+  <ul>
+    <li><b>No VOC chemistry.</b> Delhi's winter ozone is VOC limited as well as radiation
+      limited, and we have no VOC measurements. TROPOMI formaldehyde and NO<sub>2</sub>
+      could give a regime map, but that requires orbit level netCDF processing. Only the
+      radiation limited half is modelled, and the report says so wherever ozone appears.</li>
+    <li><b>A single chemical layer.</b> Vertical structure is diagnosed, not resolved. The
+      lid and mixing depth are tracked in time and height and modulate surface
+      concentration, but the chemistry is solved in one layer. This is the largest
+      remaining simplification in the system.</li>
+    <li><b>No data assimilation.</b> Observations enter as features and as training truth,
+      not through an analysis cycle.</li>
+    <li><b>The plume magnitude is partly a DSS emulator.</b> One multiplicative scale
+      factor is fitted against the DSS attribution. The physics parameters are not. So the
+      correlation is an honest result and the magnitude is a calibration, and §6.2 reports
+      them as two different things.</li>
+    <li><b>Three of four species respond without driving.</b> §4.5 explains why that is the
+      physically correct arrangement, but it is a modelling choice and it is recorded as
+      one.</li>
+  </ul>
+</section>
+
+<!-- ═══════════════ 12. WHAT CHANGED ═══════════════ -->
+<section id="roadmap">
+  <div class="sec-head">
+    <span class="sec-no">12</span>
+    <div>
+      <h2>What was closed, and what is left</h2>
+      <p class="dek">An earlier draft of this report listed four outstanding items. All four have now been acted on. This section records what each cost and what it bought.</p>
+    </div>
+  </div>
+
+  <table class="zebra">
+    <thead><tr><th style="width:26%">Item</th><th style="width:12%">Status</th><th>Outcome</th></tr></thead>
+    <tbody>
+      <tr><th>All four species into the loop</th><td><span class="pill met">DONE</span></td>
+        <td>Closes C6. PM10, NO<sub>2</sub> and O<sub>3</sub> now respond to the coupled meteorology, each by its own mechanism and each with its own acceptance bound. Eight of eight gates pass. §4.5</td></tr>
+      <tr><th>Scheduled snapshot refresh</th><td><span class="pill met">DONE</span></td>
+        <td>Closes C7. The pipeline runs on a GitHub runner with 16 GB against a 1.1 GB peak, commits the bundle, and Render auto-deploys. Costs nothing. §10.3</td></tr>
+      <tr><th>Score the coupling ablation</th><td><span class="pill met">DONE</span></td>
+        <td>Ran, and came out negative at &minus;0.11 %. Reported as negative, with the regime split that makes it informative. §8.5 and §11.2</td></tr>
+      <tr><th>Fair comparison against the DSS</th><td><span class="pill met">DONE</span></td>
+        <td>The blocker was assumed to be archive access. It was not: an archive of past forecast runs exists and is free. §8.4</td></tr>
+    </tbody>
+    <caption>Table 12.1 Of the eleven clauses in Table 1.1, ten are now met in full.</caption>
+  </table>
+
+  <h3>12.1 What the ablation result should change about how this is read</h3>
+  <p>
+    A negative result on the headline mechanism deserves more than a footnote. The coupling
+    is physically correct, converges, and lands every magnitude inside published Delhi
+    ranges it was never fitted to. It also does not measurably improve the forecast. Both
+    of those are true at once, and the second does not cancel the first.
+  </p>
+  <p>
+    What the solver buys is not accuracy. It is the ability to answer questions a fitted
+    model cannot: what happens to ozone if the aerosol halves, how much of tonight's PM2.5
+    is feedback rather than emission, and whether each link in the chain is individually
+    defensible against the literature. Those are the questions the problem statement is
+    actually about. A system that improved error by an unexplainable two percent would be
+    worth less than one that explains why the air behaves as it does.
+  </p>
+
+  <h3>12.2 What is genuinely left</h3>
+  <ul class="compact">
+    <li><b>A true 72 hour lead comparison.</b> The archived forecast runs we can reach are
+      short lead. Scoring against the DSS at matched lead needs an archive indexed by
+      initialisation time, not by valid time.</li>
+    <li><b>Multi layer chemistry.</b> Resolving two or three layers rather than one would
+      let the plume arrive aloft and mix down explicitly rather than through a gate.</li>
+    <li><b>TROPOMI derived VOC regime map.</b> Formaldehyde to NO<sub>2</sub> ratio, with
+      the threshold near 3.1, would make the ozone chemistry regime aware.</li>
+    <li><b>Assimilation of station observations</b> into the initial state rather than only
+      into the feature set.</li>
+    <li><b>Ablate the three new species separately.</b> The ablation reported here isolates
+      the radiative feedback on PM2.5, which is what it was built to do. The PM10,
+      NO<sub>2</sub> and O<sub>3</sub> responses have not been scored on their own.</li>
+  </ul>
+</section>
+
 
 <!-- ═══════════════ APPENDIX ═══════════════ -->
 <section>
@@ -1245,7 +1366,8 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <tr><th>GRAP probabilities, Table 8.2</th><td><span class="mono">models/uncertainty_pm25_24h.json</span></td><td><span class="mono">scripts/train_uncertainty.py</span></td></tr>
     <tr><th>DSS head to head, Table 8.3</th><td><span class="mono">models/validation.json</span></td><td><span class="mono">scripts/validate.py</span></td></tr>
     <tr><th>Grid construction, Table 3.1</th><td><span class="mono">data/snapshot/health.json</span></td><td><span class="mono">vayuchakra/grid.py</span></td></tr>
-    <tr><th>Species in the loop, Table 11.1</th><td><span class="mono">vayuchakra/feedback.py</span></td><td>source inspection</td></tr>
+    <tr><th>Species responses, Table 4.3</th><td><span class="mono">data/snapshot/coupling.json</span></td><td><span class="mono">vayuchakra/feedback.py</span></td></tr>
+    <tr><th>Coupling ablation, Table 8.4</th><td><span class="mono">models/validation.json</span></td><td><span class="mono">scripts/validate.py</span></td></tr>
     <tr><th>Abandoned UV check, §8.4</th><td><span class="mono">vayuchakra/photolysis.py</span></td><td><span class="mono">cloud_attenuation_check()</span></td></tr>
   </tbody>
   <caption>Table A.1 Every claim traced to its artefact.</caption>
@@ -1253,10 +1375,11 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
 
 <h3>A.1 Running it</h3>
 <ul class="compact">
-  <li><span class="mono">pytest</span> runs 76 tests. They include a mesh walk asserting the
+  <li><span class="mono">pytest</span> runs 84 tests. They include a mesh walk asserting the
     two grid tiers leave no coverage gap, and they gate on every literature bound in
-    Table 4.1.</li>
-  <li><span class="mono">DECISIONS.md</span> records 59 decisions with the measurement behind
+    Table 4.1, including a test that fails if a species is handed to the solver and never
+    judged.</li>
+  <li><span class="mono">DECISIONS.md</span> records 61 decisions with the measurement behind
     each, negative results included.</li>
   <li><span class="mono">scripts/run_all.sh</span> runs the pipeline end to end.</li>
   <li>The dashboard reads the same API this report cites, so anything on screen traces back

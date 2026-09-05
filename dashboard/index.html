@@ -1804,7 +1804,11 @@ async function loadCoupling() {
       textContent: directional(v) ? "must be negative"
                                   : v.expected[0] + " to " + v.expected[1] }));
     const st = el("td"), chip = el("span", "chip " + (v.ok ? "ok" : "bad"));
-    chip.append(el("span", "dot"), document.createTextNode(v.ok ? "within" : "outside"));
+    // "within" is the wrong word for a check that tests a sign rather than a range, and
+    // reading "within" beside "must be negative" makes the reader work out which test
+    // actually ran.
+    chip.append(el("span", "dot"), document.createTextNode(
+      directional(v) ? (v.ok ? "right sign" : "wrong sign") : (v.ok ? "within" : "outside")));
     st.append(chip); tr.append(st); t.append(tr);
   });
   g.replaceChildren(t);
@@ -2225,7 +2229,7 @@ async function loadEvidence() {
     vs.replaceChildren(wrap);
   }
 
-  renderDss(val.dss_head_to_head);
+  renderDss(val.dss_head_to_head, val.dss_head_to_head_era5_for_reference);
 
   const ls = $("#loso-slot");
   if (loso.__error) {
@@ -2270,7 +2274,7 @@ async function loadEvidence() {
    ERA5 reanalysis, meaning the weather as it actually turned out; the DSS had to
    forecast that weather too, days ahead. A reader who sees the numbers before the
    reason will take away something false. */
-function renderDss(d) {
+function renderDss(d, era5Reference) {
   const slot = $("#dss-slot");
   if (!slot) return;
   if (!d || !d.available || !Array.isArray(d.by_lead)) {
@@ -2287,13 +2291,16 @@ function renderDss(d) {
   }
 
   const wrap = el("div"), lead = el("p", "note caveat");
-  lead.innerHTML = "<b>This is not a fair comparison, and the lower number is not a "
-    + "win.</b> The DSS was issued <b>operationally</b>: it had to predict the weather "
-    + "as well as the chemistry, days ahead. This hindcast is driven by ERA5 "
-    + "<b>reanalysis</b>, the weather as it actually turned out. What the table supports "
-    + "is that the statistical layer maps meteorology to PM2.5 competitively, nothing "
-    + "more.";
+  // Read from the payload, never hard-coded. The caveat depends on which meteorology
+  // drove the hindcast, and a fixed sentence asserting reanalysis would go on claiming
+  // an advantage the archived-forecast run has already given up. A stale caveat that
+  // understates the result is still a false statement about it.
+  lead.textContent = d.not_like_for_like
+    || "This comparison carries caveats the payload did not supply. Treat it as "
+       + "indicative only.";
   wrap.append(lead);
+
+  // No banner restating the caveat: it already says this, at length, directly above.
 
   const t = el("table", "kv"), head = el("tr");
   head.append(el("th", null, "Lead"));
@@ -2313,6 +2320,19 @@ function renderDss(d) {
   });
   makeSortable(t);
   wrap.append(t);
+
+  // The ERA5 run is kept beside the fair one, because the pair is the finding: a reader
+  // who sees only the new numbers cannot tell that giving up the reanalysis cost nothing.
+  const ref = era5Reference;
+  if (ref && Array.isArray(ref.by_lead) && d.met_source === "archived_forecast") {
+    const p = el("p", "note");
+    const pairs = ref.by_lead.map(r => "+" + r.lead_hours + " h " + fmt(r.vayuchakra.rmse, 2))
+                             .join(", ");
+    p.innerHTML = "Driven by ERA5 reanalysis instead, the same hindcast scores " + pairs
+      + ". <b>Giving up the reanalysis did not cost skill</b>, which is the opposite of "
+      + "what the caveat predicted and is reported as such.";
+    wrap.append(p);
+  }
 
   const why = el("details", "why"), body = el("div");
   body.innerHTML = "<p>Window " + (d.window ? d.window.from + " to " + d.window.to : "archived")

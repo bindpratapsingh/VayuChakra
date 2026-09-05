@@ -1,5 +1,109 @@
 {
-  "generated_at": "2026-09-04T23:36:33Z",
+  "generated_at": "2026-09-04T23:46:13Z",
+  "dss_head_to_head": {
+    "available": true,
+    "window": {
+      "from": "2021-10-06",
+      "to": "2022-02-28"
+    },
+    "configuration": "reduced - no chemistry prior; CAMS coverage begins 2022-08-15, after this window",
+    "ground_truth": "Delhi city-mean hourly PM2.5 from CPCB stations",
+    "citation": "MoES/IITM WRF-Chem Decision Support System (JAMES). Third-party output, cited not redistributed.",
+    "met_source": "archived_forecast",
+    "not_like_for_like": "Our hindcast is driven by ARCHIVED FORECAST RUNS, not reanalysis, so it carries meteorological error the way an operational system does. That removes most of the advantage the ERA5 version had, but NOT all of it: the archive holds the best available run for each hour, which is a short lead time, while the DSS was scored 24 to 72 hours ahead. Boundary layer height alone is still backfilled from ERA5, because the forecast archive does not serve it. The residue is in our favour and is named here rather than left for a reader to discover.",
+    "our_models_trained_on": "Feb 2025 - Aug 2026, so this window is genuinely out of sample in time.",
+    "by_lead": [
+      {
+        "lead_hours": 24,
+        "n_hours": 2382,
+        "dss": {
+          "rmse": 98.41,
+          "mae": 67.03,
+          "corr": 0.433,
+          "bias": -39.03
+        },
+        "n_common": 2363,
+        "vayuchakra": {
+          "rmse": 60.81,
+          "mae": 43.34,
+          "corr": 0.802,
+          "bias": 15.83
+        },
+        "persistence": {
+          "rmse": 93.98
+        },
+        "dss_on_common_hours": {
+          "rmse": 98.78
+        }
+      },
+      {
+        "lead_hours": 48,
+        "n_hours": 2382,
+        "dss": {
+          "rmse": 107.96,
+          "mae": 74.34,
+          "corr": 0.311,
+          "bias": -38.64
+        },
+        "n_common": 2363,
+        "vayuchakra": {
+          "rmse": 66.48,
+          "mae": 48.68,
+          "corr": 0.757,
+          "bias": 17.33
+        },
+        "persistence": {
+          "rmse": 108.78
+        },
+        "dss_on_common_hours": {
+          "rmse": 108.34
+        }
+      },
+      {
+        "lead_hours": 72,
+        "n_hours": 2382,
+        "dss": {
+          "rmse": 118.52,
+          "mae": 80.53,
+          "corr": 0.206,
+          "bias": -40.69
+        },
+        "n_common": 2363,
+        "vayuchakra": {
+          "rmse": 72.08,
+          "mae": 51.9,
+          "corr": 0.698,
+          "bias": 15.66
+        },
+        "persistence": {
+          "rmse": 115.0
+        },
+        "dss_on_common_hours": {
+          "rmse": 118.95
+        }
+      },
+      {
+        "lead_hours": 96,
+        "n_hours": 2382,
+        "dss": {
+          "rmse": 124.67,
+          "mae": 83.51,
+          "corr": 0.184,
+          "bias": -37.69
+        }
+      },
+      {
+        "lead_hours": 120,
+        "n_hours": 2330,
+        "dss": {
+          "rmse": 126.44,
+          "mae": 87.54,
+          "corr": 0.088,
+          "bias": -38.71
+        }
+      }
+    ]
+  },
   "coupling_ablation": {
     "available": true,
     "window": {
@@ -122,105 +226,34 @@
     },
     "note": "Uncoupled baseline is the bias-corrected CAMS prior, so the ONLY difference between the two runs is the radiative feedback."
   },
-  "dss_head_to_head": {
-    "available": true,
-    "window": {
-      "from": "2021-10-06",
-      "to": "2022-02-28"
-    },
-    "configuration": "reduced - no chemistry prior; CAMS coverage begins 2022-08-15, after this window",
-    "ground_truth": "Delhi city-mean hourly PM2.5 from CPCB stations",
-    "citation": "MoES/IITM WRF-Chem Decision Support System (JAMES). Third-party output, cited not redistributed.",
-    "not_like_for_like": "The DSS forecasts were issued OPERATIONALLY: it had to predict the weather as well as the chemistry, days ahead. Our hindcast is driven by ERA5 REANALYSIS - the meteorology as it actually turned out. That is a material advantage and it is not a fair comparison of forecast skill. What this table supports is that the statistical layer maps meteorology to PM2.5 competitively; it does NOT show we forecast better than the MoES DSS.",
-    "our_models_trained_on": "Feb 2025 - Aug 2026, so this window is genuinely out of sample in time.",
+  "dss_head_to_head_era5_for_reference": {
+    "note": "The same comparison driven by ERA5 reanalysis. Retained because the difference between the two is the result: removing the reanalysis advantage did not degrade the hindcast.",
     "by_lead": [
       {
         "lead_hours": 24,
-        "n_hours": 2382,
-        "dss": {
-          "rmse": 98.41,
-          "mae": 67.03,
-          "corr": 0.433,
-          "bias": -39.03
-        },
-        "n_common": 2363,
         "vayuchakra": {
           "rmse": 64.26,
           "mae": 47.43,
           "corr": 0.799,
           "bias": 25.3
-        },
-        "persistence": {
-          "rmse": 93.98
-        },
-        "dss_on_common_hours": {
-          "rmse": 98.78
         }
       },
       {
         "lead_hours": 48,
-        "n_hours": 2382,
-        "dss": {
-          "rmse": 107.96,
-          "mae": 74.34,
-          "corr": 0.311,
-          "bias": -38.64
-        },
-        "n_common": 2363,
         "vayuchakra": {
           "rmse": 68.91,
           "mae": 52.57,
           "corr": 0.762,
           "bias": 26.6
-        },
-        "persistence": {
-          "rmse": 108.78
-        },
-        "dss_on_common_hours": {
-          "rmse": 108.34
         }
       },
       {
         "lead_hours": 72,
-        "n_hours": 2382,
-        "dss": {
-          "rmse": 118.52,
-          "mae": 80.53,
-          "corr": 0.206,
-          "bias": -40.69
-        },
-        "n_common": 2363,
         "vayuchakra": {
           "rmse": 72.82,
           "mae": 54.58,
           "corr": 0.716,
           "bias": 24.27
-        },
-        "persistence": {
-          "rmse": 115.0
-        },
-        "dss_on_common_hours": {
-          "rmse": 118.95
-        }
-      },
-      {
-        "lead_hours": 96,
-        "n_hours": 2382,
-        "dss": {
-          "rmse": 124.67,
-          "mae": 83.51,
-          "corr": 0.184,
-          "bias": -37.69
-        }
-      },
-      {
-        "lead_hours": 120,
-        "n_hours": 2330,
-        "dss": {
-          "rmse": 126.44,
-          "mae": 87.54,
-          "corr": 0.088,
-          "bias": -38.71
         }
       }
     ]

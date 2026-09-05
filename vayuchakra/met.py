@@ -27,6 +27,8 @@ from .grid import Cell
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+#: Archived forecast RUNS, not reanalysis. See `fetch_historical_forecast`.
+HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
 
 #: Hourly fields requested from Open-Meteo.
 #:
@@ -236,12 +238,58 @@ def fetch_archive(cells: list[Cell], start: str, end: str) -> MetResult:
     """ERA5 reanalysis for a past window - the hindcast path for DSS validation.
 
     Dates are ISO ``YYYY-MM-DD``. ERA5 lags real time by about five days.
+
+    **This is reanalysis: the weather as it actually turned out**, with observations
+    assimilated after the fact. That is the right driver for studying a mechanism and
+    the wrong one for claiming forecast skill, which is why the DSS head-to-head carries
+    the caveat it does. `fetch_historical_forecast` is the fairer driver.
     """
     # models=era5 explicitly: the default selection was observed returning a null
     # boundary layer height on some dates while era5 served it 24/24 for the same day.
     return _fetch(cells, url=ARCHIVE_URL,
                   params={"start_date": start, "end_date": end, "models": "era5"},
                   vars_=ARCHIVE_VARS, ttl=C.CACHE_TTL_ARCHIVE, label="open-meteo-era5")
+
+
+#: What the archived-forecast endpoint serves, measured 2026-09-05 over 2021-11-05/06
+#: at Delhi rather than assumed. It is the EXACT COMPLEMENT of the ERA5 archive, which
+#: is the whole reason both exist here:
+#:
+#: | field                   | ERA5 archive | forecast archive |
+#: |-------------------------|--------------|------------------|
+#: | boundary_layer_height   | 24/24        | **0/48, all null** |
+#: | temperature_925/850hPa  | 0/24         | **48/48**        |
+#: | geopotential_height_*   | 0/24         | **48/48**        |
+#: | every surface field     | served       | served           |
+#:
+#: So the forecast archive brings a real vertical temperature profile - which means
+#: `indices.inversion()` can take its profile path instead of the surface proxy - and
+#: takes away the bulk boundary-layer height the heads were trained on. Neither source
+#: alone is sufficient for a hindcast, and that is a property of the data, not a choice.
+HISTORICAL_FORECAST_VARS: tuple[str, ...] = tuple(
+    v for v in ALL_VARS if v != "boundary_layer_height")
+
+
+def fetch_historical_forecast(cells: list[Cell], start: str, end: str) -> MetResult:
+    """Archived *forecast* runs for a past window, rather than reanalysis.
+
+    This is the driver that makes a comparison against an operational system fair. ERA5
+    knows how the weather turned out because it assimilated the observations; an
+    archived forecast does not, so a hindcast driven by it has to live with the same
+    meteorological error an operational forecast lives with.
+
+    **It does not make the comparison perfect, and the report says so.** Open-Meteo's
+    archive holds the best available run for each timestamp, which is a short lead time.
+    The MoES DSS was scored at 24, 48 and 72 hours ahead. So this removes most of the
+    reanalysis advantage, not all of it, and the residue is in our favour.
+
+    Note the missing boundary layer height above: a caller wanting a complete panel has
+    to source that separately, and whichever way it does, it must say so.
+    """
+    return _fetch(cells, url=HISTORICAL_FORECAST_URL,
+                  params={"start_date": start, "end_date": end},
+                  vars_=HISTORICAL_FORECAST_VARS, ttl=C.CACHE_TTL_ARCHIVE,
+                  label="open-meteo-archived-forecast")
 
 
 def utc_now() -> dt.datetime:

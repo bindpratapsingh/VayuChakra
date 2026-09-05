@@ -102,6 +102,10 @@ def main() -> int:
     ap.add_argument("--dss-end", default="2022-02-28")
     ap.add_argument("--skip-dss", action="store_true")
     ap.add_argument("--skip-ablation", action="store_true")
+    ap.add_argument("--dss-met-source", default="era5",
+                    choices=["era5", "archived_forecast"],
+                    help="era5 is reanalysis and flatters us; archived_forecast is the "
+                         "fair comparison, driven by the forecast runs as issued.")
     ap.add_argument("--dss-model-dir", default=None,
                     help="models trained WITHOUT the DSS window. Without this the "
                          "comparison is in-sample once the multi-winter panel is used, "
@@ -121,7 +125,8 @@ def main() -> int:
         from pathlib import Path as _P
         d = validate.dss_head_to_head(args.dss_start, args.dss_end,
                                       model_dir=_P(args.dss_model_dir)
-                                      if args.dss_model_dir else None)
+                                      if args.dss_model_dir else None,
+                                      met_source=args.dss_met_source)
         report["dss_head_to_head"] = d
         _print_dss(d)
 

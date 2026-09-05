@@ -1407,3 +1407,61 @@ without a wind column raised `AttributeError` and took the whole summary down. I
 never fired because the production frame always has wind and no test had called
 `summary()` on a synthetic one. Fixed by testing membership rather than relying on
 `.get`.
+
+## D-061
+
+**The comparison against the operational DSS is now fair, and the fair version is better,
+which is the opposite of what we predicted.**
+
+Every version of this report has carried the same caveat on the DSS head-to-head: our
+hindcast was driven by ERA5 **reanalysis**, the weather as it actually turned out, while
+the DSS had to forecast that weather days ahead. The caveat was correct and it was
+disqualifying. It was also filed as "needs archive access", which turned out to be simply
+wrong. Open-Meteo serves an archive of past **forecast runs** alongside the reanalysis
+archive, free, and it covers the Oct 2021 window.
+
+**Measured coverage, which is the reason both archives are now in the code.** The two are
+exact complements, and neither alone can build a hindcast panel:
+
+| field | ERA5 archive | forecast archive |
+|---|---|---|
+| `boundary_layer_height` | 24/24 | **0/48, all null** |
+| `temperature_925/850hPa` | 0/24 | **48/48** |
+| `geopotential_height_*` | 0/24 | **48/48** |
+
+So the forecast archive brings a real vertical temperature profile, which ERA5 does not
+serve at all, and takes away the bulk boundary-layer height every head was trained on.
+Left alone, the missing PBL would not have raised an error: `indices.dispersion()` takes
+`np.fmin(pbl, lid)`, `np.fmin` ignores NaN, and mixing depth would have silently become
+the inversion lid alone. The panel would have built, the numbers would have looked
+plausible, and the comparison would have been invalid in a new way nobody was looking
+for. PBL is therefore backfilled from ERA5, deliberately and visibly, and the panel
+carries a `met_source_note` saying so.
+
+**The result.** RMSE against Delhi city-mean PM2.5, same 2,363 common hours:
+
+| lead | DSS | ours, reanalysis | ours, forecast archive |
+|---|---|---|---|
+| +24 h | 98.78 | 64.26 | **60.81** |
+| +48 h | 108.34 | 68.91 | **66.48** |
+| +72 h | 118.95 | 72.82 | **72.08** |
+
+Removing the advantage should have made us worse. It made us slightly better at every
+lead. **That is a reason for suspicion, not celebration**, and the explanation is that two
+things changed at once: the fair run also gained the profile-based inversion where the
+reanalysis run had a surface proxy. The improvement cannot be attributed to the
+meteorology swap alone and the report says so; isolating them needs a third run.
+
+What can be said without reservation is the part that matters: **the hindcast does not
+depend on knowing how the weather turned out.** Two smaller caveats remain and both
+favour us. The archive holds the best available run per hour, which is short lead, while
+the DSS was scored 24 to 72 hours ahead; and PBL is still reanalysis.
+
+The ERA5 numbers are kept in `validation.json` under
+`dss_head_to_head_era5_for_reference` rather than deleted, because the pair is the
+finding. A reader who sees only the new numbers cannot tell that the fair driver cost
+nothing.
+
+**The caveat text is now generated from the driver rather than hard-coded.** It had been
+one fixed sentence asserting reanalysis. Left that way it would have gone on claiming an
+advantage we had just removed, which is a worse failure than the original caveat.

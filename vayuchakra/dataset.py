@@ -211,11 +211,28 @@ def build_panel(
     *,
     with_chem: bool = True,
     cache_name: str | None = None,
+    met_source: str = "era5",
 ) -> pd.DataFrame:
     """Join observations, meteorology, indices and the chemistry prior into one frame.
 
     `with_chem=False` produces the reduced configuration used for the DSS window, where
     CAMS has no coverage before mid-August 2022.
+
+    `met_source` decides what "past meteorology" means, and it is the difference between
+    a mechanism study and a skill claim:
+
+    * ``"era5"`` - reanalysis, the weather as it actually turned out. Correct for
+      studying how meteorology drives chemistry. Unfair as the driver for a comparison
+      against a system that had to forecast that weather.
+    * ``"archived_forecast"`` - the forecast runs as they were issued, which is what an
+      operational system had. **Serves no boundary layer height**, so the bulk PBL is
+      backfilled from ERA5 and the panel is labelled to say so; every other field,
+      including the vertical temperature profile ERA5 does not serve at all, comes from
+      the forecast archive.
+
+    The backfill is the honest residue rather than a fix: one variable still carries
+    reanalysis, and `met_source_note` on the returned frame records exactly that so no
+    downstream reader can lose it.
     """
     cache = (C.DATA / f"{cache_name}.parquet") if cache_name else None
     if cache and cache.exists():
@@ -231,10 +248,41 @@ def build_panel(
         return pd.DataFrame()
     print(f"[dataset] observations: {len(o):,} station-hours")
 
-    m = met.fetch_archive(cells, start, end)
-    if m.frame.empty:
-        print("[dataset] no meteorology returned")
-        return pd.DataFrame()
+    if met_source == "archived_forecast":
+        m = met.fetch_historical_forecast(cells, start, end)
+        if m.frame.empty:
+            print("[dataset] no archived-forecast meteorology returned")
+            return pd.DataFrame()
+        # The forecast archive serves no boundary layer height at all. Left alone, the
+        # column would be absent, indices.dispersion() would fall through to the
+        # inversion lid via np.fmin (which ignores NaN), and mixing depth would silently
+        # become a different quantity from the one every head was trained on. That is
+        # exactly the train/serve gap this codebase has been bitten by before, and it
+        # would be invisible: the panel would build, the numbers would look plausible,
+        # and the comparison would be invalid in a new way nobody was looking for.
+        #
+        # So the bulk PBL is backfilled from ERA5, deliberately and visibly. One
+        # variable still carries reanalysis. Saying which one is worth more than
+        # pretending the problem is solved.
+        era = met.fetch_archive(cells, start, end)
+        if not era.frame.empty and "boundary_layer_height" in era.frame.columns:
+            blh = era.frame[["cell_id", "time", "boundary_layer_height"]]
+            m.frame.drop(columns=["boundary_layer_height"], errors="ignore", inplace=True)
+            m.frame = m.frame.merge(blh, on=["cell_id", "time"], how="left")
+            note = ("meteorology from the archived forecast runs; boundary_layer_height "
+                    "alone backfilled from ERA5 reanalysis, because the forecast archive "
+                    "does not serve it")
+        else:
+            note = ("meteorology from the archived forecast runs; NO boundary layer "
+                    "height available from either source")
+        print(f"[dataset] {note}")
+    else:
+        m = met.fetch_archive(cells, start, end)
+        if m.frame.empty:
+            print("[dataset] no meteorology returned")
+            return pd.DataFrame()
+        note = "meteorology from ERA5 reanalysis: the weather as it actually turned out"
+
     mm = indices.enrich(m.frame).rename(columns={"cell_id": "station_id"})
     print(f"[dataset] meteorology: {len(mm):,} rows ({mm['inversion_method'].iloc[0]} path)")
 
@@ -261,6 +309,10 @@ def build_panel(
     panel = photolysis.add_features(panel)
     panel = add_calendar(panel)
     panel = panel.sort_values(["station_id", "time"]).reset_index(drop=True)
+    # Carried on the frame rather than only printed, so a result built from this panel
+    # can state which meteorology produced it without the caller having to remember.
+    panel.attrs["met_source"] = met_source
+    panel.attrs["met_source_note"] = note
     print(f"[dataset] panel: {len(panel):,} rows x {len(panel.columns)} columns")
 
     if cache:

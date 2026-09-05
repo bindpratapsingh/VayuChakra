@@ -92,7 +92,8 @@ def city_mean_observations(start: str, end: str, max_stations: int = 25,
 
 
 def hindcast(start: str, end: str, *, max_stations: int = 25,
-             with_chem: bool | None = None, model_dir=None) -> pd.DataFrame:
+             with_chem: bool | None = None, model_dir=None,
+             met_source: str = "era5") -> pd.DataFrame:
     """Run our model over a past window, at the Delhi city level.
 
     `with_chem=None` decides automatically from the CAMS coverage boundary rather than
@@ -115,8 +116,13 @@ def hindcast(start: str, end: str, *, max_stations: int = 25,
     if not usable:
         return pd.DataFrame()
 
+    # The cache name carries the met source. Without it the ERA5 panel and the
+    # archived-forecast panel would collide on one file, and the second run would
+    # silently score the first run's meteorology.
+    suffix = "" if met_source == "era5" else f"_{met_source}"
     panel = dataset.build_panel(usable, start, end, with_chem=with_chem,
-                                cache_name=f"hindcast_{start}_{end}")
+                                met_source=met_source,
+                                cache_name=f"hindcast_{start}_{end}{suffix}")
     if panel.empty:
         return pd.DataFrame()
 
@@ -149,8 +155,13 @@ def hindcast(start: str, end: str, *, max_stations: int = 25,
 
 
 def dss_head_to_head(start: str = "2021-10-06", end: str = "2022-02-28",
-                     model_dir=None) -> dict:
-    """Score VayuChakra, the MoES DSS and persistence on identical hours."""
+                     model_dir=None, met_source: str = "era5") -> dict:
+    """Score VayuChakra, the MoES DSS and persistence on identical hours.
+
+    `met_source="archived_forecast"` is the fair version of this comparison: our
+    hindcast is then driven by the forecast runs as they were issued rather than by
+    reanalysis, so it carries meteorological error the way an operational system does.
+    """
     if not dss.available():
         return {"available": False, "reason": "DSS workbook not found"}
 
@@ -163,7 +174,7 @@ def dss_head_to_head(start: str = "2021-10-06", end: str = "2022-02-28",
         return {"available": False,
                 "reason": "no observations with archive coverage for this window"}
 
-    ours = hindcast(start, end, model_dir=model_dir)
+    ours = hindcast(start, end, model_dir=model_dir, met_source=met_source)
 
     out = {"available": True,
            "window": {"from": start, "to": end},
@@ -172,8 +183,11 @@ def dss_head_to_head(start: str = "2021-10-06", end: str = "2022-02-28",
            "ground_truth": "Delhi city-mean hourly PM2.5 from CPCB stations",
            "citation": ("MoES/IITM WRF-Chem Decision Support System (JAMES). "
                         "Third-party output, cited not redistributed."),
+           "met_source": met_source,
            # The single most important caveat on this table, stated before the numbers
-           # rather than after them.
+           # rather than after them - and it is a DIFFERENT caveat depending on which
+           # meteorology drove the hindcast. Hard-coding the reanalysis wording would
+           # have kept claiming an advantage we had just removed.
            "not_like_for_like": (
                "The DSS forecasts were issued OPERATIONALLY: it had to predict the "
                "weather as well as the chemistry, days ahead. Our hindcast is driven by "
@@ -181,7 +195,16 @@ def dss_head_to_head(start: str = "2021-10-06", end: str = "2022-02-28",
                "material advantage and it is not a fair comparison of forecast skill. "
                "What this table supports is that the statistical layer maps meteorology "
                "to PM2.5 competitively; it does NOT show we forecast better than the "
-               "MoES DSS."),
+               "MoES DSS."
+               if met_source == "era5" else
+               "Our hindcast is driven by ARCHIVED FORECAST RUNS, not reanalysis, so it "
+               "carries meteorological error the way an operational system does. That "
+               "removes most of the advantage the ERA5 version had, but NOT all of it: "
+               "the archive holds the best available run for each hour, which is a short "
+               "lead time, while the DSS was scored 24 to 72 hours ahead. Boundary layer "
+               "height alone is still backfilled from ERA5, because the forecast archive "
+               "does not serve it. The residue is in our favour and is named here rather "
+               "than left for a reader to discover."),
            "our_models_trained_on": ("Feb 2025 - Aug 2026, so this window is genuinely "
                                      "out of sample in time."),
            "by_lead": []}
