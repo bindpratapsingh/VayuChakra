@@ -27,6 +27,8 @@ TWO MEASURED FACTS THAT SHAPE THIS MODULE
 from __future__ import annotations
 
 import json
+import time
+import threading
 import hashlib
 import csv
 import gzip
@@ -396,14 +398,49 @@ def _to_hourly(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ─── Live ────────────────────────────────────────────────────────────────────
-def fetch_latest(stations: list[Station], workers: int = 6) -> pd.DataFrame:
+#: Requests per minute we allow ourselves against the OpenAQ API. The free tier permits
+#: about 60. Pacing to just under it is FASTER than exceeding it, which is the part that
+#: is easy to get wrong: on a burst the server answers 429 and the client then waits
+#: 15, 30 and 45 seconds. One refused request costs more than a minute of politeness.
+OPENAQ_RPM = 55.0
+_throttle_lock = threading.Lock()
+_next_slot = [0.0]
+
+
+def _throttled() -> None:
+    """Block until this thread may issue its request. Shared across workers.
+
+    A token bucket would be more elegant; a minimum interval between request STARTS is
+    what actually matters to a fixed-window rate limiter, and it is four lines.
+    """
+    interval = 60.0 / OPENAQ_RPM
+    with _throttle_lock:
+        now = time.monotonic()
+        wait = max(0.0, _next_slot[0] - now)
+        _next_slot[0] = max(now, _next_slot[0]) + interval
+    if wait > 0:
+        time.sleep(wait)
+
+
+def fetch_latest(stations: list[Station], workers: int = 3) -> pd.DataFrame:
     """Most recent reading per station, for the live layer.
 
     Uses `/locations/{id}/latest`, which returns **every sensor at a location in one
-    response**. The obvious alternative — one request per sensor — is roughly 800
-    requests for the NCR network and reliably earns an HTTP 429 partway through,
-    leaving a partial picture that looks like a quiet day rather than a throttled one.
-    One request per location is about 130, which the rate limit tolerates.
+    response**. The obvious alternative, one request per sensor, is roughly 800 requests
+    for the NCR network and reliably earns an HTTP 429 partway through, leaving a partial
+    picture that looks like a quiet day rather than a throttled one. One request per
+    location is about 160.
+
+    **Paced, not just parallel.** Six workers with no pacing burst far past the free
+    tier's limit, and the recovery is brutal: three retries at 15, 30 and 45 seconds,
+    after which the request returns nothing. On a developer machine that mostly survived
+    and took 106 seconds; on a CI runner it exhausted the retry budget and the whole
+    live feed came back empty, silently falling through to the three-day-old archive.
+    The forecast then ran with a stale initial condition and said so, which was honest
+    and entirely avoidable.
+
+    So requests are paced to just under the limit and the worker count is cut. Staying
+    inside the window is faster than fighting it, and far more predictable.
 
     Uses the API rather than S3 because the archive lags by a day or more, which is
     useless for a "what is the air doing right now" panel.
@@ -420,6 +457,7 @@ def fetch_latest(stations: list[Station], workers: int = 6) -> pd.DataFrame:
                 lookup[int(sid)] = (st, param)
 
     def one(st: Station) -> list[dict]:
+        _throttled()
         payload = net.get_json(net.build_url(f"{API}/locations/{st.id}/latest", {"limit": 100}),
                                headers=_headers(), ttl=C.CACHE_TTL_OBSERVATION)
         got = []
