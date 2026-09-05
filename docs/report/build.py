@@ -22,6 +22,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 DOCUMENTS = [
     (HERE / "report.html", HERE.parent / "VayuChakra-Report.pdf"),
     (HERE / "briefing.html", HERE.parent / "VayuChakra-Jury-Briefing.pdf"),
+    (HERE / "primer.html", HERE.parent / "VayuChakra-Team-Primer.pdf"),
 ]
 
 # The footer is styled inline: Chromium renders these templates in an isolated context

@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VayuChakra Team Primer</title>
+<style>
+@page { size: A4; margin: 16mm 15mm 18mm; }
+
+:root {
+  --ink:      #16202b;
+  --ink-2:    #46545f;
+  --ink-3:    #6f7d89;
+  --brand:    #0f3540;
+  --brand-2:  #1d5f70;
+  --plain:    #0e6b46;
+  --plain-bg: #eaf3ee;
+  --tech:     #1d5f70;
+  --tech-bg:  #eef3f4;
+  --warn:     #8a5320;
+  --warn-bg:  #f7ead8;
+  --rule:     #c5d2d5;
+  --rule-2:   #dde6e8;
+  --serif:    "Times New Roman", Times, serif;
+  --sans:     Calibri, "Segoe UI", Candara, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; color: var(--ink); background: #fff; font: 11.2pt/1.58 var(--serif); }
+p { margin: 0 0 8pt; }
+h1, h2, h3, h4, .sans, table, .lbl, .gloss dt { font-family: var(--sans); }
+
+h1 { font-size: 29pt; font-weight: 700; letter-spacing: -0.5pt; margin: 0 0 5pt; line-height: 1.06; }
+h2 { font-size: 16pt; font-weight: 700; color: var(--brand); margin: 0 0 4pt; letter-spacing: -0.2pt; }
+.h2rule { height: 2pt; background: var(--brand); margin: 0 0 11pt; }
+h2 .n { color: var(--ink-3); font-weight: 600; margin-right: 8pt; }
+h3 { font-size: 12.6pt; font-weight: 700; margin: 15pt 0 6pt; color: var(--brand-2); }
+section { page-break-before: always; }
+section.first { page-break-before: avoid; }
+h2, h3, .h2rule { page-break-after: avoid; }
+table, figure, .pair, .box, .gloss dl > div { page-break-inside: avoid; }
+
+/* cover */
+.cover { height: 250mm; display: flex; flex-direction: column; }
+.cover .bar { height: 6pt; background: var(--brand); margin-bottom: 16pt; }
+.kicker { font-family: var(--sans); font-size: 10pt; font-weight: 600; letter-spacing: 1.2pt;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 22pt; }
+.cover .sub { font-family: var(--sans); font-size: 14pt; color: var(--brand-2); font-weight: 600; margin: 4pt 0 18pt; }
+.cover .thesis { font-size: 12.6pt; line-height: 1.52; max-width: 142mm; color: var(--ink-2); }
+.cover .spacer { flex: 1 1 auto; }
+
+/* the two tracks */
+.pair { margin: 0 0 13pt; }
+.track { padding: 9pt 12pt; border-left: 3.5pt solid; }
+.track .lbl { font-size: 8.2pt; font-weight: 700; letter-spacing: 1pt; text-transform: uppercase;
+  margin-bottom: 4pt; }
+.track p:last-child { margin-bottom: 0; }
+.plain { border-left-color: var(--plain); background: var(--plain-bg); }
+.plain .lbl { color: var(--plain); }
+.tech { border-left-color: var(--tech); background: var(--tech-bg); margin-top: 5pt; }
+.tech .lbl { color: var(--tech); }
+.tech, .tech p { font-size: 10.4pt; }
+
+.box { border: 0.75pt solid var(--rule); border-top: 2.5pt solid var(--warn);
+  background: #fdfaf5; padding: 9pt 12pt; margin: 11pt 0; }
+.box h4 { margin: 0 0 5pt; color: var(--warn); font-size: 10.6pt; }
+.box p { margin: 0 0 5pt; font-size: 10.6pt; }
+.box p:last-child { margin: 0; }
+
+table { border-collapse: collapse; width: 100%; font-size: 9.6pt; margin: 0 0 5pt; }
+caption { caption-side: bottom; text-align: left; font-family: var(--sans); font-size: 8.4pt;
+  color: var(--ink-3); padding-top: 4pt; line-height: 1.4; }
+th, td { text-align: left; padding: 4.6pt 6pt; border-bottom: 0.5pt solid var(--rule-2); vertical-align: top; }
+thead th { background: var(--tech-bg); color: var(--brand); font-weight: 700; font-size: 8.4pt;
+  text-transform: uppercase; letter-spacing: 0.4pt; border-bottom: 1pt solid var(--rule); }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 1pt solid var(--rule); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody th { font-weight: 600; }
+.zebra tbody tr:nth-child(even) { background: #f7fafa; }
+.good { color: var(--plain); font-weight: 600; }
+
+figure { margin: 11pt 0 12pt; }
+figure svg { display: block; width: 100%; height: auto; }
+figcaption { font-family: var(--sans); font-size: 8.4pt; color: var(--ink-3); margin-top: 5pt; line-height: 1.4; }
+
+ul, ol { margin: 0 0 9pt; padding-left: 16pt; }
+li { margin-bottom: 4.5pt; }
+.mono { font-family: Consolas, "Courier New", monospace; font-size: 9pt; background: var(--tech-bg); padding: 0.5pt 3pt; }
+
+/* glossary */
+.gloss dl { margin: 0; }
+.gloss dl > div { display: grid; grid-template-columns: 46mm 1fr; gap: 4pt 10pt;
+  padding: 6pt 0; border-bottom: 0.5pt solid var(--rule-2); }
+.gloss dt { font-weight: 700; font-size: 10pt; color: var(--brand-2); }
+.gloss dd { margin: 0; font-size: 10.2pt; }
+.gloss dd em { color: var(--ink-3); font-style: italic; }
+
+.five { counter-reset: f; }
+.five > div { display: grid; grid-template-columns: 13mm 1fr; gap: 10pt; padding: 8pt 0;
+  border-bottom: 0.5pt solid var(--rule-2); }
+.five > div:last-child { border-bottom: 0; }
+.five .num { font-family: var(--sans); font-size: 20pt; font-weight: 700; color: var(--brand);
+  line-height: 0.95; }
+.five b { font-family: var(--sans); font-size: 11pt; display: block; margin-bottom: 2pt; }
+.five p { margin: 0; font-size: 10.6pt; }
+</style>
+</head>
+<body>
+
+<!-- ══ COVER ══ -->
+<section class="first">
+<div class="cover">
+  <div class="bar"></div>
+  <div class="kicker">Team primer &nbsp;·&nbsp; read this before the jury round</div>
+  <h1>What we are building,<br>and why</h1>
+  <div class="sub">VayuChakra &nbsp;·&nbsp; MoES / NCMRWF &nbsp;·&nbsp; Delhi NCR</div>
+
+  <p class="thesis">
+    This document assumes you know nothing about air quality modelling. Every idea is
+    explained twice: once in ordinary language, and once in the technical form you would
+    need to defend it. Read the green boxes to understand the project. Read the blue
+    boxes when you want the detail underneath.
+  </p>
+
+  <div style="margin-top:20pt">
+    <div class="track plain" style="max-width:150mm">
+      <div class="lbl">In plain words</div>
+      <p>Delhi's winter smog is so thick it blocks sunlight. Less sunlight means the
+      ground stays cold. Cold ground means the dirty air cannot rise and escape. So the
+      smog gets thicker, which blocks more sunlight. It feeds itself.</p>
+      <p style="margin-top:5pt">Almost every air quality forecast ignores that circle.
+      We built the circle.</p>
+    </div>
+    <div class="track tech" style="max-width:150mm">
+      <div class="lbl">The technical version</div>
+      <p>Aerosol radiative forcing suppresses the surface sensible heat flux, which
+      reduces convective boundary layer growth and the turbulent momentum transport that
+      drives surface wind. The resulting reduction in ventilation raises surface
+      concentration, which raises aerosol optical depth. Because the final term feeds the
+      first, the system must be solved rather than evaluated.</p>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div style="border-top:1pt solid var(--rule); padding-top:10pt; font-family:var(--sans);
+              font-size:9.4pt; color:var(--ink-2)">
+    <b>How to read this:</b> sections 1 to 3 are the "what and why", and everyone should
+    read them. Sections 4 to 7 are how it works. Section 8 is what is not finished.
+    Section 9 is a glossary: if a word confuses you anywhere in this document, it is
+    defined there.
+  </div>
+</div>
+</section>
+
+<!-- ══ 1 ══ -->
+<section>
+<h2><span class="n">1</span>The problem we were given</h2><div class="h2rule"></div>
+
+<h3>1.1 What the Ministry actually asked for</h3>
+<p>
+  The Ministry of Earth Sciences ran a problem statement called <i>Air Pollution and
+  Weather Coupled Forecasting System, Delhi NCR focus</i>. Stripped of jargon, it asks
+  for four things.
+</p>
+<table class="zebra">
+  <thead><tr><th style="width:30%">They asked for</th><th>Which means</th></tr></thead>
+  <tbody>
+    <tr><th>A forecast that links weather and pollution <b>in both directions</b></th>
+        <td>Not just "wind blows pollution away", but also "pollution changes the weather". This is the hard half and the whole point.</td></tr>
+    <tr><th>Special attention to <b>temperature inversions</b></th>
+        <td>The invisible lid that forms over Delhi on winter nights and traps everything underneath it.</td></tr>
+    <tr><th>Handling of <b>stubble burning smoke</b></th>
+        <td>Farmers in Punjab and Haryana burn crop residue. That smoke travels 200 to 400 km and arrives over Delhi. The forecast has to know when it will actually land.</td></tr>
+    <tr><th>A <b>dashboard</b> with a 72-hour outlook</th>
+        <td>Three days ahead, at high enough resolution to be useful inside the city, that a non-specialist can operate.</td></tr>
+  </tbody>
+</table>
+
+<h3>1.2 Why the "both directions" part is the whole challenge</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>Think of a pot with a lid. The city is the pot. Cars, factories and fires keep
+    adding smoke. On a normal day the lid is high, so the smoke spreads through a lot of
+    air and stays thin. On a winter night the lid drops very low, so the same smoke is
+    packed into a tenth as much air. Nothing about the smoke changed. The pot got
+    smaller.</p>
+    <p>Now the part that most forecasts miss. That thick smoke blocks the sun. The ground
+    does not warm up. When the ground does not warm up, the lid stays low. So tomorrow
+    the smoke is packed into a small pot again, and it gets thicker still.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>The mixed layer depth sets the dilution volume for surface emissions. Nocturnal
+    radiative cooling produces a surface based temperature inversion, collapsing that
+    depth from roughly 2,000 m to under 200 m and raising concentration by an order of
+    magnitude at constant emission.</p>
+    <p>The feedback runs through the radiation budget: column aerosol attenuates incoming
+    shortwave, the reduced surface energy budget lowers the sensible heat flux, and
+    encroachment growth of the convective boundary layer weakens. Published Delhi values
+    put the shortwave reduction at 5 to 35 percent and the boundary layer suppression at
+    5 to 35 percent under haze.</p>
+  </div>
+</div>
+
+<div class="box">
+  <h4>The sentence to remember</h4>
+  <p>
+    <b>Weather decides how much air the pollution gets to spread into, and the pollution
+    decides how much air the weather will give it tomorrow.</b> That circle is called a
+    feedback loop, and closing it is what makes this project different from a normal AQI
+    app.
+  </p>
+</div>
+</section>
+
+<!-- ══ 2 ══ -->
+<section>
+<h2><span class="n">2</span>What we built, in one page</h2><div class="h2rule"></div>
+
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>We built a website that predicts Delhi's air quality for the next three days,
+    across about a thousand small squares on the map, and shows you <i>why</i> it thinks
+    so rather than just giving you a number.</p>
+  </div>
+</div>
+
+<h3>2.1 The journey of one forecast</h3>
+<p>Here is what happens, in order, every six hours.</p>
+<table class="zebra">
+  <thead><tr><th style="width:6%">Step</th><th style="width:28%">What happens</th><th>In plain words</th></tr></thead>
+  <tbody>
+    <tr><th>1</th><td><b>Collect</b></td><td>We download four things: readings from 159 real air quality monitors around Delhi, a weather forecast, a global pollution model's output, and satellite photos of where fires are burning.</td></tr>
+    <tr><th>2</th><td><b>Compute the physics</b></td><td>From the weather we work out things the weather forecast does not directly tell us: is there a lid tonight, how high is it, how much air is available for mixing, how much sunlight is getting through the haze.</td></tr>
+    <tr><th>3</th><td><b>Track the smoke</b></td><td>Every fire the satellite saw becomes a puff of smoke that we push along on the forecast wind, hour by hour, to see if and when it arrives over Delhi.</td></tr>
+    <tr><th>4</th><td><b>Ask the AI</b></td><td>Twelve trained models take all of the above and predict four pollutants at three different times ahead.</td></tr>
+    <tr><th>5</th><td><b>Close the loop</b></td><td>We take that prediction and run the feedback circle: this much smoke blocks this much sun, which lowers the lid this much, which raises the smoke this much. Repeat until the answer stops changing.</td></tr>
+    <tr><th>6</th><td><b>Publish</b></td><td>Convert to the official Indian AQI number, work out the chance of crossing each emergency threshold, and put it on the website.</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 What the website shows</h3>
+<table>
+  <thead><tr><th style="width:34%">Page</th><th>The question it answers</th></tr></thead>
+  <tbody>
+    <tr><th>What this is</th><td>What the project is and how it meets the brief.</td></tr>
+    <tr><th>Where the air comes from</th><td>The map, and where today's fires are burning.</td></tr>
+    <tr><th>The lid over the city</th><td>Is there an inversion tonight, how low, and how long.</td></tr>
+    <tr><th>The loop we close</th><td>The feedback circle, with each step's live number.</td></tr>
+    <tr><th>Smoke from the fields</th><td>Whether the stubble smoke actually reaches us.</td></tr>
+    <tr><th>The 72-hour outlook</th><td>The actual forecast: AQI per square, and emergency risk.</td></tr>
+    <tr><th>Does it actually work</th><td>Every accuracy number, including the ones that went against us.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ══ 3 ══ -->
+<section>
+<h2><span class="n">3</span>The AI: what it is and what it does</h2><div class="h2rule"></div>
+<p>
+  This is the section most people want and most people find confusing, so it goes slowly.
+</p>
+
+<h3>3.1 How many models, and what is each one for?</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>We have <b>twelve</b> separate prediction models, plus five extra ones for
+    measuring uncertainty. Seventeen in total.</p>
+    <p>Why twelve? Because we predict <b>four different pollutants</b> at <b>three
+    different times ahead</b>. Four times three is twelve. Each model does exactly one
+    job: for example, "predict PM2.5, 24 hours from now". A different model predicts
+    ozone 72 hours from now. They do not share anything.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>Twelve independent gradient boosted regression models, one per (target, horizon)
+    pair over PM2.5, PM10, NO<sub>2</sub> and O<sub>3</sub> at 24, 48 and 72 hours, plus
+    five quantile heads at the 10th, 25th, 50th, 75th and 90th percentiles for PM2.5 at
+    24 hours. Separate models rather than a multi-output model because the targets have
+    materially different drivers and seasonality.</p>
+  </div>
+</div>
+
+<table class="zebra">
+  <thead><tr><th>Pollutant</th><th>What it is, in plain words</th><th class="n">24 h</th><th class="n">48 h</th><th class="n">72 h</th></tr></thead>
+  <tbody>
+    <tr><th>PM2.5</th><td>Tiny soot particles. The dangerous one. Gets into your lungs and bloodstream.</td><td class="n">model 1</td><td class="n">model 2</td><td class="n">model 3</td></tr>
+    <tr><th>PM10</th><td>Bigger dust particles. Road dust, construction, desert dust.</td><td class="n">model 4</td><td class="n">model 5</td><td class="n">model 6</td></tr>
+    <tr><th>NO₂</th><td>A gas from burning fuel. Mostly vehicles.</td><td class="n">model 7</td><td class="n">model 8</td><td class="n">model 9</td></tr>
+    <tr><th>O₃ (ozone)</th><td>Not emitted directly. It is <i>made</i> in the air by sunlight acting on pollution. Peaks on bright afternoons.</td><td class="n">model 10</td><td class="n">model 11</td><td class="n">model 12</td></tr>
+  </tbody>
+  <caption>Ozone is the odd one out and it matters: because sunlight makes it, anything that blocks sunlight (like smog) reduces it. That is why our haze calculations affect ozone in the opposite direction to the others.</caption>
+</table>
+
+<h3>3.2 What actually goes into a model, and what comes out</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>Think of one model as a very experienced clerk. Every hour you hand the clerk a
+    form with <b>142 numbers</b> on it: today's pollution readings, yesterday's, the
+    temperature, the wind, whether there is a lid, how much sunlight is getting through,
+    what month it is, whether it is Diwali. The clerk hands back <b>one number</b>: what
+    PM2.5 will be 24 hours from now.</p>
+    <p>The clerk learned the job by being shown <b>571,037 real examples</b> from the past
+    six years: here is what the form looked like, and here is what actually happened a day
+    later. Do that half a million times and the clerk gets good at it.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>142 features per row. The supervised frame is built by shifting the meteorological
+    columns backward by the horizon, so at time <span class="mono">t</span> the model sees
+    forecast meteorology valid for <span class="mono">t+h</span>, exactly as an
+    operational system would. Pollution columns are never shifted backward, which
+    prevents target leakage.</p>
+    <p>Training set 571,037 station hours over 44 CPCB stations, Oct 2020 to Aug 2026,
+    with 1 Nov 2025 to 28 Feb 2026 withheld entirely.</p>
+  </div>
+</div>
+
+<h3>3.3 What kind of AI is it? (Not a chatbot, not a neural network)</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>It is a <b>decision tree</b> method. A decision tree is a flowchart of yes or no
+    questions: "is the wind under 2 m/s? yes. Is there a lid? yes. Is it December? yes.
+    Then predict high pollution."</p>
+    <p>One tree is weak. So the method builds hundreds of them in a row, where each new
+    tree specifically studies the mistakes the previous trees made and tries to correct
+    them. That is what "gradient boosting" means: a committee of simple flowcharts, each
+    one patching the last one's errors.</p>
+    <p>We did not use a neural network. For table shaped data of this size, boosted trees
+    usually win, they cope with missing readings, and crucially <b>we can see which
+    inputs they relied on</b>, which is how we caught a real bug once.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>XGBoost, <span class="mono">reg:squarederror</span>, max_depth 6, eta 0.04,
+    subsample 0.8, colsample_bytree 0.8, min_child_weight 8, reg_lambda 1.5, up to 700
+    rounds with early stopping at 40. Depth is deliberately shallow: deeper trees mainly
+    memorised individual episodes rather than learning regime behaviour.</p>
+  </div>
+</div>
+
+<h3>3.4 What did it actually learn?</h3>
+<p>
+  We can rank which inputs the model leaned on. For PM2.5 at 24 hours, in order: the day
+  of the year, whether it is winter, the day of year again in a cyclical form, whether it
+  is monsoon, the reading one hour ago, the average over the last 72 hours, and then
+  <b>the ventilation coefficient</b>.
+</p>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">Why that last one matters to us</div>
+    <p>The ventilation coefficient is not something the weather service gives you. It is
+    something <b>we calculate</b>: how tall the mixing layer is, multiplied by how fast
+    the wind is blowing through it. In other words, how much air per second is available
+    to carry pollution away.</p>
+    <p>The model ranked our calculated number above most of the raw weather data it was
+    made from. That is the physics earning its place, and it is a good thing to be able to
+    say out loud.</p>
+  </div>
+</div>
+</section>
+
+<!-- ══ 4 ══ -->
+<section>
+<h2><span class="n">4</span>The physics: the loop, in detail</h2><div class="h2rule"></div>
+
+<figure>
+  <svg viewBox="0 0 720 200" font-family="Calibri, sans-serif">
+    <defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f3540"/></marker></defs>
+    <g font-size="10.5">
+      <rect x="10" y="16" width="126" height="44" rx="3" fill="#0f3540"/>
+      <text x="73" y="35" text-anchor="middle" font-weight="700" fill="#fff">Smoke in the air</text>
+      <text x="73" y="50" text-anchor="middle" font-size="9.2" fill="#c5d9de">PM2.5 and dust</text>
+      <rect x="166" y="16" width="126" height="44" rx="3" fill="#eef3f4" stroke="#0f3540"/>
+      <text x="229" y="35" text-anchor="middle" font-weight="700" fill="#0f3540">Blocks sunlight</text>
+      <text x="229" y="50" text-anchor="middle" font-size="9.2" fill="#1d5f70">13 % less reaches us</text>
+      <rect x="322" y="16" width="126" height="44" rx="3" fill="#eef3f4" stroke="#0f3540"/>
+      <text x="385" y="35" text-anchor="middle" font-weight="700" fill="#0f3540">Ground stays cold</text>
+      <text x="385" y="50" text-anchor="middle" font-size="9.2" fill="#1d5f70">0.7 °C cooler</text>
+      <rect x="478" y="16" width="126" height="44" rx="3" fill="#eef3f4" stroke="#0f3540"/>
+      <text x="541" y="35" text-anchor="middle" font-weight="700" fill="#0f3540">Lid stays low</text>
+      <text x="541" y="50" text-anchor="middle" font-size="9.2" fill="#1d5f70">7 % lower</text>
+      <rect x="478" y="112" width="126" height="44" rx="3" fill="#eef3f4" stroke="#0f3540"/>
+      <text x="541" y="131" text-anchor="middle" font-weight="700" fill="#0f3540">Wind drops</text>
+      <text x="541" y="146" text-anchor="middle" font-size="9.2" fill="#1d5f70">1.5 % slower</text>
+      <rect x="322" y="112" width="126" height="44" rx="3" fill="#eef3f4" stroke="#0f3540"/>
+      <text x="385" y="131" text-anchor="middle" font-weight="700" fill="#0f3540">Less air to mix in</text>
+      <rect x="166" y="112" width="126" height="44" rx="3" fill="#0f3540"/>
+      <text x="229" y="131" text-anchor="middle" font-weight="700" fill="#fff">Smoke thickens</text>
+      <text x="229" y="146" text-anchor="middle" font-size="9.2" fill="#c5d9de">+7 %</text>
+    </g>
+    <g stroke="#0f3540" stroke-width="1.5" fill="none" marker-end="url(#m)">
+      <path d="M136 38 H162"/><path d="M292 38 H318"/><path d="M448 38 H474"/>
+      <path d="M541 60 V108"/>
+      <path d="M478 134 H452"/><path d="M322 134 H296"/>
+    </g>
+    <path d="M166 134 H100 V66" stroke="#0f3540" stroke-width="1.5" fill="none"
+          stroke-dasharray="4 3" marker-end="url(#m)"/>
+    <text x="106" y="92" font-size="9.4" font-style="italic" fill="#0f3540">and back to the start</text>
+  </svg>
+  <figcaption>Figure 1. Percentages are real measured values from the system running now, during hazy daylight hours.</figcaption>
+</figure>
+
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">Why this is hard, and why it is called "solving"</div>
+    <p>Look at the dashed arrow. The last box feeds back into the first one. So you cannot
+    just calculate down the chain once and stop, because the answer you get at the end
+    changes the number you started with.</p>
+    <p>What we do instead is go round the circle repeatedly. Calculate, feed the answer
+    back in, calculate again. After about five laps the number stops changing, and that
+    settled value is the answer. That is what "solving" means here, as opposed to just
+    "calculating".</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>Damped fixed point iteration with relaxation factor 0.5. Every response is clipped
+    to a physically bounded range, so divergence is impossible by construction. Any cell
+    that fails to converge within the iteration budget falls back to the uncoupled value
+    and is counted in the diagnostics. Current run: 5 iterations, converged, zero
+    fallbacks.</p>
+  </div>
+</div>
+
+<h3>4.1 How we know these numbers are not invented</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>Scientists have measured these effects over Delhi and published the results. We
+    compare every number our system produces against those published ranges. If any of
+    them lands outside, the software build <b>fails</b>. It is a test, not a report.</p>
+    <p>Right now all eight land inside. And we never showed the system those published
+    numbers, so it is not copying them.</p>
+  </div>
+</div>
+<table class="zebra">
+  <thead><tr><th>What changes under haze</th><th class="n">Ours</th><th class="n">Published range</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><th>Sunlight reaching the ground</th><td class="n">13.2 % less</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Daytime temperature</th><td class="n">0.72 °C cooler</td><td class="n">0.1 to 2.5 °C</td><td class="good">inside</td></tr>
+    <tr><th>Height of the mixing layer</th><td class="n">6.9 % lower</td><td class="n">5 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Wind speed</th><td class="n">1.5 % slower</td><td class="n">0.5 to 6 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting PM2.5</th><td class="n">7.2 % higher</td><td class="n">2 to 30 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting PM10</th><td class="n">5.8 % higher</td><td class="n">1 to 25 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting NO₂</th><td class="n">16.3 % higher</td><td class="n">2 to 35 %</td><td class="good">inside</td></tr>
+    <tr><th>Resulting ozone</th><td class="n">slightly lower</td><td class="n">must go down</td><td class="good">correct direction</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ══ 5 ══ -->
+<section>
+<h2><span class="n">5</span>The smoke from the fields</h2><div class="h2rule"></div>
+
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>Satellites photograph the earth several times a day and can spot fires by their
+    heat. Every October and November, thousands of them light up across Punjab and
+    Haryana as farmers clear crop stubble.</p>
+    <p>We take each fire the satellite saw and turn it into an imaginary puff of smoke. We
+    then push each puff along on the forecast wind, hour by hour, letting it spread out as
+    it travels, and see where it ends up.</p>
+    <p><b>The important part:</b> arriving over Delhi is not the same as being breathed in
+    Delhi. If the smoke is floating above the lid, it passes over the city and nobody at
+    ground level notices. It only affects people when it gets mixed down to the ground.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>Lagrangian puff dispersion. Emission mass is derived from fire radiative power per
+    detection, advected on the forecast wind field, with Gaussian horizontal spread as a
+    function of travel time and stability class. Surface coupling is decided by the
+    relationship between puff height and the diagnosed mixing depth.</p>
+  </div>
+</div>
+
+<div class="box">
+  <h4>Something we recently discovered we were doing wrong</h4>
+  <p>
+    We used to decide "does this smoke reach the ground" with a simple height comparison:
+    if the lid is above the smoke, it arrives; otherwise it does not. That is a switch,
+    and the real atmosphere does not have a switch.
+  </p>
+  <p>
+    What really happens is that overnight the smoke sits in a layer above the city,
+    completely cut off from the ground. Then after sunrise the ground warms, the mixing
+    layer grows upward, and it gradually eats into that smoke layer, pulling it down over
+    about two to three hours. That is why Delhi's pollution has a sharp <b>morning peak
+    between 7 and 10 am</b> that traffic alone cannot explain.
+  </p>
+  <p>
+    We have now built a two-layer version that reproduces that morning peak from a proper
+    mass budget. It is written and tested but not yet switched on by default, because we
+    want to score it against the Ministry's own data first. Promoting it because it is
+    newer would be the wrong reason.
+  </p>
+</div>
+</section>
+
+<!-- ══ 6 ══ -->
+<section>
+<h2><span class="n">6</span>How we know it works</h2><div class="h2rule"></div>
+
+<h3>6.1 The baseline that matters</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>Any forecast has to beat the laziest possible forecast, which is <b>"tomorrow will
+    be the same as today"</b>. That is called persistence, and it is embarrassingly hard
+    to beat, because air pollution really is quite similar from one day to the next.</p>
+    <p>If you cannot beat persistence, your model is worthless no matter how sophisticated
+    it looks. All twelve of ours beat it, by between 15 and 29 percent.</p>
+  </div>
+</div>
+
+<h3>6.2 The four tests, and what each one rules out</h3>
+<table class="zebra">
+  <thead><tr><th style="width:26%">Test</th><th>What it proves, in plain words</th><th class="n">Result</th></tr></thead>
+  <tbody>
+    <tr><th>Hide a whole winter</th>
+        <td>We deleted four months of winter from the training data, trained the models without ever seeing it, then asked them to predict it. This rules out "it only works because it memorised last winter".</td>
+        <td class="n good">12 of 12 beat persistence</td></tr>
+    <tr><th>Hide a whole station</th>
+        <td>We deleted one monitoring station completely, then asked the model to predict that exact location. This is the real test, because we forecast 1,120 map squares and only about 40 have a monitor in them.</td>
+        <td class="n good">10 of 10 improved, +31.6 %</td></tr>
+    <tr><th>Ask an impossible question</th>
+        <td>"What would ozone do if the smog halved?" That has never happened in the data, so a pure pattern matcher cannot answer. Ours says +12.8 %; published Delhi science says +25 %. Same direction, right ballpark, and we never showed it that number.</td>
+        <td class="n good">same sign, within 2×</td></tr>
+    <tr><th>Check the honesty of "maybe"</th>
+        <td>When the system says "80 percent confident", is it right 80 percent of the time? Measured: 75.6 percent. Slightly cautious, which is the safe direction to be wrong in.</td>
+        <td class="n good">well calibrated</td></tr>
+  </tbody>
+</table>
+
+<h3>6.3 The result that went against us, which we report anyway</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>We tested whether the feedback loop, the thing the whole project is named after,
+    actually makes the forecast more accurate. <b>It does not.</b> Overall it is 0.11
+    percent worse.</p>
+    <p>But split it up and it gets interesting: on hazy days it is 0.35 percent
+    <i>better</i>, and on clean days it is slightly worse. In other words, it helps exactly
+    where the physics says it should and does nothing where the physics says it should
+    not. That is what a real but weak effect looks like.</p>
+    <p>We report this openly. A system that only shows you its wins has not been tested,
+    it has been advertised. And what the loop genuinely buys us is not accuracy: it is the
+    ability to answer "what if" questions, and to explain <i>why</i> a number is high.</p>
+  </div>
+</div>
+</section>
+
+<!-- ══ 7 ══ -->
+<section>
+<h2><span class="n">7</span>What is not finished</h2><div class="h2rule"></div>
+
+<h3>7.1 We do not run a full chemistry model, and cannot</h3>
+<div class="pair">
+  <div class="track plain">
+    <div class="lbl">In plain words</div>
+    <p>There is a well known scientific program called WRF-Chem that simulates weather and
+    chemical reactions together, properly, from first principles. The brief mentions it.
+    We do not run it, and it is not because we did not try.</p>
+    <p>We measured what it needs. Just <i>compiling</i> the program takes up to four hours
+    on the free computers we have, out of a six hour limit. Then actually running a
+    three day forecast takes twelve to eighteen hours. And it needs ten to twelve
+    gigabytes of memory when only sixteen are available with no safety margin. It is a
+    national research centre's programme, with a cluster behind it.</p>
+    <p>What we do instead is use the output of a model like that which is <b>already
+    running</b>: the European CAMS system, which does have online chemistry, and we add our
+    own physics on top.</p>
+  </div>
+  <div class="track tech">
+    <div class="lbl">The technical version</div>
+    <p>WRF-Chem with MOZART gas phase and MOSAIC aerosol on a 42 &times; 33 &times; 35 grid
+    at 10 km requires 4,320 integration steps for 72 hours. Benchmarked at 12 to 18 hours
+    wall clock on 4 cores, with peak RSS of 10 to 12 GB driven by KPP solver
+    intermediates, and no swap on a CI runner. CMAQ and CAMx fail on ephemeral disk during
+    meteorological ingest before the model starts.</p>
+  </div>
+</div>
+
+<h3>7.2 The rest of the list</h3>
+<table class="zebra">
+  <thead><tr><th style="width:30%">Not done</th><th>What it means and why it matters</th></tr></thead>
+  <tbody>
+    <tr><th>Chemistry in one layer only</th><td>We treat the air over each square as one well mixed box. The real atmosphere has structure with height. We track that structure and draw it, but the chemistry does not use it yet. This is our biggest simplification.</td></tr>
+    <tr><th>No hydrocarbon chemistry</th><td>Ozone formation depends on two families of chemicals. We model the sunlight half properly and do not model the hydrocarbon half at all, because nobody measures hydrocarbons here.</td></tr>
+    <tr><th>Observations are not assimilated</th><td>We use the monitor readings to train and to set the starting point, but not in the formal way weather centres blend observations into a model state.</td></tr>
+    <tr><th>Two-layer smoke model not switched on</th><td>Built and tested, waiting to be scored against the Ministry's data before we promote it.</td></tr>
+  </tbody>
+</table>
+
+<div class="box">
+  <h4>How to talk about all this</h4>
+  <p>
+    Do not be defensive about any of it. Every one of these is a known, named, measured
+    limitation with a reason. Saying "we measured what WRF-Chem needs and it does not fit,
+    so we consume an operational coupled model instead" is a much stronger answer than
+    hoping nobody asks.
+  </p>
+</div>
+</section>
+
+<!-- ══ 8 ══ -->
+<section>
+<h2><span class="n">8</span>If you remember only five things</h2><div class="h2rule"></div>
+
+<div class="five">
+  <div><div class="num">1</div><div>
+    <b>Pollution changes the weather, not just the other way round.</b>
+    <p>Smog blocks sunlight, the ground stays cold, the lid stays low, and the smog gets
+    worse. Closing that circle is what the brief asked for and what we built.</p>
+  </div></div>
+  <div><div class="num">2</div><div>
+    <b>Twelve AI models. Four pollutants, three time horizons each.</b>
+    <p>Each takes 142 numbers about the atmosphere and returns one prediction. They learned
+    from 571,037 real hours of measurements from 44 stations.</p>
+  </div></div>
+  <div><div class="num">3</div><div>
+    <b>The AI does not invent the physics. We compute it and feed it in.</b>
+    <p>The lid height, the mixing depth, the sunlight getting through the haze: we
+    calculate those and hand them to the model as inputs. Then we apply physics again to
+    its output.</p>
+  </div></div>
+  <div><div class="num">4</div><div>
+    <b>Everything is checked against published science we never trained on.</b>
+    <p>Eight out of eight of our feedback numbers land inside ranges measured by other
+    scientists over Delhi. If one falls outside, the build fails.</p>
+  </div></div>
+  <div><div class="num">5</div><div>
+    <b>We report what did not work.</b>
+    <p>The feedback loop does not improve accuracy overall. We say so, on the website and
+    in every document. That is why the numbers that <i>are</i> good can be believed.</p>
+  </div></div>
+</div>
+
+<div class="box" style="margin-top:16pt">
+  <h4>If someone asks you a question you cannot answer</h4>
+  <p>
+    Say "I do not know that part in detail, but I can tell you where it is written down."
+    Every number in this project comes from a file in the repository, and the full
+    technical report explains each one. Guessing in front of a jury is far worse than
+    saying you will check.
+  </p>
+</div>
+</section>
+
+<!-- ══ 9 ══ -->
+<section>
+<h2><span class="n">9</span>Glossary</h2><div class="h2rule"></div>
+<p>Every term used in this document or on the dashboard, in plain words.</p>
+
+<div class="gloss"><dl>
+  <div><dt>AQI</dt><dd>Air Quality Index. A single 0 to 500 number combining several pollutants, so the public gets one figure instead of six. India has its own official formula (CPCB) which we follow exactly. <em>0 to 50 is Good, above 400 is Severe.</em></dd></div>
+  <div><dt>PM2.5 / PM10</dt><dd>Particulate matter under 2.5 and 10 micrometres across. PM2.5 is the dangerous one because it reaches deep into the lungs. <em>The number is the size, not the amount.</em></dd></div>
+  <div><dt>Ozone (O₃)</dt><dd>A gas that is not emitted by anything. Sunlight acts on other pollution and creates it in the air. High on bright afternoons, near zero at night.</dd></div>
+  <div><dt>Temperature inversion</dt><dd>Normally air gets colder as you go up. Sometimes it gets warmer instead, and that warm layer acts as a lid: nothing below can rise through it. <em>This is why Delhi's winter nights are so bad.</em></dd></div>
+  <div><dt>Mixing depth / boundary layer</dt><dd>How tall the layer of air is that pollution can actually spread into. Two kilometres on a sunny afternoon, sometimes under 100 metres before dawn.</dd></div>
+  <div><dt>Ventilation coefficient</dt><dd>Mixing depth multiplied by wind speed. How much air per second is available to carry pollution away. <em>Our own calculated number, and one of the model's most useful inputs.</em></dd></div>
+  <div><dt>Aerosol</dt><dd>Any tiny particle suspended in air. Smoke, dust, soot. <em>Same thing as particulate matter, different word.</em></dd></div>
+  <div><dt>Aerosol optical depth (AOD)</dt><dd>A measure of how much the air blocks light, looking straight up. High AOD means thick haze.</dd></div>
+  <div><dt>Photolysis</dt><dd>A chemical reaction driven by light. Sunlight splitting a molecule apart. <em>This is how ozone gets made, which is why haze reduces ozone.</em></dd></div>
+  <div><dt>Feedback loop / coupling</dt><dd>When an effect circles back and changes its own cause. Pollution reduces sunlight, which increases pollution.</dd></div>
+  <div><dt>Plume</dt><dd>A trail of smoke travelling away from its source.</dd></div>
+  <div><dt>Fumigation</dt><dd>When smoke that has been sitting above the city overnight gets mixed down to ground level in the morning. <em>The cause of Delhi's 7 to 10 am pollution spike.</em></dd></div>
+  <div><dt>Persistence</dt><dd>The laziest forecast: "tomorrow equals today". The baseline every real forecast must beat.</dd></div>
+  <div><dt>Held out / hold out</dt><dd>Data deliberately hidden from the model during training, kept back to test it honestly afterwards.</dd></div>
+  <div><dt>RMSE</dt><dd>Root mean square error. The average size of the model's mistakes. <em>Lower is better.</em></dd></div>
+  <div><dt>Gradient boosting</dt><dd>The AI method we use. Hundreds of simple yes/no flowcharts in a row, each correcting the mistakes of the ones before it.</dd></div>
+  <div><dt>Feature</dt><dd>One input number given to the model. We use 142 of them.</dd></div>
+  <div><dt>Quantile</dt><dd>Instead of one prediction, a range. "There is a 10 percent chance it is below X and a 90 percent chance it is below Y." <em>How we produce probabilities for GRAP.</em></dd></div>
+  <div><dt>GRAP</dt><dd>Graded Response Action Plan. India's official emergency ladder for Delhi air. Restrictions kick in at AQI 200, 300 and 400.</dd></div>
+  <div><dt>CAMS</dt><dd>The European weather service's global model that includes atmospheric chemistry. We use its output as a starting point.</dd></div>
+  <div><dt>WRF-Chem</dt><dd>A full research grade weather plus chemistry model. Too heavy to run on our hardware, as explained in section 7.</dd></div>
+  <div><dt>MoES DSS</dt><dd>The Ministry's own operational forecast system. We use its published numbers as a reference to check ours against. <em>We cite it, we never copy or redistribute it.</em></dd></div>
+  <div><dt>CPCB</dt><dd>Central Pollution Control Board. Runs India's official monitoring stations and defines the AQI formula.</dd></div>
+  <div><dt>FIRMS</dt><dd>NASA's satellite fire detection service. Tells us where stubble is burning.</dd></div>
+  <div><dt>Snapshot</dt><dd>A saved copy of a full forecast. Our website serves one of these, refreshed every six hours, because the free server cannot run the full calculation itself.</dd></div>
+</dl></div>
+</section>
+
+</body>
+</html>

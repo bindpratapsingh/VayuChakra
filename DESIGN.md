@@ -395,11 +395,14 @@ not.
 
 ## 11. The print documents have their own type system
 
-`docs/report/report.html` and `docs/report/briefing.html` are not web pages. They exist
-only to be rendered to `docs/VayuChakra-Report.pdf` and
-`docs/VayuChakra-Jury-Briefing.pdf` by `docs/report/build.py`, and they depart from this
-document in three ways, each deliberate. The briefing sets one step larger throughout,
-because it is read aloud from in a room rather than studied at a desk.
+`docs/report/report.html`, `docs/report/briefing.html` and `docs/report/primer.html` are
+not web pages. They exist only to be rendered to PDFs by `docs/report/build.py`, and they
+depart from this document in three ways, each deliberate. The briefing sets one step
+larger throughout, because it is read aloud from in a room rather than studied at a desk.
+The primer adds one device the others do not have: every idea appears twice, in a green
+"in plain words" track and a blue "technical version" track, because its readers are
+teammates who do not yet know the vocabulary and the two audiences cannot be served by
+one register.
 
 **Typography.** The product UI uses `system-ui` and nothing else, and that rule holds
 on the dashboard: a dashboard is scanned and operated, so a display pairing buys
