@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T20:01:51Z",
+  "generated_at": "2026-09-05T20:10:01Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,22 +10,22 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2713
+      "bytes": 2347
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 139595
+      "bytes": 139229
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 139118
+      "bytes": 138752
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 139928
+      "bytes": 139562
     },
     "/profile": {
       "file": "profile.json",
@@ -92,21 +92,21 @@
       "status": "retained",
       "bytes": 1773,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.0
     },
     "/scenario?kind=district": {
       "file": "scenario__kind=district.json",
       "status": "retained",
       "bytes": 4857,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.0
     },
     "/dss": {
       "file": "dss.json",
       "status": "retained",
       "bytes": 1184,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.0
     }
   }
 }
