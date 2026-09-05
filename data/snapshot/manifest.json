@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T20:17:05Z",
+  "generated_at": "2026-09-05T20:25:59Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -40,7 +40,7 @@
     "/coupling": {
       "file": "coupling.json",
       "status": "ok",
-      "bytes": 78523
+      "bytes": 78530
     },
     "/photolysis": {
       "file": "photolysis.json",
@@ -65,7 +65,7 @@
     "/uncertainty?horizon=24": {
       "file": "uncertainty__horizon=24.json",
       "status": "ok",
-      "bytes": 44112
+      "bytes": 44111
     },
     "/uncertainty?horizon=48": {
       "file": "uncertainty__horizon=48.json",
