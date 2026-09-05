@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T04:37:45Z",
+  "generated_at": "2026-09-05T10:43:17Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,32 +10,32 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2404
+      "bytes": 2514
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 140447
+      "bytes": 139935
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 139947
+      "bytes": 139567
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 141046
+      "bytes": 141778
     },
     "/profile": {
       "file": "profile.json",
       "status": "ok",
-      "bytes": 54282
+      "bytes": 54281
     },
     "/domain": {
       "file": "domain.json",
       "status": "ok",
-      "bytes": 45375
+      "bytes": 47143
     },
     "/coupling": {
       "file": "coupling.json",
@@ -50,12 +50,12 @@
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 58575
+      "bytes": 58513
     },
     "/plume": {
       "file": "plume.json",
       "status": "ok",
-      "bytes": 9219
+      "bytes": 12511
     },
     "/plume/calibration": {
       "file": "plume__calibration.json",
@@ -92,21 +92,21 @@
       "status": "retained",
       "bytes": 1773,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     },
     "/scenario?kind=district": {
       "file": "scenario__kind=district.json",
       "status": "retained",
       "bytes": 4857,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     },
     "/dss": {
       "file": "dss.json",
       "status": "retained",
       "bytes": 1184,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     }
   }
 }
