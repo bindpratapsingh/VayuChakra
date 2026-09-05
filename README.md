@@ -44,7 +44,7 @@ blocks more sunlight. The problem statement calls ignoring that loop a source of
 | **Plume dispersion** | Lagrangian puffs released from satellite fire detections, advected on forecast wind, gated by the inversion lid |
 | **72-hour outlook** | 1,120 cells, ~2.8 km over Delhi, ~11 km across the wider NCR |
 | **Validated against the MoES DSS** | Head-to-head with the ministry's own operational system on identical observations |
-| **A forecaster's interface** | Six views organised around the physics: the region, the vertical column, the loop, transport, the surface product, and the evidence |
+| **A forecaster's interface** | Seven views organised around the physics: the region, the vertical column, the loop, transport, the surface product, the evidence, and an About view stating the brief clause by clause |
 
 ---
 
@@ -63,6 +63,7 @@ the views are named for the physics rather than for pages.
 | **Transport** | Whether the smoke actually arrives, and how the model scores against the MoES DSS attribution. |
 | **Forecast** | The surface product. CPCB AQI per cell, and the probability of breaching each GRAP stage. |
 | **Evidence** | Every validation number, negative results included. |
+| **About** | What the system is, the problem statement quoted, and all eleven clauses of it with the status of each. The species clause is not asserted: it is checked against what the running solver reports it coupled, so the table cannot drift into claiming something the live system no longer does. |
 
 The cross-section is the one that did not exist before. Inversion lid, mixing depth and
 the temperature profile at 950, 925 and 850 hPa were all being computed and then
@@ -70,6 +71,12 @@ flattened into three line charts of surface scalars. On a 168-hour window the li
 present in 95 hours and absent in 73, and absence is drawn as absence rather than joined
 through: "no lid" and "a lid at ground level" are opposite statements about the
 atmosphere and must not share a pixel.
+
+The full write-up is a 26 page PDF: **[docs/VayuChakra-Report.pdf](docs/VayuChakra-Report.pdf)**.
+It sets out the problem statement clause by clause, what each clause requires, what was
+built to meet it, the evidence for every claim, and what remains. It downloads from the
+dashboard rail and from the About view, and is served at
+[`/docs/VayuChakra-Report.pdf`](https://vayuchakra.onrender.com/docs/VayuChakra-Report.pdf).
 
 Screenshots are in [docs/shots/](docs/shots/).
 
@@ -93,24 +100,38 @@ box.
 ```
 
 All three meteorological variables the problem statement names, **temperature, wind and
-PBL height**, now respond, and NO₂ and O₃ enter the loop through photolysis.
+PBL height**, respond. So do **all four chemical species it names**: PM2.5 sits inside the
+iterated fixed point and carries the return path to the atmosphere, because it is what the
+aerosol model is calibrated on; PM10, NO₂ and O₃ respond to the meteorology the solver
+produces without meaningfully driving it, which is physically correct rather than a
+shortcut. Coarse dust, NO₂ and ozone at these concentrations do not move the shortwave
+budget enough to close a loop through it.
 
 Step 5 feeds step 1, so it is **solved**, not evaluated. Damped fixed-point iteration
 with clipped responses, an iteration cap, and a divergence flag that falls back to the
 uncoupled answer rather than shipping a number it could not solve for.
 
-**Measured against published Delhi ranges** (high-aerosol daylight hours, Nov–Dec 2024,
-5,856 hours, converged in 6 iterations, 0 diverged):
+**Measured against published Delhi ranges** (high-aerosol daylight hours,
+67,458 cell-hours of the shipped run, converged in 5
+iterations, 0 diverged):
 
 | | measured | published |
 |---|---|---|
-| Shortwave reduction | 13.5% | 5–35% |
-| Daytime cooling | −0.74 K | 0.1–2.5 K |
-| PBL suppression | 7.0% | 5–35% |
-| PM2.5 amplification | 7.5% | 2–30% |
-| **Surface wind slackening** | **1.46%** | 0.5–6.0% |
+| Shortwave reduction | 11.708% | 5-35% |
+| Daytime cooling | -0.628 K | 0.1-2.5 K |
+| PBL suppression | 6.045% | 5-35% |
+| Surface wind slackening | 1.267% | 0.5-6.0% |
+| PM2.5 amplification | 6.251% | 2-30% |
+| **PM10 amplification** | **5.323%** | 1-25% |
+| **NO₂ amplification** | **19.904%** | 2-35% |
+| **O₃ response** | **-0.061%** | must be negative |
 
-Five for five, on 13,109 high-aerosol daylight hours.
+**Eight for eight.** PM10 moves less than PM2.5, as it must: it is fine plus a coarse
+excess, and coarse dust sediments out of a collapsing layer instead of accumulating in it.
+Ozone is checked on **direction**, not magnitude: the solver applies only the closure term
+the trained head could not see, so its size is small by construction, but attenuated
+ultraviolet cannot produce more ozone and a positive value there would mean the pathway is
+wired backwards.
 
 ---
 
@@ -353,7 +374,7 @@ vayuchakra/
   photolysis.py  MCM clear-sky J, aerosol attenuation of ultraviolet
   uncertainty.py quantile heads, interval coverage, GRAP exceedance probability
 api/main.py      local FastAPI
-dashboard/       the six-view interface, one file, no build step
+dashboard/       the seven-view interface, one file, no build step
 scripts/         build_dataset.py, train.py, run_all.sh, and the validators
 tests/           76 offline tests
 ```

@@ -1,9 +1,9 @@
-# VayuChakra — decision and assumption log
+# VayuChakra: decision and assumption log
 
 Every non-obvious choice, why it was made, and what would reverse it.
 Append-only. Newest at the bottom of each section.
 
-**Target:** MoES / NCMRWF — *Air Pollution–Weather Coupled Forecasting System (Delhi NCR Focus)*
+**Target:** MoES / NCMRWF: *Air Pollution–Weather Coupled Forecasting System (Delhi NCR Focus)*
 **Mode:** local development only. Nothing hosted. Nothing pushed until explicitly asked.
 
 ---
@@ -49,7 +49,7 @@ the artefacts portable.
 ## D-005 · Domain is Delhi NCR, wider than AirGrid's
 **Decision.** 27.6–29.4 N, 76.0–78.0 E.
 **Why.** AirGrid's grid is Delhi only (28.4–28.9, 76.8–77.4). The PS says "Delhi NCR",
-and the MoES DSS apportionment resolves 19 NCR districts — Panipat, Karnal, Meerut and
+and the MoES DSS apportionment resolves 19 NCR districts, Panipat, Karnal, Meerut and
 Bharatpur all sit outside AirGrid's box. Stubble plumes also arrive from beyond it.
 
 ## D-006 · Two-way coupling as a damped fixed-point iteration
@@ -64,14 +64,14 @@ surfaced rather than swallowed.
 
 ## D-007 · PM2.5 and O3 get separate models
 **Decision.** Two heads, not one AQI scalar.
-**Why.** The PS names both explicitly. They are governed by different physics — O3 peaks
+**Why.** The PS names both explicitly. They are governed by different physics, O3 peaks
 in the afternoon when PM2.5 is diluted, and rises when NOx falls. A single scalar cannot
 represent both, and AirGrid's single-AQI target is the main scientific gap to close.
 
 ## D-008 · Two-tier grid, fine over Delhi
 **Decision.** 0.025 deg (~2.8 km) inside the Delhi NCT box, 0.1 deg (~11 km) over the
 rest of NCR. 1,115 cells total: 420 fine + 695 coarse, no overlap.
-**Why.** A uniform 0.1 deg grid put only **8 cells inside Delhi** — indefensible for a
+**Why.** A uniform 0.1 deg grid put only **8 cells inside Delhi**, indefensible for a
 PS that asks for "high-resolution". A uniform 0.025 deg grid over the whole NCR box
 would be ~11,000 cells, mostly farmland whose only job is to advect a plume toward the
 city. Resolution where the forecast is consumed, coverage where it only needs to
@@ -80,7 +80,7 @@ transport.
 ## D-009 · Exclude the 1000 hPa level over Delhi
 **Decision.** The vertical profile uses 950 / 925 / 850 hPa only.
 **Why.** Measured 2026-09-04: Delhi ground is ~225 m ASL and the 1000 hPa surface sits
-at ~41 m ASL — **184 m below the terrain**. Open-Meteo still reports a temperature
+at ~41 m ASL, **184 m below the terrain**. Open-Meteo still reports a temperature
 there, by downward extrapolation, and it reads several degrees warmer than the 2 m
 observation at night. Using it would have manufactured inversions that do not exist.
 Every level is now checked for height-above-ground before use.
@@ -94,26 +94,26 @@ default would have inflated it 3.6x and silently moved every dispersion threshol
 **Decision.** Keep the hourly flag, but define an *episode* on the rolling 24-hour
 **maximum** ventilation coefficient, not the mean.
 **Why.** Measured: the hourly flag fires on 88% of hours, because the boundary layer
-collapses every night everywhere — no discriminating power, and "consecutive stagnant
+collapses every night everywhere, no discriminating power, and "consecutive stagnant
 hours" became a run of ordinary nights (88 h). The published VC thresholds are defined
 on *afternoon* ventilation. Testing the 24 h maximum asks the physically meaningful
 question: did the day ever clear out? A 24h-mean test flagged 96% of hours; the
 maximum test gives 68% in a poorly-ventilated September cell, and will separate
 properly in winter.
 **Note.** Thresholds are for **display and labelling only**. The ML models consume the
-continuous `ventilation_coeff`, `vc_24h_mean`, `vc_24h_max` — never the flags — so a
+continuous `ventilation_coeff`, `vc_24h_mean`, `vc_24h_max`, never the flags, so a
 threshold choice cannot bias a prediction.
 
-## D-012 · CAMS archive does not cover the DSS window — validate twice
+## D-012 · CAMS archive does not cover the DSS window: validate twice
 **Measured 2026-09-04.** CAMS via Open-Meteo begins ~**mid-August 2022**. Requests for
 Oct 2021 – Feb 2022 return a correct time axis with **all values null**. The MoES DSS
 workbook covers exactly Oct 2021 – Feb 2022, so the chemistry prior is unavailable for
 the one window we most want to compare against.
 **Decision.** Two complementary validations rather than one compromised one.
- 1. **DSS window (Oct 2021 – Feb 2022)** — run VayuChakra in a reduced configuration
+ 1. **DSS window (Oct 2021 – Feb 2022)**, run VayuChakra in a reduced configuration
     (meteorology + lags + persistence, **no chemistry prior**) and compare against the
     DSS `Model forecast` sheet. Like-for-like on information available at forecast time.
- 2. **Production configuration** — validate the full model (with CAMS) on a recent
+ 2. **Production configuration**, validate the full model (with CAMS) on a recent
     winter where CAMS, ERA5 and station observations all exist, scored against CPCB.
 **Reported honestly.** We say which configuration produced which number, always.
 **Upgrade path.** ECMWF ADS serves the CAMS **EAC4 reanalysis back to 2003**. Getting
@@ -132,27 +132,27 @@ rather than working around with a filter.
 
 ## D-014 · Dual-path inversion: profile where possible, surface proxy otherwise
 **Measured 2026-09-04.** The Open-Meteo **forecast** API serves pressure levels; the
-**ERA5 archive never does** — `temperature_925hPa` returned 0/24 non-null on every
+**ERA5 archive never does**, `temperature_925hPa` returned 0/24 non-null on every
 archive date tested from 2021 to 2026, while `boundary_layer_height` returned 24/24.
 `soil_temperature_0cm` (skin) is unavailable; `soil_temperature_0_to_7cm` exists but is
-a damped layer average running warm at night and cool at midday — the opposite phase to
+a damped layer average running warm at night and cool at midday, the opposite phase to
 a skin temperature, so it is **not** an inversion proxy and is kept only as a predictor.
 **Decision.** `indices.inversion()` dispatches on what the data contains and stamps
 `inversion_method` = `profile` | `surface` on every row.
- - **profile** — true inversion strength in K, lid height from the temperature profile.
- - **surface** — `inversion_strength_k` left **NaN, never zero**. A collapsed boundary
+ - **profile**, true inversion strength in K, lid height from the temperature profile.
+ - **surface**, `inversion_strength_k` left **NaN, never zero**. A collapsed boundary
    layer (< 250 m) while the sun is down is the surface signature of a radiative
    inversion, and the PBL height is then the lid.
 **Why NaN and not zero.** A model trained where the feature is absent must not use it,
 and NaN enforces that. Zero would quietly teach it that no hindcast hour had an
-inversion — a fabricated fact, and exactly the kind of silent corruption that is
+inversion, a fabricated fact, and exactly the kind of silent corruption that is
 impossible to find later.
 **Verified.** Forecast and archive frames have **identical schemas**, so they
 concatenate cleanly. Nov 2021 Delhi from the archive path reproduces the expected
 diurnal cycle: PBL 26 m at midnight rising to 1074 m at 15:00 IST, inversion 100% of
 night hours and 0% at midday, VC 72 → 4540.
 
-## D-015 · Absolute AOD is not predictable from surface PM2.5 — use elasticity instead
+## D-015 · Absolute AOD is not predictable from surface PM2.5: use elasticity instead
 **Measured** on 26,496 hours of paired CAMS output across six NCR points, 2024:
 | model for log(AOD) | r² |
 |---|---|
@@ -161,12 +161,12 @@ night hours and 0% at midday, VC 72 → 4540.
 | log column + relative humidity | **0.356** |
 | + hygroscopic growth term | 0.358 |
 | + log dust | 0.383 |
-**Reading.** Humidity dominates — aerosol swells as it takes up water, so the same mass
+**Reading.** Humidity dominates, aerosol swells as it takes up water, so the same mass
 has very different optical depth at 30% and 90% RH. Even so, r² = 0.38 is too weak to
 *predict* AOD, because AOD is a column quantity that also sees aerosol above the
 boundary layer which surface PM2.5 cannot know about.
-**Decision.** Do not predict absolute AOD. Take **CAMS's own AOD as the baseline** — it
-comes from an actual radiative-transfer model — and use the fitted **elasticity**
+**Decision.** Do not predict absolute AOD. Take **CAMS's own AOD as the baseline**, it
+comes from an actual radiative-transfer model, and use the fitted **elasticity**
 ∂ln(AOD)/∂ln(PM2.5) only to *perturb* it when our predicted PM2.5 differs from CAMS's:
 `AOD = AOD_cams × (PM_ours / PM_cams) ** b`.
 **Why this is better.** The feedback loop never needed absolute AOD; it needed the
@@ -176,31 +176,31 @@ where it is strong and avoids leaning on it where it is weak.
 ## D-016 · The coupling reference must be a PRISTINE atmosphere, not CAMS
 **The bug this fixes was conceptual, not mechanical.** The first solver expressed the
 feedback as a perturbation *relative to CAMS's own state*. It converged in one
-iteration with **exactly zero effect** — correctly, because when our PM2.5 equals
+iteration with **exactly zero effect**, correctly, because when our PM2.5 equals
 CAMS's PM2.5 there is no perturbation to respond to. It answered "how does the feedback
 differ from CAMS's feedback?" when the question is "what IS the feedback?"
 
 **Decision.** Three distinct optical states, never conflated:
 | state | meaning |
 |---|---|
-| `AOD_BACKGROUND` = 0.10 | pristine atmosphere — the ablation's control |
+| `AOD_BACKGROUND` = 0.10 | pristine atmosphere, the ablation's control |
 | `aod_climatology` | what the weather model already assumed, per cell per month |
 | `aod_actual` | the real load, iterated because PM2.5 depends on it |
 
-The driving shortwave is **not** clear-sky — Open-Meteo's radiation scheme has already
+The driving shortwave is **not** clear-sky, Open-Meteo's radiation scheme has already
 dimmed it with a climatological aerosol. So the climatological loss is divided out to
 recover clear-sky irradiance before any load is applied. Skipping that step would count
 the climatological aerosol twice.
 
 **Second bug found by the same fix.** `pbl_response` clipped its ratio at 1.0, which
 silently forbade the pristine control from ever having a DEEPER boundary layer than the
-baseline — zeroing out the effect being measured. Now bounded both ways.
+baseline, zeroing out the effect being measured. Now bounded both ways.
 
-**Result — measured, Nov–Dec 2024, Delhi, 5,856 hours, all four gates PASS:**
+**Result: measured, Nov–Dec 2024, Delhi, 5,856 hours, all four gates PASS:**
 | quantity | all hours | daytime | published Delhi range |
 |---|---|---|---|
 | shortwave reduction | 10.3% | 11.1% | 5–35% |
-| near-surface cooling | — | **−0.59 K** | 0.1–2.5 K |
+| near-surface cooling |, | **−0.59 K** | 0.1–2.5 K |
 | PBL suppression | 5.1% | 5.7% | 5–35% |
 | PM2.5 amplification | 2.5% | **6.1%** | 2–30% |
 
@@ -215,10 +215,10 @@ daytime figures are the representative ones and are quoted as such.
 **Decision.** `sw_reduction_frac` and `pbl_suppression_frac` are NaN when the pristine
 shortwave is below 1 W/m².
 **Why.** A "percentage reduction of zero shortwave" is not a number. Filling it with 0
-would drag every reported mean toward zero in proportion to the length of the night —
+would drag every reported mean toward zero in proportion to the length of the night, 
 an artefact of the season, not a property of the aerosol.
 
-## D-018 · CORRECTION — the DSS validation window IS coverable by observations
+## D-018 · CORRECTION: the DSS validation window IS coverable by observations
 **This reverses an earlier conclusion of mine, which was wrong.**
 
 I first sampled OpenAQ S3 coverage using station IDs 235 (Anand Vihar), 17 (R K Puram)
@@ -236,15 +236,15 @@ sites are 5509, 7044 and 6357. Scanning all 161 NCR stations rather than three:
 | both, within 60 km of Delhi | **66** |
 
 The DSS window (Oct 2021 - Feb 2022) is covered by 66 Delhi-area stations, including
-**IITM sites** (Lodhi Road 11607, Chandni Chowk 11603) — the same institute that
-built the DSS — plus IMD and CPCB.
+**IITM sites** (Lodhi Road 11607, Chandni Chowk 11603), the same institute that
+built the DSS, plus IMD and CPCB.
 
-**Consequence — the validation gets stronger than planned.** We can now score
+**Consequence, the validation gets stronger than planned.** We can now score
 VayuChakra *and* the MoES DSS against the **same observations** over the **same
 window**: a genuine head-to-head, not a structural comparison.
 
 **Verified end to end.** Pulled 10 Delhi stations for 1-14 Nov 2021: 3,178 hours,
-PM2.5 97% complete. City-mean by day reproduces the documented episode —
+PM2.5 97% complete. City-mean by day reproduces the documented episode, 
 111-150 µg/m³ on 1-3 Nov, **414 on 4 Nov (Diwali 2021)**, decaying 358 → 331, then the
 mid-month stubble-and-stagnation peak at 306-343. The data is real and correctly
 timestamped.
@@ -273,18 +273,18 @@ MW** of fire radiative power.
 **Dispersion combines two regimes in quadrature.** Pasquill-Gifford was fitted below
 10 km and badly under-predicts a 200 km transport, so near-field turbulence is combined
 with a far-field shear term proportional to distance travelled. Gives σ ≈ 1.1 km at
-1 h, 12 km at 6 h, 30 km at 15 h — the right order for a regional smoke plume.
+1 h, 12 km at 6 h, 30 km at 15 h, the right order for a regional smoke plume.
 
 **Verified magnitudes.** A modelled burn night (3,000 fires × 165 kg/h over 6 h,
-σ = 40 km) gives **490 µg/m³ under a 300 m layer, 196 µg/m³ under 1500 m** — correct
+σ = 40 km) gives **490 µg/m³ under a 300 m layer, 196 µg/m³ under 1500 m**, correct
 order for a severe episode, and correctly inverse in mixing depth.
 
 **The inversion gate works in both directions** (this is the PS requirement):
 | puff height | 400 m lid | contribution |
 |---|---|---|
-| 200 m | below | 1.31 µg/m³ — trapped |
-| 450 m | above | 0.98 µg/m³ — decoupling |
-| 700 m | above | **0.00** — decoupled |
+| 200 m | below | 1.31 µg/m³, trapped |
+| 450 m | above | 0.98 µg/m³, decoupling |
+| 700 m | above | **0.00**, decoupled |
 Smoke can sit overhead while monitors read clean, then land abruptly when morning
 convection reconnects it. That is real, observed Delhi behaviour and it falls out of
 the model rather than being scripted.
@@ -293,7 +293,7 @@ the model rather than being scripted.
 **Broadcasting bug, and it was physical.** `_contribution` used one wind dict for both
 the puff population and the receptor cells. Whether smoke is coupled to the ground is
 set by the lid **where the puff is**; the volume it dilutes into is set by the mixing
-depth **at the receptor**. Conflating them raised a shape error here — but had the
+depth **at the receptor**. Conflating them raised a shape error here, but had the
 array lengths happened to match, it would have silently returned wrong numbers.
 
 **Unit bug.** Puff mass is in grams and volume in m³, so the Gaussian quotient is
@@ -307,16 +307,16 @@ until a case that *should* be non-zero has been shown to be non-zero.
 ## D-021 · CPCB index computed from concentrations, never predicted directly
 **Decision.** Models predict PM2.5, O3, PM10 and NO2 concentrations; `aqi.py` applies
 the published breakpoint table afterwards.
-**Why.** AQI is a max-of-sub-indices over piecewise-linear breakpoints — discontinuous
+**Why.** AQI is a max-of-sub-indices over piecewise-linear breakpoints, discontinuous
 and non-monotone in any single pollutant. Asking a regressor to learn that lookup table
 *on top of* atmospheric physics wastes capacity on arithmetic we can do exactly. It is
 also **auditable**: anyone can check our breakpoints against CPCB's published table;
 nobody can check a number that emerged from a tree ensemble.
-**PM10 and NO2 are carried purely for index validity** — CPCB requires ≥3 pollutants
+**PM10 and NO2 are carried purely for index validity**, CPCB requires ≥3 pollutants
 including a particulate, and with only PM2.5 and O3 every AQI correctly came back NaN.
 **Verified** against the published table at every breakpoint, plus the two traps:
  - **Shared endpoints.** Bands abut (0-30, then 30-60), so a value landing exactly on
-   one matches both. The FIRST match must win — CPCB puts PM2.5 = 30 at index 50, not
+   one matches both. The FIRST match must win, CPCB puts PM2.5 = 30 at index 50, not
    51. Filling only where unset fixed an off-by-one at every single breakpoint.
  - **Averaging windows.** A 400 µg/m³ hourly spike gives a naive AQI of 500 but a
    correct CPCB AQI of 218, because the standard is defined on a 24-hour mean.
@@ -327,7 +327,7 @@ including a particulate, and with only PM2.5 and O3 every AQI correctly came bac
    the 24/48/72 h predictions. `horizon_h` is now added to the grouping key
    automatically, because forgetting to pass it is silent.
 2. **NaN PM2.5 coerced to zero** by a `fillna(0)` before adding the plume term. That
-   converts "we cannot predict this hour" into "the air is perfectly clean" — the most
+   converts "we cannot predict this hour" into "the air is perfectly clean", the most
    dangerous direction to be wrong in, and entirely plausible-looking on a map. NaN is
    now preserved end to end.
 3. **Fallback picked a column, not a value.** `_persistence_fallback` returned the
@@ -336,13 +336,13 @@ including a particulate, and with only PM2.5 and O3 every AQI correctly came bac
    Now coalesced row by row: 2% → **93%**.
 
 ## D-023 · The literature gate is evaluated in the regime the literature describes
-**Problem.** `pbl_suppression_pct` failed at 4.69% against a 5-35% bound — while the
+**Problem.** `pbl_suppression_pct` failed at 4.69% against a 5-35% bound, while the
 model was behaving correctly. The published Delhi figures come from **winter haze
 episodes at high aerosol loading, in daylight**. Our average included clean September
 afternoons and nights, when the radiative feedback is correctly *zero*.
 **Decision.** Gate on high-aerosol daylight hours (AOD ≥ 0.5, shortwave ≥ 50 W/m²) and
 report the all-conditions figure alongside, clearly labelled, rather than judging it.
-**Result — all four now pass, and the distinction is itself informative:**
+**Result: all four now pass, and the distinction is itself informative:**
 | quantity | in-regime | all conditions | published |
 |---|---|---|---|
 | shortwave reduction | **11.4%** | 9.8% | 5-35% |
@@ -355,8 +355,8 @@ reported; only the like-for-like one is judged. Returns `ok: None` rather than a
 when fewer than 20 in-regime hours exist.
 
 ## D-024 · One request per location, not per sensor
-**Measured.** `fetch_latest` issued one request per sensor — roughly 800 for the NCR
-network — and earned HTTP 429 partway through, leaving a partial picture that reads
+**Measured.** `fetch_latest` issued one request per sensor, roughly 800 for the NCR
+network, and earned HTTP 429 partway through, leaving a partial picture that reads
 like a quiet day rather than a throttled one. `/locations/{id}/latest` returns every
 sensor at a location in one response: ~130 requests, no throttling, 93 stations
 returned.
@@ -374,7 +374,7 @@ than a chat interface, so forcing it onto the citizen app's ramp would be wrong.
 **Inherited unchanged:** the CPCB AQI band scale. That is a public standard, not a brand
 asset, and it is reproduced exactly in both products.
 **Scene sentence that forced the choices** (light, dense, tabular): *a reviewer at a desk
-indoors under office light, reading a 72-hour outlook and deciding whether to trust it —
+indoors under office light, reading a 72-hour outlook and deciding whether to trust it, 
 or the same screen projected in a lit jury room.*
 
 ## D-026 · Palettes are validated, not eyeballed
@@ -385,13 +385,13 @@ that are now enforced everywhere:
  1. every band-coloured element carries its band **name and number** as visible text;
  2. every map cell carries a **hairline border**, so a pale yellow cell is still a cell.
 Text on bands: dark ink on the four light bands, white on the two dark ones. White on
-Good is only 3.65:1 — large-text-only — so ink is used there too.
+Good is only 3.65:1, large-text-only, so ink is used there too.
 **Chart series:** `#3b62d4 → #c2701c → #0f9b8e`. Two earlier candidates failed (indigo
 too dark at L 0.35 and below the chroma floor; teal↔purple at CVD ΔE 7.2). The shipped
 set passes all five checks with margin (CVD ΔE 14.0 protan, normal-vision ΔE 21.7).
 **Contrast, measured:** white on chrome 12.54:1, ink on surface 16.52:1, muted ink 6.83:1.
 
-## D-027 · Never a dual axis — three panels instead
+## D-027 · Never a dual axis: three panels instead
 The inversion tracker shows strength (K), mixing depth (m) and ventilation coefficient
 (m²·s⁻¹). One pair of axes would need two or three y-scales, which lets whoever draws the
 chart choose the story by choosing the scaling. Three panels sharing one x-axis compare
@@ -402,11 +402,11 @@ The validator checks colour, not layout. Screenshotting each view found four def
 that no amount of code review had surfaced:
 
 1. **`isFinite(null)` is `true`.** The global `isFinite` coerces, and `Number(null)` is
-   0 — so every missing hour was plotted as **zero**, drawing a cliff to the floor at the
+   0, so every missing hour was plotted as **zero**, drawing a cliff to the floor at the
    end of every forecast, exactly where CAMS stops supplying a prior. *The data was
    honest; the chart was lying.* Now `Number.isFinite` throughout, which does not coerce.
-2. **The forecast endpoint returned `tail(1)`** — the last row of a frame that runs five
-   days forward — landing precisely on those same sparse hours. Every one of 420 cells
+2. **The forecast endpoint returned `tail(1)`**, the last row of a frame that runs five
+   days forward, landing precisely on those same sparse hours. Every one of 420 cells
    came back with a null AQI and the map rendered entirely grey. It now selects the row
    **valid at issue time + horizon**, which is the question the control is asking.
 3. **`reduce` on an empty array throws.** When no cell had a usable index, the summary
@@ -460,7 +460,7 @@ A fixed `min_months = 8` made a 4-month request unsatisfiable, so the builder re
 every station and printed "nothing to do" for what was a misconfigured threshold rather
 than absent data. Now `max(2, 60% of the window)`.
 
-## D-032 · Full training run — all 12 heads beat persistence
+## D-032 · Full training run: all 12 heads beat persistence
 Panel: 536,670 rows, 40 stations, Feb 2025 – Aug 2026. Chronological hold-out.
 
 | head | RMSE | persistence | vs persistence | r² |
@@ -472,18 +472,18 @@ Panel: 536,670 rows, 40 stations, Feb 2025 – Aug 2026. Chronological hold-out.
 
 **Acceptance criterion V1 met.** AirGrid's 24 h head lost to persistence by 4.2%; every
 head here beats it, and the margin *widens* with lead time, which is the expected shape
-— persistence degrades faster than a physics-informed model as the horizon grows.
+,  persistence degrades faster than a physics-informed model as the horizon grows.
 
 **The ozone head is the clearest vindication of a diagnosis.** On the 4-month smoke
 panel it *lost* by 16.6%, and the stated reason was that Jan–Apr contains almost no
 photochemistry and O3 was only 54% populated. On the full 19-month panel, with O3 at
-83.2%, it beats persistence by 20% at r² = 0.61 — the best-fitting head in the set.
+83.2%, it beats persistence by 20% at r² = 0.61, the best-fitting head in the set.
 The earlier failure was the training window, not the model.
 
 **Memory fix that made this possible.** `make_supervised` on 537k rows × 130 columns
 built a ~250-column float64 frame and pandas copied it several times, exceeding memory
 and killing the first run after the 43-minute build. Now it carries only feature-eligible
-columns, drops unlabelled rows before assembling, and stores float32 — 466 MB, 17 s.
+columns, drops unlabelled rows before assembling, and stores float32, 466 MB, 17 s.
 XGBoost casts to float32 internally, so the precision costs nothing.
 
 ## D-033 · The plume case study: three physics variants, and why I stopped
@@ -492,14 +492,14 @@ archived ERA5 meteorology and archived CPCB observations.
 
 | variant | peak plume | corr vs residual | verdict |
 |---|---|---|---|
-| A · injection height fixed forever | 15.6 µg/m³ | +0.249 | **backwards** — largest contribution in the deep afternoon layer |
-| B · entrained, no residual layer | 153.5 µg/m³ | +0.180 | **over-corrected** — implies stubble is ~69% of Delhi PM2.5 |
+| A · injection height fixed forever | 15.6 µg/m³ | +0.249 | **backwards**, largest contribution in the deep afternoon layer |
+| B · entrained, no residual layer | 153.5 µg/m³ | +0.180 | **over-corrected**, implies stubble is ~69% of Delhi PM2.5 |
 | C · entrained with residual layer | 9.3 µg/m³ | −0.122 | most defensible physics, weakest correlation |
 
 **Variant A was a real bug.** Comparing a parcel's *injection* height against the current
 lid forever meant smoke injected at ~300 m sat "above" a 33 m nocturnal inversion and was
 excluded from the surface all night. The model reported its biggest plume contributions
-when the mixed layer was deepest — the exact opposite of the trapping mechanism the
+when the mixed layer was deepest, the exact opposite of the trapping mechanism the
 problem statement asks about.
 
 **Variant C is what ships.** When the layer collapses at dusk, smoke already spread
@@ -514,7 +514,7 @@ against a residual is weak, and **the case study is a limitation of this work ra
 a result of it.** It should be presented that way.
 
 **Two rate-limit fixes came out of the same run.** Open-Meteo's archive limit is
-per-minute, so the ordinary ~2 s backoff re-triggered it and burned the retry budget —
+per-minute, so the ordinary ~2 s backoff re-triggered it and burned the retry budget, 
 five requests failed and the advection silently ran on a wind field with holes in it.
 HTTP 429 now honours `Retry-After` and waits out the window; the corridor was also
 thinned from 1,115 to 835 cells, since nearest-neighbour wind lookup gains nothing from
@@ -522,7 +522,7 @@ thinned from 1,115 to 835 cells, since nearest-neighbour wind lookup gains nothi
 
 ## D-034 · One HTTP 502 destroyed a hindcast, and the error message pointed the wrong way
 **What happened.** The coupling ablation reported *"chemistry prior unavailable"*. CAMS
-was fine — tested standalone for the same window, 100% populated. The real cause was a
+was fine, tested standalone for the same window, 100% populated. The real cause was a
 single **HTTP 502** on the meteorology request, which emptied the panel; the ablation's
 error branch then attributed an empty panel to the chemistry prior.
 
@@ -532,7 +532,7 @@ error branch then attributed an empty panel to the chemistry prior.
    time, not asked again immediately. They now use the same long, `Retry-After`-aware
    wait as 429.
 2. **A failed batch lost every cell in it.** Open-Meteo takes up to 100 points per
-   request, so a 20-station hindcast is a *single* request — one failure and the entire
+   request, so a 20-station hindcast is a *single* request, one failure and the entire
    run has no meteorology. Failed batches now split in half and retry, up to three
    levels, which isolates a bad cell or an oversized request instead of surrendering
    everything.
@@ -543,13 +543,13 @@ error branch then attributed an empty panel to the chemistry prior.
 **Lesson kept.** An error message that names the wrong cause is worse than a generic
 one: a vague message makes you look, a confident wrong one makes you look elsewhere.
 
-## D-035 · DSS head-to-head — and the caveat that matters more than the table
+## D-035 · DSS head-to-head: and the caveat that matters more than the table
 A silent join bug hid this result entirely at first. The DSS sheet stores integer IST
 hours; IST is UTC+5:30, so every converted timestamp landed at **:30 past the hour**
 while every observation series is floored to :00. The merge matched **zero rows** and
 printed an empty table rather than raising. Floored to the hour, matching observations.
 
-**Result** — identical hours, identical ground truth (Delhi city-mean CPCB PM2.5):
+**Result**, identical hours, identical ground truth (Delhi city-mean CPCB PM2.5):
 
 | lead | hours | DSS RMSE | VayuChakra | persistence |
 |---|---|---|---|---|
@@ -562,7 +562,7 @@ sample in time.
 
 **The caveat is not a footnote, it is the headline.** The DSS forecasts were issued
 **operationally**: it had to predict the weather as well as the chemistry, days ahead.
-Our hindcast is driven by **ERA5 reanalysis** — the meteorology as it actually turned
+Our hindcast is driven by **ERA5 reanalysis**, the meteorology as it actually turned
 out. That is a material advantage and makes this **not a fair comparison of forecast
 skill**. The table supports "the statistical layer maps meteorology to PM2.5
 competitively". It does **not** support "we forecast better than the MoES DSS", and that
@@ -572,7 +572,7 @@ sentence must never be said. The caveat now prints above the numbers, not below 
 **First run was an unfair test, and I fixed the test before believing the answer.** The
 uncoupled arm is CAMS plus a fitted bias, so its mean error is zero *by construction*;
 the coupled arm is that series multiplied by ~1.075 and therefore *must* come out biased
-high — it did, by +4.21 µg/m³. That comparison measures which arm was allowed to fit an
+high, it did, by +4.21 µg/m³. That comparison measures which arm was allowed to fit an
 intercept, not whether the feedback helps. Both arms are now re-centred to zero mean
 bias before scoring, in the overall and per-regime numbers alike.
 
@@ -585,14 +585,14 @@ bias before scoring, in the overall and per-regime numbers alike.
 | well ventilated | 8,134 | 76.61 | 76.77 | −0.21% |
 | **high aerosol** | 28,440 | 83.29 | 83.00 | **+0.35%** |
 
-**The honest reading.** The feedback's *magnitudes* are right — all four literature
+**The honest reading.** The feedback's *magnitudes* are right, all four literature
 checks pass (SW 13.5%, cooling −0.74 K, PBL 7.0%, PM 7.5%). But switching it on does
 **not** measurably improve PM2.5 against observations. It helps only in the high-aerosol
 regime, and by 0.35%, which is not a result to lean on.
 
 **Three candidate explanations, none of them "the physics is wrong":**
 1. The uncoupled baseline is weak (RMSE 82.76). A ~7% modulation is small against that
-   much residual error — an unfavourable signal-to-noise ratio.
+   much residual error, an unfavourable signal-to-noise ratio.
 2. The ablation's baseline is CAMS-plus-bias, not the trained model.
 3. **Most likely and most interesting:** the trained model already receives mixing
    depth, ventilation coefficient, shortwave and the stagnation indices, so it may be
@@ -602,7 +602,7 @@ regime, and by 0.35%, which is not a result to lean on.
 **What this means for the pitch.** The problem statement asserts that ignoring the
 feedback "leads to significant inaccuracies". We tested that assertion rather than
 repeating it, and on this window, with this baseline, we could not confirm it. Saying so
-is worth more than a claim we cannot support — and explanation 3, if true, is a finding
+is worth more than a claim we cannot support, and explanation 3, if true, is a finding
 in its own right: the physics matters, but it may enter through the features rather than
 through an explicit solver.
 
@@ -625,7 +625,7 @@ A real atmospheric field at 2.8 km spacing should exceed 0.9. The values were ne
 on either side of a split threshold and flip between two leaf values. The map was
 displaying an artefact of the estimator as though it were a pollution gradient.
 
-**Fix.** Gaussian smoothing at 6 km, the effective resolution of the inputs — the
+**Fix.** Gaussian smoothing at 6 km, the effective resolution of the inputs, the
 meteorology is ~11 km, the CAMS prior ~40 km, the station network ~5 km. Applied before
 the plume and the coupling, since the plume carries genuine sharp gradients that must
 not be blurred.
@@ -635,7 +635,7 @@ not be blurred.
 states the honest claim: the forecast resolves what its drivers resolve, and no finer.
 
 ## D-038 · A second map scale, because the CPCB one can go blind
-The September forecast spans AQI 104–121 — entirely inside "Moderate" — so the standard
+The September forecast spans AQI 104–121, entirely inside "Moderate", so the standard
 palette painted 420 identical yellow squares and hid a real 17-point spread. The band
 scale is correct and must stay the default, but it stops being informative when a whole
 city sits in one band.
@@ -652,10 +652,10 @@ responsive pollutant.
 
 | pathway | mechanism | effect on ozone |
 |---|---|---|
-| **API** — aerosol→photolysis | aerosol blocks UV, ozone production slows | **−8.5 to −11.4 ppb (10–12%)** |
-| **ARF** — aerosol→radiation→PBL | what we built in Round 1 | −0.9 to −2.9 ppb (1–3%) |
+| **API**, aerosol→photolysis | aerosol blocks UV, ozone production slows | **−8.5 to −11.4 ppb (10–12%)** |
+| **ARF**, aerosol→radiation→PBL | what we built in Round 1 | −0.9 to −2.9 ppb (1–3%) |
 
-*(Xing et al., ACP 22, 4101, 2022 — paired WRF-Chem runs isolating each.)*
+*(Xing et al., ACP 22, 4101, 2022, paired WRF-Chem runs isolating each.)*
 
 **Implementation.** `vayuchakra/photolysis.py`: MCM v3.3.1 clear-sky rates
 `J = l·cos(SZA)^m·exp(−n·sec(SZA))` with published coefficients, aerosol optical depth
@@ -663,14 +663,14 @@ shifted from CAMS's 550 nm to the photolysis-relevant 380 nm via an Ångström e
 (×1.56), then attenuated by Beer-Lambert **scaled by the share of extinction that
 actually removes a photon from the actinic flux**. That last bracket matters: photolysis
 responds to photons arriving from every direction, so light scattered by aerosol still
-counts. Applying raw Beer-Lambert to J would have overstated the effect several-fold —
+counts. Applying raw Beer-Lambert to J would have overstated the effect several-fold, 
 the same trap avoided in `feedback.py`.
 
 **Verified against known magnitudes:** J(NO₂) = 0.0089 s⁻¹ overhead (literature ~1e-2),
 J(O¹D) = 3.78e-5 s⁻¹ (literature ~3e-5), both correctly zero below the horizon.
 
 **Nothing is fitted.** With k = 1.0 the physics produces a **21.0%** mean reduction in
-J(NO₂) at present-day Delhi aerosol — inside the 20–30% the literature spans, with no
+J(NO₂) at present-day Delhi aerosol, inside the 20–30% the literature spans, with no
 tuning at all. That is a stronger position than a fitted coefficient.
 
 ## D-040 · The seasonal calibration target was Beijing's, and Delhi is the opposite
@@ -694,7 +694,7 @@ The plan's headline check (V1) was to compare modelled `J/J_clear` against Open-
 not, and neither is any other Open-Meteo radiation product. Three measurements:
 
 1. **`uv_index_clear_sky` means cloud-free, not aerosol-free.** At cloud cover below 5%
-   the ratio is **0.998** — no attenuation — while mean AOD over those same hours is 0.41.
+   the ratio is **0.998**, no attenuation, while mean AOD over those same hours is 0.41.
    Aerosol sits in both the numerator and the denominator.
 2. **The ratio tracks cloud, not aerosol:** 0.998 → 0.963 → 0.925 → 0.903 → 0.841 across
    rising cloud bands, while within clear skies a threefold rise in AOD moves it only
@@ -703,7 +703,7 @@ not, and neither is any other Open-Meteo radiation product. Three measurements:
    clear skies it reads **750, 761, 762 W/m²** across AOD bands 0–0.4, 0.4–0.7, 0.7–1.5.
    Flat. The radiation scheme carries a *climatological* aerosol, not the day's load.
 
-**Consequence.** No Open-Meteo radiation product can validate aerosol optics — there is
+**Consequence.** No Open-Meteo radiation product can validate aerosol optics, there is
 no daily aerosol signal in any of them. The check was replaced, not dropped: validation
 moved to the **ozone response against station observations**, which tests the mechanism
 against measurements rather than against an intermediate.
@@ -712,7 +712,7 @@ against measurements rather than against an intermediate.
 built on (D-016): the driving shortwave contains a climatological aerosol that must be
 divided out before a real load is applied.
 
-## D-042 · Photolysis features do not improve the ozone forecast — a second negative result
+## D-042 · Photolysis features do not improve the ozone forecast: a second negative result
 Identical panel, identical splits, with and without the photolysis block:
 
 | head | with J | without J | change |
@@ -741,7 +741,7 @@ counterfactual is the subject of the next entry, and it is the correct test of t
 
 **Consequences, both serious:**
 1. **Every metric reported before this point is a summer/monsoon score.** All twelve
-   heads, the persistence comparisons, the r² values — none of them had ever been
+   heads, the persistence comparisons, the r² values, none of them had ever been
    evaluated on Delhi's defining pollution season.
 2. **The photolysis effect was being tested in the one season where it is weakest.** The
    literature's claim is specifically that Delhi's ozone production is *radiation-limited
@@ -749,8 +749,8 @@ counterfactual is the subject of the next entry, and it is the correct test of t
    test of the hypothesis.
 
 **Fix.** `dataset.split_holdout_window()` and `model.train_head(holdout=...)`: hold out a
-named season block instead of the most recent slice. Still strictly out of sample — the
-window is absent from training entirely — but it chooses the window by season rather than
+named season block instead of the most recent slice. Still strictly out of sample, the
+window is absent from training entirely, but it chooses the window by season rather than
 by recency.
 
 **Both splits are now reported**, because they answer different questions: recency asks
@@ -767,13 +767,13 @@ statistical forecaster can answer: *what would ozone be if Delhi's aerosol were 
 | −75% | **+24.29%** |
 
 **Published Delhi figure: a 50% AOD reduction raises ozone by ~25%** (Nelson et al.,
-Faraday Discussions 226, 2021, APHH-India). Ours gives **+12.79%** — same sign,
+Faraday Discussions 226, 2021, APHH-India). Ours gives **+12.79%**, same sign,
 monotonic, accelerating, and within a factor of two of a number the model was **never
 fitted to and never saw**.
 
 **The seasonal split is itself corroboration.** The same experiment on the summer
 hold-out gives only **+4.03%**; winter gives +12.79%, a threefold stronger response. That
-is exactly the pattern the literature explains — winter ozone production in Delhi is
+is exactly the pattern the literature explains, winter ozone production in Delhi is
 radiation-limited, summer is not. We did not build that seasonality in; it fell out.
 
 **Why the remaining factor of two is expected, not a defect.** The published +25% comes
@@ -786,7 +786,7 @@ amplification through radical chemistry. Under-predicting is the expected direct
 persistence 26.38 (**+23.9%**, r² 0.760) on the unseen winter, versus +20.1% and r² 0.609
 on the summer split.
 
-**This is the answer to D-042.** Explicit photolysis adds nothing to *forecast skill* —
+**This is the answer to D-042.** Explicit photolysis adds nothing to *forecast skill*, 
 the model already infers it from radiation features. What it adds is the ability to run a
 **counterfactual**, which a statistical model structurally cannot: that atmosphere is not
 in the training data. The problem statement asks for a system that "simulates real-time
@@ -810,13 +810,13 @@ recency split is large enough that reporting only one of them would have been mi
 
 1. **PM2.5 in winter is far harder, and we were quoting the easy season.** RMSE rises
    from 26 to 89 µg/m³ and the margin over persistence at 24 h collapses from +18.0% to
-   **+4.5%**. Winter Delhi is dominated by episode dynamics — boundary-layer collapse,
-   multi-day accumulation, festival and burning spikes — and persistence is a strong
+   **+4.5%**. Winter Delhi is dominated by episode dynamics, boundary-layer collapse,
+   multi-day accumulation, festival and burning spikes, and persistence is a strong
    baseline precisely when concentrations are high and slowly varying. The margin
    recovers at longer leads (+18.8% at 72 h), which is the expected shape: persistence
    decays faster than physics as the horizon grows.
 2. **Ozone is the opposite: better in winter than summer**, at every horizon, reaching
-   r² 0.76. Consistent with the radiation-limited regime — when ozone production is
+   r² 0.76. Consistent with the radiation-limited regime, when ozone production is
    controlled by available sunlight, a model with radiation and photolysis features has
    more to work with.
 
@@ -831,18 +831,18 @@ scheduling error. PM10 and NO₂ winter numbers still to be filled in.
 
 ## D-047 · The plume validation works now, and it overturns a Round 1 decision
 **What changed: the target, not the model.** Round 1 correlated the plume against *total*
-observed PM2.5 and got r = −0.12 — an uninformative comparison, because transported smoke
+observed PM2.5 and got r = −0.12, an uninformative comparison, because transported smoke
 is an additive minority term against a signal dominated by local emissions and mixing
 depth. Scoring instead against the **MoES DSS daily stubble attribution** (147 days,
 season mean 8.6 µg/m³, peak 38.0) turns it into a real test.
 
-**Season-long result** — 6 Oct to 30 Nov 2021, 229,709 archived FIRMS detections, 56 days:
+**Season-long result**, 6 Oct to 30 Nov 2021, 229,709 archived FIRMS detections, 56 days:
 
 | variant | r | scale | RMSE | peak (scaled) | DSS peak |
 |---|---|---|---|---|---|
-| **A** — injection height fixed | **+0.596** | 4.79 | 8.28 | 27.7 | 38.0 |
-| C — entrained + residual layer | +0.525 | 2.73 | 8.90 | 24.5 | 38.0 |
-| B — entrained, no residual | +0.369 | 0.11 | 9.95 | 22.4 | 38.0 |
+| **A**, injection height fixed | **+0.596** | 4.79 | 8.28 | 27.7 | 38.0 |
+| C, entrained + residual layer | +0.525 | 2.73 | 8.90 | 24.5 | 38.0 |
+| B, entrained, no residual | +0.369 | 0.11 | 9.95 | 22.4 | 38.0 |
 
 All three are strongly positive where Round 1's best was negative. The change of
 reference is what made validation possible at all.
@@ -850,7 +850,7 @@ reference is what made validation possible at all.
 **Variant A wins, and I had rejected it.** Round 1 shipped C after judging A "backwards"
 from a single four-day episode. Over a full season against the operational reference, A
 has the best day-to-day timing. **That earlier decision was made on physical reasoning
-rather than measurement** — the exact failure this project keeps trying to avoid — and it
+rather than measurement**, the exact failure this project keeps trying to avoid, and it
 is now reversed. Default changed to A.
 
 **A plausible reason A wins.** C carries a running maximum of the mixing depth the parcel
@@ -860,7 +860,7 @@ correlation measures.
 
 **The caveat that keeps this honest.** The DSS attribution is **daily**, so it can settle
 day-to-day timing and nothing finer. It cannot discriminate the variants on their
-*diurnal* behaviour, which is where A is most questionable — A produces its largest
+*diurnal* behaviour, which is where A is most questionable, A produces its largest
 contributions under the deepest afternoon layer, which remains physically odd. C is
 retained in the code and is the better choice the moment a sub-daily reference exists.
 
@@ -876,7 +876,7 @@ stubble bbox: a 4-day window on 5 Nov 2021 returns 24,004 detections and succeed
 7- and 10-day windows on the same dates fail outright. Blocks now start at 4 days and
 halve on an empty response, because a genuinely quiet stretch and an over-large request
 are indistinguishable from one empty reply. Total recovered: 229,709 detections with the
-correct seasonal shape — 51,209 at the 7-10 Nov peak, 1,123 by late November.
+correct seasonal shape, 51,209 at the 7-10 Nov peak, 1,123 by late November.
 
 ## D-049 · Complete winter hold-out: all twelve heads still beat persistence
 Nov 2025 – Feb 2026 held out of training entirely.
@@ -889,7 +889,7 @@ Nov 2025 – Feb 2026 held out of training entirely.
 | NO₂ +24 / +48 / +72 h | 24.36 / 26.52 / 27.89 | 27.63 / 31.01 / 32.33 | +11.8 / +14.5 / +13.7% | 0.64 / 0.57 / 0.52 |
 
 **The claim survives the harder test**, which is the point of running it. Every head
-beats persistence in the season the problem statement is actually about — but PM2.5 at
+beats persistence in the season the problem statement is actually about, but PM2.5 at
 24 h beats it by 4.5%, not the 18.0% the summer split advertised, and that difference is
 now stated wherever the figure appears.
 
@@ -906,11 +906,11 @@ the surface wind slackens.
 **Scaled from the published ratio, not fitted.** Xing et al. report wind falling 1.6-4.3%
 in the same experiments where PBL falls 13.0-20.9%, so the response is about a fifth of
 the boundary-layer suppression. Verified across the range: 13% PBL suppression gives
-2.60% wind, 21% gives 4.20% — inside the reported band at both ends.
+2.60% wind, 21% gives 4.20%, inside the reported band at both ends.
 
 **The gate caught a real bug, and it was a repeat offence.** The first implementation
-clipped the response to the suppression side only, so the pristine control — which has a
-*deeper* layer — could not differ from the baseline. Measured wind reduction came out at
+clipped the response to the suppression side only, so the pristine control, which has a
+*deeper* layer, could not differ from the baseline. Measured wind reduction came out at
 **0.462%** against a 0.5-6.0% bound and failed. This is precisely the mistake already made
 once in `pbl_response` (D-016): **clipping a two-sided response to one side**. Both are
 now two-sided, and a test encodes the correct behaviour rather than the convenient one.
@@ -929,7 +929,7 @@ now two-sided, and a test encodes the correct behaviour rather than the convenie
 PM2.5 drives the loop, and NO₂ and O₃ enter it through photolysis (D-039).
 
 ## D-051 · Leave-one-station-out: the gridded product is justified
-Every score before this was temporal — different hours, same stations. That answers "does
+Every score before this was temporal, different hours, same stations. That answers "does
 it work next week". It does not answer the question a **gridded** forecast rests on: we
 serve 1,120 cells and about 40 contain an instrument, so for a thousand of them the model
 is extrapolating in space and nothing had tested whether it can.
@@ -984,7 +984,7 @@ forecast reported `degraded: []` throughout.
 **Two fixes, because one was not enough.** `photolysis.add_features` now runs on the
 inference path, computed exactly as in training. And the fallback is no longer silent: an
 absent trained feature is recorded in `notes` and flagged in `degraded`, because filling
-one with NaN is a real degradation rather than a formality — the model was fitted
+one with NaN is a real degradation rather than a formality, the model was fitted
 expecting a value there.
 
 **The lesson.** A safety net that can be bypassed by ordinary convenience code is not a
@@ -1009,13 +1009,13 @@ A survey of every station within 60 km of Delhi against the OpenAQ S3 archive:
 2018-19, 2019-20, 2020-21, 2021-22 and 2025-26, the middle four with 47-65 stations each.
 
 **This explains the weakest number in the project.** With only Nov 2025 - Feb 2026
-available, the winter hold-out removed the *only* winter from training — so the model was
+available, the winter hold-out removed the *only* winter from training, so the model was
 tested on winter having never seen one. PM2.5 at +24 h scored **+4.5%** over persistence
 under that arrangement. Neither split reflected operational reality, which is *trained on
 past winters, forecasting the current one*:
 
- - recency split: winter **in** training, tested on summer — winter never evaluated;
- - winter hold-out: winter tested, but **absent** from training — pessimistic by design.
+ - recency split: winter **in** training, tested on summer, winter never evaluated;
+ - winter hold-out: winter tested, but **absent** from training, pessimistic by design.
 
 **Fix.** A second panel covering Oct 2018 - Mar 2022 (four more winters, 40 stations,
 47,984 station-days) to concatenate with the existing one. CAMS does not reach back that
@@ -1034,7 +1034,7 @@ interpolates the conditional CDF to give the probability of breaching each stage
 
 | | |
 |---|---|
-| interval coverage | **66.7%** against 80% nominal — over-confident |
+| interval coverage | **66.7%** against 80% nominal, over-confident |
 | quantile crossing rate | 5.7% (repaired by row-wise sorting, and reported) |
 
 | GRAP threshold | observed | predicted | Brier | **skill vs climatology** |
@@ -1048,7 +1048,7 @@ is the useful result. **The interval is too narrow**, and that is the same one-w
 problem: a model that has never seen a winter is confidently wrong about one, and its
 quantiles inherit the confidence without the accuracy.
 
-**A Brier score alone is not interpretable** — 0.108 sounds good until you notice that
+**A Brier score alone is not interpretable**, 0.108 sounds good until you notice that
 always predicting the base rate scores 0.155 on the same data. The skill score against
 that climatological forecast is reported alongside, because it is the number that says
 whether the model knows anything.

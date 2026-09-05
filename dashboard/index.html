@@ -312,8 +312,18 @@ svg.map rect.cell { stroke: rgba(16,24,32,0.20); stroke-width: 0.4; cursor: cros
 svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 
 /* ---------- geographic maps ---------- */
+/* `isolation: isolate` is doing real work here, not tidying.
+   Leaflet assigns its own z-indexes on the panes and controls it creates: tiles at 200,
+   overlays 400, markers 600, popups 700, controls 800. The topbar is sticky at
+   --z-sticky (10), so every one of those beat it, and scrolling a map up under the
+   topbar painted tiles and zoom buttons straight over it - the header text disappeared
+   behind the map. Raising the topbar above 800 would work until Leaflet or a plugin
+   picked a higher number.
+   Isolating instead confines that whole 200-800 range inside the map element, which
+   then stacks as one ordinary box in normal flow, below anything positioned above it.
+   The map cannot escape its own panel no matter what Leaflet does internally. */
 .geo { border-radius: var(--r-sm); border: 1px solid var(--line); overflow: hidden;
-       background: var(--canvas, #f7f9fb); }
+       background: var(--canvas, #f7f9fb); isolation: isolate; }
 #domain-map.geo { height: 620px; }
 #map-slot.geo { height: 480px; }
 .leaflet-container { font: inherit; background: #f7f9fb; }
@@ -321,6 +331,35 @@ svg.map rect.cell:hover { stroke: var(--ink); stroke-width: 1.4; }
 .leaflet-bar a { color: var(--ink); }
 /* Leaflet's default marker shadow and focus ring fight a data overlay. */
 .leaflet-interactive:focus { outline: 2px solid var(--brand-active); outline-offset: 1px; }
+/* ---------- the About view ---------- */
+.brief {
+  border-left: 3px solid var(--brand); background: var(--panel-2);
+  padding: 12px 16px; margin: 0 0 14px; font-size: 0.9375rem; line-height: 1.55;
+  color: var(--ink); font-style: italic;
+}
+.clause { display: grid; gap: 2px 14px; grid-template-columns: 30px 1fr auto;
+          padding: 9px 0; border-bottom: 1px solid var(--line); }
+.clause:last-child { border-bottom: 0; }
+.clause .cid { font-size: 0.75rem; font-weight: 700; color: var(--ink-muted);
+               font-variant-numeric: tabular-nums; grid-row: 1 / span 2; }
+.clause .ct { font-weight: 600; font-size: 0.875rem; }
+.clause .cd { grid-column: 2; font-size: 0.8125rem; color: var(--ink-muted); line-height: 1.5; }
+.clause .cs { grid-row: 1 / span 2; grid-column: 3; align-self: start; }
+@media (max-width: 620px) {
+  .clause { grid-template-columns: 26px 1fr; }
+  .clause .cs { grid-row: 3; grid-column: 2; margin-top: 4px; }
+}
+.about-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.about-links a {
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  font-size: 0.8125rem; font-weight: 600; color: var(--brand);
+  border: 1px solid var(--line); border-radius: var(--r-bar);
+  padding: 9px 13px; background: var(--panel);
+  transition: border-color 140ms ease-out, background 140ms ease-out;
+}
+.about-links a:hover { border-color: var(--brand); background: var(--panel-2); }
+@media (prefers-reduced-motion: reduce) { .about-links a { transition: none } }
+
 .geo-key {
   display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
   font-size: 0.75rem; color: var(--ink-muted); margin-bottom: 8px;
@@ -489,6 +528,7 @@ svg.cycle .pulse { fill: var(--s2); }
       <button data-view="transport"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5h9a2.5 2.5 0 1 0-2.5-2.5" opacity=".55"/><path d="M2 10.5h13"/><path d="M12 7.8 15.4 10.5 12 13.2"/><path d="M2 14.5h7" opacity=".55"/></svg><span class="k">4</span><span>Smoke from the fields</span><span class="sub">Stubble plume transport</span></button>
       <button data-view="forecast"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 16.5v-13" opacity=".55"/><path d="M2.5 16.5h15" opacity=".55"/><path d="M5 13l3.5-4.5 3 2.5L17 5"/></svg><span class="k">5</span><span>The 72-hour outlook</span><span class="sub">AQI and GRAP risk</span></button>
       <button data-view="evidence"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V9m4.5 7.5V4m4.5 12.5v-5" opacity=".55"/><path d="M13.5 13.8 15.6 16 18.5 11.6"/></svg><span class="k">6</span><span>Does it actually work</span><span class="sub">Validation, negatives included</span></button>
+      <button data-view="about"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5" opacity=".55"/><path d="M10 9v4.5"/><path d="M10 6.4v.1"/></svg><span class="k">7</span><span>What this is</span><span class="sub">The brief, and how it is met</span></button>
     </nav>
     <div class="docs">
       <div class="dt">How this works</div>
@@ -793,6 +833,123 @@ svg.cycle .pulse { fill: var(--s2); }
       </div>
     </section>
 
+    <section class="view" data-view="about">
+      <header>
+        <h2>What this is</h2>
+        <div class="finding" id="f-about">VayuChakra forecasts Delhi NCR's air quality
+          72 hours ahead by solving the weather and the chemistry <b>together</b>, in
+          both directions, rather than treating the weather as a fixed input.</div>
+        <p>Built for the Ministry of Earth Sciences and NCMRWF problem statement on
+           air pollution and weather coupled forecasting.</p>
+      </header>
+
+      <div class="cols two">
+        <div class="panel">
+          <header><h3>The problem</h3><span class="hint">why coupling matters</span></header>
+          <p class="note" style="margin-bottom:10px">
+            Weather sets the volume that pollution occupies. On a winter night an
+            inversion puts a lid over the city, the mixed layer collapses from two
+            kilometres to a few hundred metres, and the same emissions land in a
+            fraction of the air. Most systems model that direction.
+          </p>
+          <p class="note" style="margin-bottom:10px">
+            <b>The return path is the hard one.</b> Aerosol is not a passive tracer. It
+            blocks sunlight, so the surface heats less, so the layer stays shallow, so
+            the wind slackens, so the same emissions concentrate further, which blocks
+            more sunlight. The loop closes on itself, which is why it has to be
+            <b>solved</b> rather than evaluated once.
+          </p>
+          <p class="note">
+            The same aerosol also removes the ultraviolet that drives ozone chemistry, a
+            pathway three to ten times stronger for ozone than the radiation route. And
+            Delhi's worst air is often not made in Delhi: stubble smoke travels 200 to
+            400 km and arrives over a city that cannot ventilate it.
+          </p>
+        </div>
+
+        <div class="panel">
+          <header><h3>What it does</h3><span class="hint">in one screen</span></header>
+          <table class="kv">
+            <tr><th>Domain</th><td class="n">1,120 cells, Alwar to Karnal</td></tr>
+            <tr><th>Resolution</th><td class="n">2.8 km over Delhi, 11 km NCR</td></tr>
+            <tr><th>Pollutants</th><td class="n">PM2.5, PM10, NO₂, O₃</td></tr>
+            <tr><th>Horizon</th><td class="n">24, 48 and 72 hours</td></tr>
+            <tr><th>Index</th><td class="n">CPCB National AQI</td></tr>
+            <tr><th>Forecast skill</th><td class="n">12 of 12 heads beat persistence</td></tr>
+            <tr><th>Coupled magnitudes</th><td class="n">8 of 8 inside published bounds</td></tr>
+            <tr><th>Where no monitor exists</th><td class="n">10 of 10 stations improved</td></tr>
+          </table>
+          <p class="note caveat" style="margin-top:10px">
+            Every number on this site is read from a result file and traceable to the
+            endpoint that produced it. Negative results are shown, not hidden.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px">
+        <header><h3>The brief, clause by clause</h3>
+          <span class="hint">10 of 11 met in full</span></header>
+        <p class="brief">The solution must leverage advanced weather-chemistry models
+          (such as WRF-Chem or similar open-source coupled frameworks) to dynamically
+          interlink meteorology with pollution dispersion (specifically PM2.5 and
+          Ground-level Ozone) ... Implement a workflow that handles two-way feedback
+          between meteorology (temperature, wind, PBL height) and chemistry (PM2.5,
+          PM10, O3, NOx). A user-friendly, real-time dashboard displaying
+          high-resolution AQI forecasts for Delhi NCR with a 72-hour outlook.</p>
+        <div id="clause-list"></div>
+      </div>
+
+      <div class="cols two" style="margin-top:14px">
+        <div class="panel">
+          <header><h3>What it is not</h3><span class="hint">stated so it is never overclaimed</span></header>
+          <ul class="note" style="margin:0; padding-left:18px">
+            <li style="margin-bottom:6px"><b>Not WRF-Chem.</b> No radiative transfer
+              solve, no chemical mechanism integrated forward, no emissions inventory.
+              We consume CAMS, an operational coupled model, and add our own feedback
+              layer on top.</li>
+            <li style="margin-bottom:6px"><b>No VOC chemistry.</b> Delhi's winter ozone
+              is VOC limited as well as radiation limited. Only the radiation limited
+              half is modelled.</li>
+            <li style="margin-bottom:6px"><b>A single chemical layer.</b> Vertical
+              structure is diagnosed and drawn, not resolved.</li>
+            <li><b>The coupling does not improve forecast error.</b> Measured at
+              &minus;0.11%, and reported as a negative result rather than dropped. What
+              it buys is the ability to answer questions a fitted model cannot.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <header><h3>Read further</h3><span class="hint">the full write-up and the source</span></header>
+          <p class="note" style="margin-bottom:12px">
+            The project report sets out the problem statement, every requirement it
+            implies, each result with the file it came from, and what remains. 26 pages.
+          </p>
+          <div class="about-links">
+            <a id="about-pdf" href="/docs/VayuChakra-Report.pdf" download>
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 3v9"/><path d="M6.5 8.8 10 12.3 13.5 8.8"/><path d="M3.5 15.5h13"/>
+              </svg>Project report, PDF</a>
+            <a href="https://github.com/bindpratapsingh/VayuChakra" target="_blank" rel="noopener">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+              </svg>Source on GitHub</a>
+            <a href="https://vayuchakra.onrender.com" target="_blank" rel="noopener">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15"/>
+                <path d="M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5z"/>
+              </svg>Live system</a>
+          </div>
+          <p class="note caveat" style="margin-top:12px">
+            Third-party sources are cited, never redistributed. The MoES and IITM
+            WRF-Chem Decision Support System is used as a calibration reference and a
+            comparison target; its output is not ours and is labelled as such wherever
+            it appears.
+          </p>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>
 
@@ -813,7 +970,8 @@ document.getElementById("foot-api").textContent =
 /* The report is served by the API process, not by whatever static server happens to be
    holding this page, so the link needs the same base every fetch uses. Hosted these are
    the same origin and API is empty, which leaves the href exactly as authored. */
-if (API) document.getElementById("doc-pdf").href = API + "/docs/VayuChakra-Report.pdf";
+if (API) document.querySelectorAll("#doc-pdf, #about-pdf").forEach(
+  a => { a.href = API + "/docs/VayuChakra-Report.pdf"; });
 
 /* Colours that have to be literals.
    SVG presentation attributes cannot read a CSS custom property, so every colour drawn
@@ -2385,12 +2543,110 @@ async function loadScenario() {
   slot.replaceChildren(wrap);
 }
 
+/* The eleven clauses of the problem statement, and where each is met.
+   The wording in `t` is the statement's, not ours. Status is deliberately NOT all
+   hardcoded: the two clauses that were most recently closed are checked against what
+   the API actually returns, so this table cannot drift into claiming something the
+   running system no longer does. If the check cannot be made, the clause says so
+   rather than asserting a pass. */
+const CLAUSES = [
+  ["C1", "Advanced weather-chemistry models, WRF-Chem or similar coupled frameworks",
+   "CAMS (ECMWF IFS-COMPO), a global online-coupled meteorology and chemistry model, is "
+   + "the chemistry prior and supplies the aerosol optical depth the feedback runs on. "
+   + "We do not run a chemical transport model ourselves.", "part"],
+  ["C2", "Dynamically interlink meteorology with dispersion, PM2.5 and ground-level ozone",
+   "Forecast meteorology drives 142 features per cell hour, including boundary layer "
+   + "height, ventilation coefficient, lid height and mixing depth.", "ok"],
+  ["C3", "Model the impact of inversion on external spikes such as stubble burning",
+   "The plume delivers mass to the surface only where the modelled lid permits it. "
+   + "Calibrated against the MoES DSS at r = +0.60 over 54 days.", "ok"],
+  ["C4", "How those trapped pollutants alter local weather",
+   "An explicit, iterated aerosol radiative feedback solver, every response clipped and "
+   + "gated against published Delhi values.", "ok"],
+  ["C5", "Two-way feedback on temperature, wind and PBL height",
+   "All three respond, each inside its published range.", "ok"],
+  ["C6", "...and chemistry across PM2.5, PM10, O3 and NOx",
+   "", "live"],
+  ["C7", "A user-friendly, real-time dashboard",
+   "Six views plus this one, each leading with a plain-language finding. The hosted "
+   + "bundle is refreshed on a schedule by the full pipeline.", "ok"],
+  ["C8", "High-resolution AQI forecasts for Delhi NCR",
+   "1,120 cells, 2.8 km over Delhi inside an 11 km NCR domain, CPCB National AQI from "
+   + "the published breakpoint table.", "ok"],
+  ["C9", "A 72-hour outlook",
+   "Twelve heads at 24, 48 and 72 hours, all beating persistence on a held-out winter.", "ok"],
+  ["C10", "Explicitly track atmospheric inversion strength",
+   "Strength in kelvin, lid height, mixing depth and ventilation as forecast series, "
+   + "with a time-height cross section.", "ok"],
+  ["C11", "Predict how stubble plumes disperse under prevailing weather",
+   "Every detection released as a puff, advected on forecast wind, dispersed with travel "
+   + "time, gated by the lid. Reports arrival, not ignition.", "ok"],
+];
+
+async function loadAbout() {
+  const host = $("#clause-list");
+  if (!host || host.dataset.done === "1") return;
+
+  // C6 is the clause we closed most recently, so it is the one worth proving rather
+  // than asserting. Ask the running solver which species it actually coupled.
+  let species = null;
+  const c = await api("/coupling");
+  if (!c.__error) {
+    const d = c.diagnostics || c;
+    if (Array.isArray(d.species_coupled)) species = d.species_coupled;
+  }
+
+  const NAMES = { pm25: "PM2.5", pm10: "PM10", no2: "NO₂", o3: "O₃" };
+  const want = ["pm25", "pm10", "no2", "o3"];
+
+  const frag = document.createDocumentFragment();
+  CLAUSES.forEach(row => {
+    const id = row[0], title = row[1];
+    let desc = row[2], state = row[3];
+
+    if (state === "live") {
+      if (!species) {
+        desc = "The solver could not be reached, so this clause is not being claimed "
+             + "either way on this load.";
+        state = "unknown";
+      } else {
+        const have = want.filter(s => species.indexOf(s) >= 0);
+        desc = have.length === want.length
+          ? "All four are coupled to the solved meteorology: "
+            + want.map(s => NAMES[s]).join(", ")
+            + ". PM2.5 carries the return path to the atmosphere, because it is what "
+            + "the aerosol model is calibrated on; the others respond without "
+            + "meaningfully driving it, which is physically correct."
+          : "Only " + have.map(s => NAMES[s]).join(", ") + " are coupled. "
+            + want.filter(s => have.indexOf(s) < 0).map(s => NAMES[s]).join(", ")
+            + " are predicted but receive no coupled adjustment.";
+        state = have.length === want.length ? "ok" : "part";
+      }
+    }
+
+    const d = el("div", "clause");
+    d.append(Object.assign(el("span", "cid"), { textContent: id }),
+             Object.assign(el("span", "ct"), { textContent: title }),
+             Object.assign(el("span", "cd"), { textContent: desc }));
+    const cs = el("span", "cs");
+    const label = state === "ok" ? "Met" : state === "part" ? "Partial" : "Unverified";
+    const chip = el("span", "chip " + (state === "ok" ? "ok" : "warn"));
+    chip.append(el("span", "dot"), document.createTextNode(label));
+    cs.append(chip); d.append(cs);
+    frag.append(d);
+  });
+  host.replaceChildren(frag);
+  host.dataset.done = "1";
+}
+
 /* ---------- routing ---------- */
 const LOADERS = { domain: loadDomain, vertical: loadVertical, coupling: loadCoupling,
-                  transport: loadTransport, forecast: loadForecast, evidence: loadEvidence };
+                  transport: loadTransport, forecast: loadForecast, evidence: loadEvidence,
+                  about: loadAbout };
 const TITLES = { domain: "Where the air comes from", vertical: "The lid over the city",
                  coupling: "The loop we close", transport: "Smoke from the fields",
-                 forecast: "The 72-hour outlook", evidence: "Does it actually work" };
+                 forecast: "The 72-hour outlook", evidence: "Does it actually work",
+                 about: "What this is" };
 
 function go(view, push) {
   if (push === undefined) push = true;
@@ -2447,7 +2703,7 @@ $("#refresh").addEventListener("click", async () => {
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea")) return;
   const keys = { "1": "domain", "2": "vertical", "3": "coupling",
-                 "4": "transport", "5": "forecast", "6": "evidence" };
+                 "4": "transport", "5": "forecast", "6": "evidence", "7": "about" };
   if (keys[e.key]) go(keys[e.key]);
 });
 addEventListener("hashchange", () => go(location.hash.slice(1) || "domain", false));

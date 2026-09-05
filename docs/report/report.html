@@ -345,7 +345,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
       <td>All four respond to the coupled meteorology, and all four are gated. Under haze: PM2.5 &plus;6.16 %, PM10 &plus;4.30 %, NO<sub>2</sub> &plus;20.17 %, O<sub>3</sub> &minus;0.13 %. PM2.5 alone carries the return path to the atmosphere, which is the physically correct arrangement rather than a shortcut. §4.5</td></tr>
 
     <tr><th>C7</th><td>User friendly, real-time dashboard</td><td><span class="pill met">MET</span></td>
-      <td>Six view dashboard, keyboard navigable, every panel leading with a plain language finding. The hosted bundle is regenerated on a six-hourly schedule by a GitHub Actions runner with 16 GB of RAM, then auto-deployed, so the site serves a current forecast at full resolution. §10.3</td></tr>
+      <td>Seven view dashboard, keyboard navigable, every panel leading with a plain language finding, including an About view that states the brief and checks the species clause against the live solver. The hosted bundle is regenerated on a six-hourly schedule by a GitHub Actions runner with 16 GB of RAM, then auto-deployed, so the site serves a current forecast at full resolution. §10.3</td></tr>
 
     <tr><th>C8</th><td>High resolution AQI for Delhi NCR</td><td><span class="pill met">MET</span></td>
       <td>1,120 cells in two tiers: Delhi at 0.025° (2.8 km), wider NCR at 0.10° (11 km), Alwar to Karnal. CPCB National AQI by the published breakpoint table. §3.3</td></tr>
@@ -1114,7 +1114,7 @@ code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt;
     <tr><th>5</th><td><b>The 72 hour outlook</b></td><td>Gridded AQI on a real map at the chosen horizon, band name and number alongside colour, and GRAP crossing probabilities.</td></tr>
     <tr><th>6</th><td><b>Does it actually work</b></td><td>All twelve heads against persistence, leave one station out, the DSS head to head with its caveat above the table, and the MoES emission reduction scenarios.</td></tr>
   </tbody>
-  <caption>Table 9.1 The six views. Keyboard shortcuts 1 to 6, hash routing, no build step and no framework: one HTML file with Leaflet for the maps.</caption>
+  <caption>Table 9.1 The seven views. Keyboard shortcuts 1 to 7, hash routing, no build step and no framework: one HTML file with Leaflet for the maps.</caption>
 </table>
 
 <h3>9.1 Interface decisions worth stating</h3>
