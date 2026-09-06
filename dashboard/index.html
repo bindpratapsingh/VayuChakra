@@ -275,12 +275,36 @@ p { margin: 0; }
   text-wrap: pretty;
 }
 @media (max-width: 700px) { .finding { font-size: 1.0625rem; padding-left: 12px; } }
-.finding .n {
-  font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* Bold alone is not enough at this size: in a 1.25rem line a bold run reads as
+   slightly darker text, not as the answer. A tinted ground behind the phrase is what
+   makes it survive a glance, which is the only kind of reading this line gets.
+   The tints are 12-14% of a token already in the palette, so nothing new is
+   introduced and every pairing keeps its contrast. */
+.finding .n,
+.finding .g,
+.finding .q,
+.finding b {
+  font-weight: 700;
+  padding: 0.06em 0.3em; margin: 0 -0.04em;
+  border-radius: var(--r-bar);
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
 }
-.finding .q { color: var(--bad); font-weight: 650; }
-.finding .g { color: var(--ok); font-weight: 650; }
+.finding .n {
+  color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.finding b { color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.finding .g { color: var(--ok);   background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.finding .q { color: var(--bad);  background: color-mix(in srgb, var(--bad) 12%, transparent); }
+/* Emphasis nests: the verdict spans wrap a whole clause and often contain a number
+   inside them. Left alone the inner run drew its own brand-tinted box inside the
+   green one and broke "All 12 forecast heads beat persistence" into three fragments.
+   Inside a verdict, the verdict wins and the phrase stays one mark. */
+.finding .g .n, .finding .g b,
+.finding .q .n, .finding .q b {
+  background: none; color: inherit; padding: 0; margin: 0;
+}
+
 .finding.is-loading { color: var(--ink-muted); }
 
 /* Hero panels carry the view; support panels step back. Without this every panel had
@@ -1767,9 +1791,12 @@ function drawChips(sum) {
     || d === "chemistry_prior" || d === "observations");
   const other = deg.length - named.length;
   if (other > 0) add("warn", other + (other === 1 ? " stage degraded" : " stages degraded"));
-  const gate = sum.coupling && sum.coupling.literature_gate;
-  if (gate && gate.ok === true) add("ok", "Coupling within published bounds");
-  else if (gate && gate.ok === false) add("bad", "Coupling outside published bounds");
+  // The literature gate is deliberately NOT a chip. It is a self-audit: it answers
+  // "are our physics magnitudes defensible", which is a question for whoever is
+  // checking our work, not for whoever is reading the forecast. It runs on every
+  // build, fails the test suite when it is violated, and is reported in full on the
+  // Evidence view. The status bar is for things that change what the reader should
+  // believe about TODAY's numbers.
   if (sum.generated_at) {
     $("#bar-sub").textContent = "generated " + new Date(sum.generated_at).toLocaleString()
       + ", " + sum.cells + " cells";
@@ -2142,7 +2169,6 @@ function drawCycle(slot, steps, diag) {
   svg.append(dot);
   slot.replaceChildren(svg);
 }
-
 
 async function loadPhotolysis() {
   const d = await api("/photolysis");
