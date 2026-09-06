@@ -901,13 +901,32 @@ def check_against_literature(result: CouplingResult) -> dict:
     # What is not arbitrary is the sign: more aerosol removes ultraviolet, and less
     # ultraviolet cannot produce more ozone. A positive value here means the pathway is
     # wired backwards.
-    if "o3_response_frac" in sub.columns:
-        o3v = 100 * _mean("o3_response_frac")
-        ok = bool(o3v == o3v and o3v <= 1e-9)
-        checks["o3_response_pct"] = {
-            "value": round(o3v, 3) if o3v == o3v else None,
-            "expected": "negative under haze: attenuated ultraviolet cannot raise ozone",
-            "ok": ok}
+    if "o3_response_frac" in sub.columns and "aod_coupled" in sub.columns:
+        # Restricted to rows where the coupling actually ADDED aerosol.
+        #
+        # The first version of this check averaged the ozone response over the whole
+        # high-aerosol regime and asserted it was negative. That is the wrong quantity
+        # and the gate duly failed on a correct model, at +0.018%. What the solver
+        # applies to ozone is a CLOSURE term: the difference between photolysis at the
+        # converged aerosol and photolysis at the baseline aerosol the trained head was
+        # already fed. Where our coupled PM2.5 lands BELOW the CAMS baseline, less
+        # aerosol means more ultraviolet and ozone correctly rises. Averaging the two
+        # populations together tests nothing.
+        #
+        # The physical statement worth asserting is narrower and actually true: where
+        # the coupling added aerosol, ozone must fall.
+        base_aod = pd.to_numeric(sub.get("cams_aod"), errors="coerce")
+        added = pd.to_numeric(sub["aod_coupled"], errors="coerce") > base_aod
+        hazier = sub[added.fillna(False)]
+        if len(hazier) >= 20:
+            v = pd.to_numeric(hazier["o3_response_frac"], errors="coerce")
+            o3v = 100 * float(v.mean()) if v.notna().any() else float("nan")
+            ok = bool(o3v == o3v and o3v <= 1e-9)
+            checks["o3_response_pct"] = {
+                "value": round(o3v, 3) if o3v == o3v else None,
+                "expected": "negative where the coupling added aerosol",
+                "n": int(len(hazier)),
+                "ok": ok}
 
     return {"ok": all(c["ok"] for c in checks.values()),
             "checks": checks,

@@ -629,3 +629,24 @@ def test_evening_collapse_hands_mass_up_rather_than_destroying_it():
     into_mixed = np.array([[50.0], [0.0], [0.0], [0.0]])
     res = twolayer.integrate(h, into_mixed, np.zeros_like(into_mixed))
     assert res["residual"][2, 0] > 0, "collapse discarded the abandoned mixed layer"
+
+
+def test_ozone_gate_judges_only_where_the_coupling_added_aerosol():
+    """Regression: the gate failed a correct model at +0.018%.
+
+    The solver applies a CLOSURE term to ozone, the difference between photolysis at the
+    converged aerosol and at the baseline aerosol the trained head was already fed.
+    Where our coupled PM2.5 lands below the CAMS baseline, less aerosol means more
+    ultraviolet and ozone correctly rises. Averaging that population together with the
+    hazier one tests nothing, and the first version of this check did exactly that.
+    """
+    df = _four_species_frame(aod=1.2)
+    df["wind_speed_10m"] = 2.0
+    res = feedback.solve(df)
+    checks = feedback.check_against_literature(res)["checks"]
+    o3 = checks.get("o3_response_pct")
+    assert o3 is not None, "ozone was coupled but not gated"
+    assert o3["ok"], f"ozone rose where the coupling added aerosol: {o3['value']}%"
+    assert o3.get("n", 0) > 0, "the gate must say how many rows it judged"
+    # And the restriction has to actually restrict: judging every row is the bug.
+    assert o3["n"] < len(res.frame)
