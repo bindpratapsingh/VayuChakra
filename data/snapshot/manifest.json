@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T05:01:23Z",
+  "generated_at": "2026-09-15T11:52:29Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,52 +10,52 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2287
+      "bytes": 2291
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 140874
+      "bytes": 141429
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 141663
+      "bytes": 141609
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 141173
+      "bytes": 141535
     },
     "/profile": {
       "file": "profile.json",
       "status": "ok",
-      "bytes": 54456
+      "bytes": 54321
     },
     "/domain": {
       "file": "domain.json",
       "status": "ok",
-      "bytes": 47936
+      "bytes": 48671
     },
     "/coupling": {
       "file": "coupling.json",
       "status": "ok",
-      "bytes": 78573
+      "bytes": 78577
     },
     "/photolysis": {
       "file": "photolysis.json",
       "status": "ok",
-      "bytes": 31500
+      "bytes": 31532
     },
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 59371
+      "bytes": 59125
     },
     "/plume": {
       "file": "plume.json",
       "status": "ok",
-      "bytes": 14078
+      "bytes": 15492
     },
     "/plume/calibration": {
       "file": "plume__calibration.json",
@@ -65,7 +65,7 @@
     "/uncertainty?horizon=24": {
       "file": "uncertainty__horizon=24.json",
       "status": "ok",
-      "bytes": 44165
+      "bytes": 44151
     },
     "/uncertainty?horizon=48": {
       "file": "uncertainty__horizon=48.json",
