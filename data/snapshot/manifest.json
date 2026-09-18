@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T16:31:26Z",
+  "generated_at": "2026-09-18T20:58:36Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,22 +10,22 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2291
+      "bytes": 2180
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 138712
+      "bytes": 139118
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 138614
+      "bytes": 138595
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 139136
+      "bytes": 138873
     },
     "/profile": {
       "file": "profile.json",
@@ -35,12 +35,12 @@
     "/domain": {
       "file": "domain.json",
       "status": "ok",
-      "bytes": 47355
+      "bytes": 45375
     },
     "/coupling": {
       "file": "coupling.json",
       "status": "ok",
-      "bytes": 78419
+      "bytes": 78470
     },
     "/photolysis": {
       "file": "photolysis.json",
@@ -50,12 +50,12 @@
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 59464
+      "bytes": 59479
     },
     "/plume": {
       "file": "plume.json",
       "status": "ok",
-      "bytes": 12926
+      "bytes": 9219
     },
     "/plume/calibration": {
       "file": "plume__calibration.json",
@@ -65,7 +65,7 @@
     "/uncertainty?horizon=24": {
       "file": "uncertainty__horizon=24.json",
       "status": "ok",
-      "bytes": 44208
+      "bytes": 44175
     },
     "/uncertainty?horizon=48": {
       "file": "uncertainty__horizon=48.json",
@@ -92,21 +92,21 @@
       "status": "retained",
       "bytes": 1773,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.4
     },
     "/scenario?kind=district": {
       "file": "scenario__kind=district.json",
       "status": "retained",
       "bytes": 4857,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.4
     },
     "/dss": {
       "file": "dss.json",
       "status": "retained",
       "bytes": 1184,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.1
+      "retained_age_hours": 0.4
     }
   }
 }
