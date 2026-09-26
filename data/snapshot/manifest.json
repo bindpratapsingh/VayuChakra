@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T16:30:07Z",
+  "generated_at": "2026-09-26T21:16:44Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,27 +10,27 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2293
+      "bytes": 2289
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 140015
+      "bytes": 138843
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 139150
+      "bytes": 138785
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 139418
+      "bytes": 139286
     },
     "/profile": {
       "file": "profile.json",
       "status": "ok",
-      "bytes": 54203
+      "bytes": 54134
     },
     "/domain": {
       "file": "domain.json",
@@ -50,7 +50,7 @@
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 58679
+      "bytes": 58464
     },
     "/plume": {
       "file": "plume.json",
@@ -65,7 +65,7 @@
     "/uncertainty?horizon=24": {
       "file": "uncertainty__horizon=24.json",
       "status": "ok",
-      "bytes": 44180
+      "bytes": 44163
     },
     "/uncertainty?horizon=48": {
       "file": "uncertainty__horizon=48.json",
