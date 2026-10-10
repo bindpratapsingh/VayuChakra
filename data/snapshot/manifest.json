@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T18:24:54Z",
+  "generated_at": "2026-10-10T06:01:18Z",
   "base": "http://127.0.0.1:8100",
   "routes": {
     "/health": {
@@ -10,52 +10,52 @@
     "/summary": {
       "file": "summary.json",
       "status": "ok",
-      "bytes": 2166
+      "bytes": 2283
     },
     "/forecast?horizon=24": {
       "file": "forecast__horizon=24.json",
       "status": "ok",
-      "bytes": 139909
+      "bytes": 141197
     },
     "/forecast?horizon=48": {
       "file": "forecast__horizon=48.json",
       "status": "ok",
-      "bytes": 139538
+      "bytes": 141282
     },
     "/forecast?horizon=72": {
       "file": "forecast__horizon=72.json",
       "status": "ok",
-      "bytes": 139019
+      "bytes": 139772
     },
     "/profile": {
       "file": "profile.json",
       "status": "ok",
-      "bytes": 54573
+      "bytes": 54429
     },
     "/domain": {
       "file": "domain.json",
       "status": "ok",
-      "bytes": 45375
+      "bytes": 73717
     },
     "/coupling": {
       "file": "coupling.json",
       "status": "ok",
-      "bytes": 78493
+      "bytes": 78483
     },
     "/photolysis": {
       "file": "photolysis.json",
       "status": "ok",
-      "bytes": 31537
+      "bytes": 31510
     },
     "/inversion": {
       "file": "inversion.json",
       "status": "ok",
-      "bytes": 59488
+      "bytes": 59360
     },
     "/plume": {
       "file": "plume.json",
       "status": "ok",
-      "bytes": 9219
+      "bytes": 63778
     },
     "/plume/calibration": {
       "file": "plume__calibration.json",
@@ -65,7 +65,7 @@
     "/uncertainty?horizon=24": {
       "file": "uncertainty__horizon=24.json",
       "status": "ok",
-      "bytes": 44282
+      "bytes": 44365
     },
     "/uncertainty?horizon=48": {
       "file": "uncertainty__horizon=48.json",
@@ -92,21 +92,21 @@
       "status": "retained",
       "bytes": 1773,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     },
     "/scenario?kind=district": {
       "file": "scenario__kind=district.json",
       "status": "retained",
       "bytes": 4857,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     },
     "/dss": {
       "file": "dss.json",
       "status": "retained",
       "bytes": 1184,
       "reason": "HTTP 503",
-      "retained_age_hours": 0.4
+      "retained_age_hours": 0.1
     }
   }
 }
